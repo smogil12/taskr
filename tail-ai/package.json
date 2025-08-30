@@ -1,0 +1,43 @@
+{
+  "name": "tail-ai",
+  "version": "1.0.0",
+  "description": "Modern time management and project tracking application with AI-powered insights",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm run build --workspaces",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "type-check": "npm run type-check --workspaces",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "setup": "npm run setup:db && npm run setup:env",
+    "setup:db": "cd infrastructure && docker-compose up -d postgres",
+    "setup:env": "cp .env.example .env"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  },
+  "keywords": [
+    "time-tracking",
+    "project-management",
+    "ai",
+    "productivity",
+    "typescript",
+    "nextjs",
+    "nodejs"
+  ],
+  "author": "Spencer Mogil",
+  "license": "MIT"
+}

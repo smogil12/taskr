@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+  ON_HOLD
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Subscription fields
+  subscriptionTier SubscriptionTier @default(FREE)
+  stripeCustomerId String?
+  subscriptionId   String?
+  subscriptionEnds DateTime?
+
+  // Relations
+  projects   Project[]
+  tasks      Task[]
+  timeEntries TimeEntry[]
+  organizations OrganizationMember[]
+  subscriptions Subscription[]
+
+  @@map("users")
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members OrganizationMember[]
+  projects Project[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String @id @default(cuid())
+  userId         String
+  organizationId String
+  role           String @default("MEMBER") // OWNER, ADMIN, MEMBER
+  joinedAt       DateTime @default(now())
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@map("organization_members")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(PLANNING)
+  startDate   DateTime
+  endDate     DateTime?
+  progress    Int           @default(0) // 0-100
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  userId         String
+  organizationId String?
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  tasks          Task[]
+  timeEntries    TimeEntry[]
+
+  @@map("projects")
+}
+
+model Task {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  priority    TaskPriority @default(MEDIUM)
+  status      TaskStatus  @default(TODO)
+  dueDate     DateTime?
+  estimatedHours Float?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  projectId   String
+  assignedTo  String?
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedUser User?  @relation(fields: [assignedTo], references: [id], onDelete: SetNull)
+  timeEntries TimeEntry[]
+
+  @@map("tasks")
+}
+
+model TimeEntry {
+  id          String   @id @default(cuid())
+  startTime   DateTime
+  endTime     DateTime?
+  duration    Int?     // in milliseconds
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId    String
+  projectId String
+  taskId    String?
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task      Task?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@map("time_entries")
+}
+
+model Subscription {
+  id                String   @id @default(cuid())
+  stripeSubscriptionId String @unique
+  userId            String   @unique
+  status            String
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
