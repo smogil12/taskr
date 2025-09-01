@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
+import { useAuth } from "@/components/providers/auth-provider"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,7 +19,7 @@ interface TimeEntry {
 }
 
 export function TimeTracking() {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [isTracking, setIsTracking] = useState(false)
   const [currentEntry, setCurrentEntry] = useState<Partial<TimeEntry> | null>(null)
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([])
@@ -253,3 +253,4 @@ export function TimeTracking() {
     </div>
   )
 }
+

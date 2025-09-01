@@ -34,7 +34,6 @@ enum TaskPriority {
 enum TaskStatus {
   TODO
   IN_PROGRESS
-  REVIEW
   COMPLETED
 }
 
@@ -58,8 +57,29 @@ model User {
   timeEntries TimeEntry[]
   organizations OrganizationMember[]
   subscriptions Subscription[]
+  clients    Client[]     // User can own multiple clients
 
   @@map("users")
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  company     String?
+  address     String?
+  notes       String?
+  hourlyRate  Float?   // Default billing rate for this client
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  projects    Project[]
+  userId      String   // Client owner
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("clients")
 }
 
 model Organization {
@@ -99,13 +119,21 @@ model Project {
   startDate   DateTime
   endDate     DateTime?
   progress    Int           @default(0) // 0-100
+  
+  // Hour allocation and tracking
+  allocatedHours    Float   @default(0) // Total hours allocated to this project
+  consumedHours     Float   @default(0) // Hours consumed by completed tasks
+  remainingHours    Float   @default(0) // Available hours (calculated field)
+  
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
   // Relations
   userId         String
+  clientId       String?     // Project can be assigned to a client
   organizationId String?
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client         Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   tasks          Task[]
   timeEntries    TimeEntry[]
@@ -120,7 +148,8 @@ model Task {
   priority    TaskPriority @default(MEDIUM)
   status      TaskStatus  @default(TODO)
   dueDate     DateTime?
-  estimatedHours Float?
+  estimatedHours Float?   // Estimated hours for this task
+  actualHours    Float?   // Actual hours spent (from time entries)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -139,6 +168,7 @@ model TimeEntry {
   startTime   DateTime
   endTime     DateTime?
   duration    Int?     // in milliseconds
+  hours       Float?   // Calculated hours from duration
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

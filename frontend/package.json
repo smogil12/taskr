@@ -1,0 +1,43 @@
+{
+  "name": "@tail-ai/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "14.0.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "@tail-ai/shared": "workspace:*",
+    "next-auth": "^4.24.5",
+    "@next-auth/prisma-adapter": "^1.0.7",
+    "prisma": "^5.7.1",
+    "@prisma/client": "^5.7.1",
+    "zod": "^3.22.4",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.2.0",
+    "lucide-react": "^0.303.0",
+    "@headlessui/react": "^1.7.17",
+    "@heroicons/react": "^2.0.18",
+    "framer-motion": "^10.16.16",
+    "react-hook-form": "^7.48.2",
+    "@hookform/resolvers": "^3.3.2",
+    "date-fns": "^2.30.0",
+    "recharts": "^2.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4"
+  }
+}

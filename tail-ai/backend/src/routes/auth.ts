@@ -1,7 +1,7 @@
-import { Router } from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { body, validationResult } from 'express-validator';
+import { Router, Request, Response } from 'express';
+import * as bcrypt from 'bcryptjs';
+import * as jwt from 'jsonwebtoken';
+const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
 
 const router = Router();
@@ -19,7 +19,7 @@ const validateLogin = [
 ];
 
 // Register new user
-router.post('/signup', validateRegistration, async (req, res) => {
+router.post('/signup', validateRegistration, async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -62,25 +62,26 @@ router.post('/signup', validateRegistration, async (req, res) => {
     });
 
     // Generate JWT token
+    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
     const token = jwt.sign(
       { userId: user.id },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      jwtSecret,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'User created successfully',
       user,
       token,
     });
   } catch (error) {
     console.error('Signup error:', error);
-    res.status(500).json({ error: 'Failed to create user' });
+    return res.status(500).json({ error: 'Failed to create user' });
   }
 });
 
 // Login user
-router.post('/signin', validateLogin, async (req, res) => {
+router.post('/signin', validateLogin, async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -108,13 +109,14 @@ router.post('/signin', validateLogin, async (req, res) => {
     }
 
     // Generate JWT token
+    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
     const token = jwt.sign(
       { userId: user.id },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      jwtSecret,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
     );
 
-    res.json({
+    return res.json({
       message: 'Login successful',
       user: {
         id: user.id,
@@ -126,12 +128,12 @@ router.post('/signin', validateLogin, async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Failed to authenticate user' });
+    return res.status(500).json({ error: 'Failed to authenticate user' });
   }
 });
 
 // Get user profile
-router.get('/profile', async (req, res) => {
+router.get('/profile', async (req: Request, res: Response) => {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -140,7 +142,8 @@ router.get('/profile', async (req, res) => {
       return res.status(401).json({ error: 'Access token required' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
+    const decoded = jwt.verify(token, jwtSecret) as any;
     
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
@@ -166,75 +169,15 @@ router.get('/profile', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user });
+    return res.json({ user });
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
       return res.status(403).json({ error: 'Invalid token' });
     }
     console.error('Profile error:', error);
-    res.status(500).json({ error: 'Failed to get user profile' });
-  }
-});
-
-// Update user profile
-router.put('/profile', async (req, res) => {
-  try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-      return res.status(401).json({ error: 'Access token required' });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    const { name, email } = req.body;
-
-    // Validate input
-    if (name && (name.length < 2 || name.length > 50)) {
-      return res.status(400).json({ error: 'Name must be between 2 and 50 characters' });
-    }
-
-    if (email && !email.includes('@')) {
-      return res.status(400).json({ error: 'Must be a valid email' });
-    }
-
-    // Check if email is already taken by another user
-    if (email) {
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          email,
-          id: { not: decoded.userId },
-        },
-      });
-
-      if (existingUser) {
-        return res.status(409).json({ error: 'Email is already taken' });
-      }
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { id: decoded.userId },
-      data: {
-        ...(name && { name }),
-        ...(email && { email }),
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        subscriptionTier: true,
-        updatedAt: true,
-      },
-    });
-
-    res.json({
-      message: 'Profile updated successfully',
-      user: updatedUser,
-    });
-  } catch (error) {
-    console.error('Profile update error:', error);
-    res.status(500).json({ error: 'Failed to update profile' });
+    return res.status(500).json({ error: 'Failed to get user profile' });
   }
 });
 
 export default router;
+

@@ -8,6 +8,7 @@ import { PrismaClient } from '@prisma/client';
 
 // Import routes
 import authRoutes from './routes/auth';
+import clientRoutes from './routes/clients';
 import projectRoutes from './routes/projects';
 import taskRoutes from './routes/tasks';
 import timeEntryRoutes from './routes/timeEntries';
@@ -53,6 +54,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/clients', clientRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/time-entries', timeEntryRoutes);
@@ -97,3 +99,4 @@ app.listen(PORT, () => {
 });
 
 export default app;
+

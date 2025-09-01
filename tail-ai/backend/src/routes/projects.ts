@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { body, validationResult } from 'express-validator';
+const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
 import { authenticateToken, checkProjectLimit } from '../middleware/auth';
 
@@ -15,14 +15,23 @@ const validateProject = [
   body('startDate').isISO8601().withMessage('Start date must be a valid date'),
   body('endDate').optional().isISO8601().withMessage('End date must be a valid date'),
   body('status').optional().isIn(['PLANNING', 'IN_PROGRESS', 'REVIEW', 'COMPLETED', 'ON_HOLD']).withMessage('Invalid status'),
+  body('allocatedHours').optional().isFloat({ min: 0 }).withMessage('Allocated hours must be a positive number'),
+  body('clientId').optional().isString().withMessage('Client ID must be a string'),
 ];
 
 // Get all projects for authenticated user
-router.get('/', async (req, res) => {
+router.get('/', async (req: any, res: any) => {
   try {
     const projects = await prisma.project.findMany({
       where: { userId: req.user!.id },
       include: {
+        client: {
+          select: {
+            id: true,
+            name: true,
+            company: true
+          }
+        },
         _count: {
           select: {
             tasks: true,
@@ -43,15 +52,15 @@ router.get('/', async (req, res) => {
       orderBy: { updatedAt: 'desc' },
     });
 
-    res.json({ projects });
+    return res.json({ projects });
   } catch (error) {
     console.error('Get projects error:', error);
-    res.status(500).json({ error: 'Failed to fetch projects' });
+    return res.status(500).json({ error: 'Failed to fetch projects' });
   }
 });
 
 // Get single project by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
@@ -61,6 +70,15 @@ router.get('/:id', async (req, res) => {
         userId: req.user!.id,
       },
       include: {
+        client: {
+          select: {
+            id: true,
+            name: true,
+            company: true,
+            email: true,
+            phone: true
+          }
+        },
         tasks: {
           orderBy: { createdAt: 'desc' },
           include: {
@@ -98,15 +116,15 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    res.json({ project });
+    return res.json({ project });
   } catch (error) {
     console.error('Get project error:', error);
-    res.status(500).json({ error: 'Failed to fetch project' });
+    return res.status(500).json({ error: 'Failed to fetch project' });
   }
 });
 
 // Create new project (with subscription limit check)
-router.post('/', validateProject, checkProjectLimit, async (req, res) => {
+router.post('/', validateProject, checkProjectLimit, async (req: any, res: any) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -116,7 +134,7 @@ router.post('/', validateProject, checkProjectLimit, async (req, res) => {
       });
     }
 
-    const { name, description, startDate, endDate, status } = req.body;
+    const { name, description, startDate, endDate, status, allocatedHours, clientId } = req.body;
 
     const project = await prisma.project.create({
       data: {
@@ -125,30 +143,27 @@ router.post('/', validateProject, checkProjectLimit, async (req, res) => {
         startDate: new Date(startDate),
         endDate: endDate ? new Date(endDate) : null,
         status: status || 'PLANNING',
-        userId: req.user!.id,
-      },
-      include: {
-        _count: {
-          select: {
-            tasks: true,
-            timeEntries: true,
-          },
+        allocatedHours: allocatedHours || 0,
+        ...(clientId && { client: { connect: { id: clientId } } }),
+        user: {
+          connect: { id: req.user!.id }
         },
       },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Project created successfully',
       project,
     });
   } catch (error) {
     console.error('Create project error:', error);
-    res.status(500).json({ error: 'Failed to create project' });
+    console.error('Error details:', JSON.stringify(error, null, 2));
+    return res.status(500).json({ error: 'Failed to create project', details: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
 
 // Update project
-router.put('/:id', validateProject, async (req, res) => {
+router.put('/:id', validateProject, async (req: any, res: any) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -159,7 +174,7 @@ router.put('/:id', validateProject, async (req, res) => {
     }
 
     const { id } = req.params;
-    const { name, description, startDate, endDate, status, progress } = req.body;
+    const { name, description, startDate, endDate, status, progress, allocatedHours, clientId } = req.body;
 
     // Check if project belongs to user
     const existingProject = await prisma.project.findFirst({
@@ -182,6 +197,8 @@ router.put('/:id', validateProject, async (req, res) => {
         ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
         ...(status && { status }),
         ...(progress !== undefined && { progress: Math.max(0, Math.min(100, progress)) }),
+        ...(allocatedHours !== undefined && { allocatedHours }),
+        ...(clientId !== undefined && { clientId }),
       },
       include: {
         _count: {
@@ -193,18 +210,18 @@ router.put('/:id', validateProject, async (req, res) => {
       },
     });
 
-    res.json({
+    return res.json({
       message: 'Project updated successfully',
       project: updatedProject,
     });
   } catch (error) {
     console.error('Update project error:', error);
-    res.status(500).json({ error: 'Failed to update project' });
+    return res.status(500).json({ error: 'Failed to update project' });
   }
 });
 
 // Delete project
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
@@ -225,15 +242,15 @@ router.delete('/:id', async (req, res) => {
       where: { id },
     });
 
-    res.json({ message: 'Project deleted successfully' });
+    return res.json({ message: 'Project deleted successfully' });
   } catch (error) {
     console.error('Delete project error:', error);
-    res.status(500).json({ error: 'Failed to delete project' });
+    return res.status(500).json({ error: 'Failed to delete project' });
   }
 });
 
 // Get project statistics
-router.get('/:id/stats', async (req, res) => {
+router.get('/:id/stats', async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
@@ -265,7 +282,7 @@ router.get('/:id/stats', async (req, res) => {
 
     const totalHours = timeStats._sum.duration ? Math.round(timeStats._sum.duration / (1000 * 60 * 60) * 100) / 100 : 0;
 
-    res.json({
+    return res.json({
       stats: {
         tasks: taskStats,
         timeTracking: {
@@ -276,8 +293,9 @@ router.get('/:id/stats', async (req, res) => {
     });
   } catch (error) {
     console.error('Get project stats error:', error);
-    res.status(500).json({ error: 'Failed to fetch project statistics' });
+    return res.status(500).json({ error: 'Failed to fetch project statistics' });
   }
 });
 
 export default router;
+

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { body, validationResult } from 'express-validator';
+const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
 import { authenticateToken } from '../middleware/auth';
 
@@ -13,13 +13,53 @@ const validateTask = [
   body('title').trim().isLength({ min: 1, max: 200 }).withMessage('Task title must be between 1 and 200 characters'),
   body('description').optional().isLength({ max: 1000 }).withMessage('Description must be less than 1000 characters'),
   body('priority').optional().isIn(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).withMessage('Invalid priority'),
-  body('status').optional().isIn(['TODO', 'IN_PROGRESS', 'REVIEW', 'COMPLETED']).withMessage('Invalid status'),
+  body('status').optional().isIn(['TODO', 'IN_PROGRESS', 'COMPLETED']).withMessage('Invalid status'),
   body('dueDate').optional().isISO8601().withMessage('Due date must be a valid date'),
   body('estimatedHours').optional().isFloat({ min: 0 }).withMessage('Estimated hours must be a positive number'),
 ];
 
+// Helper function to update project hours
+async function updateProjectHours(projectId: string) {
+  try {
+    // Calculate consumed hours from completed tasks
+    const completedTasks = await prisma.task.findMany({
+      where: {
+        projectId,
+        status: 'COMPLETED'
+      },
+      select: {
+        actualHours: true
+      }
+    });
+
+    const consumedHours = completedTasks.reduce((total, task) => {
+      return total + (task.actualHours || 0);
+    }, 0);
+
+    // Update project with new consumed hours and calculate remaining hours
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { allocatedHours: true }
+    });
+
+    if (project) {
+      const remainingHours = Math.max(0, (project.allocatedHours || 0) - consumedHours);
+      
+      await prisma.project.update({
+        where: { id: projectId },
+        data: {
+          consumedHours,
+          remainingHours
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error updating project hours:', error);
+  }
+}
+
 // Get all tasks for authenticated user
-router.get('/', async (req, res) => {
+router.get('/', async (req: any, res: any) => {
   try {
     const { projectId, status, priority, assignedTo } = req.query;
 
@@ -54,15 +94,15 @@ router.get('/', async (req, res) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    res.json({ tasks });
+    return res.json({ tasks });
   } catch (error) {
     console.error('Get tasks error:', error);
-    res.status(500).json({ error: 'Failed to fetch tasks' });
+    return res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 });
 
 // Get single task by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
@@ -98,15 +138,15 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    res.json({ task });
+    return res.json({ task });
   } catch (error) {
     console.error('Get task error:', error);
-    res.status(500).json({ error: 'Failed to fetch task' });
+    return res.status(500).json({ error: 'Failed to fetch task' });
   }
 });
 
 // Create new task
-router.post('/', validateTask, async (req, res) => {
+router.post('/', validateTask, async (req: any, res: any) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -150,18 +190,18 @@ router.post('/', validateTask, async (req, res) => {
       },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Task created successfully',
       task,
     });
   } catch (error) {
     console.error('Create task error:', error);
-    res.status(500).json({ error: 'Failed to create task' });
+    return res.status(500).json({ error: 'Failed to create task' });
   }
 });
 
 // Update task
-router.put('/:id', validateTask, async (req, res) => {
+router.put('/:id', validateTask, async (req: any, res: any) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -172,7 +212,7 @@ router.put('/:id', validateTask, async (req, res) => {
     }
 
     const { id } = req.params;
-    const { title, description, priority, status, dueDate, estimatedHours, assignedTo } = req.body;
+    const { title, description, priority, status, dueDate, estimatedHours, assignedTo, actualHours } = req.body;
 
     // Check if task belongs to user's project
     const existingTask = await prisma.task.findFirst({
@@ -198,6 +238,7 @@ router.put('/:id', validateTask, async (req, res) => {
         ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
         ...(estimatedHours !== undefined && { estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null }),
         ...(assignedTo !== undefined && { assignedTo }),
+        ...(actualHours !== undefined && { actualHours: parseFloat(actualHours) }),
       },
       include: {
         project: {
@@ -216,18 +257,23 @@ router.put('/:id', validateTask, async (req, res) => {
       },
     });
 
-    res.json({
+    // If task status changed to COMPLETED or actualHours were updated, update project hours
+    if (status === 'COMPLETED' || actualHours !== undefined) {
+      await updateProjectHours(existingTask.projectId);
+    }
+
+    return res.json({
       message: 'Task updated successfully',
       task: updatedTask,
     });
   } catch (error) {
     console.error('Update task error:', error);
-    res.status(500).json({ error: 'Failed to update task' });
+    return res.status(500).json({ error: 'Failed to update task' });
   }
 });
 
 // Delete task
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
@@ -249,11 +295,12 @@ router.delete('/:id', async (req, res) => {
       where: { id },
     });
 
-    res.json({ message: 'Task deleted successfully' });
+    return res.json({ message: 'Task deleted successfully' });
   } catch (error) {
     console.error('Delete task error:', error);
-    res.status(500).json({ error: 'Failed to delete task' });
+    return res.status(500).json({ error: 'Failed to delete task' });
   }
 });
 
 export default router;
+

@@ -20,13 +20,14 @@ export const authenticateToken = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
-      return res.status(401).json({ error: 'Access token required' });
+      res.status(401).json({ error: 'Access token required' });
+      return;
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
@@ -44,7 +45,8 @@ export const authenticateToken = async (
     });
 
     if (!user) {
-      return res.status(401).json({ error: 'User not found' });
+      res.status(401).json({ error: 'User not found' });
+      return;
     }
 
     // Check if subscription is expired
@@ -61,37 +63,43 @@ export const authenticateToken = async (
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(403).json({ error: 'Invalid token' });
+      res.status(403).json({ error: 'Invalid token' });
+      return;
     }
     if (error instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({ error: 'Token expired' });
+      res.status(401).json({ error: 'Token expired' });
+      return;
     }
-    return res.status(500).json({ error: 'Token verification failed' });
+    res.status(500).json({ error: 'Token verification failed' });
+    return;
   }
 };
 
 export const requireSubscription = (tier: 'PRO' | 'ENTERPRISE' = 'PRO') => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      res.status(401).json({ error: 'Authentication required' });
+      return;
     }
 
     const userTier = req.user.subscriptionTier;
     
     if (userTier === 'FREE') {
-      return res.status(403).json({ 
+      res.status(403).json({ 
         error: `${tier} subscription required`,
         currentTier: userTier,
         requiredTier: tier
       });
+      return;
     }
 
     if (tier === 'ENTERPRISE' && userTier !== 'ENTERPRISE') {
-      return res.status(403).json({ 
+      res.status(403).json({ 
         error: 'Enterprise subscription required',
         currentTier: userTier,
         requiredTier: tier
       });
+      return;
     }
 
     next();
@@ -102,10 +110,11 @@ export const checkProjectLimit = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      res.status(401).json({ error: 'Authentication required' });
+      return;
     }
 
     // Free users are limited to 4 projects
@@ -115,18 +124,21 @@ export const checkProjectLimit = async (
       });
 
       if (projectCount >= 4) {
-        return res.status(403).json({
+        res.status(403).json({
           error: 'Project limit reached for free tier',
           currentCount: projectCount,
           limit: 4,
           upgradeRequired: true,
         });
+        return;
       }
     }
 
     next();
   } catch (error) {
     console.error('Project limit check error:', error);
-    return res.status(500).json({ error: 'Failed to check project limit' });
+    res.status(500).json({ error: 'Failed to check project limit' });
+    return;
   }
 };
+

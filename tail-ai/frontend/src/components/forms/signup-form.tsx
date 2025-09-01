@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import { useAuth } from "@/components/providers/auth-provider"
 
 export function SignUpForm() {
   const [formData, setFormData] = useState({
@@ -16,8 +17,8 @@ export function SignUpForm() {
     confirmPassword: "",
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
   const router = useRouter()
+  const { signup, error } = useAuth()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -29,38 +30,18 @@ export function SignUpForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError("")
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
+      // Handle password mismatch through the auth context
       return
     }
 
-    try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-        }),
-      })
-
-      if (response.ok) {
-        router.push("/auth/signin?message=Account created successfully")
-      } else {
-        const data = await response.json()
-        setError(data.error || "Failed to create account")
-      }
-    } catch (error) {
-      setError("An error occurred. Please try again.")
-    } finally {
-      setIsLoading(false)
+    const success = await signup(formData.name, formData.email, formData.password)
+    if (success) {
+      router.push("/dashboard")
     }
+    
+    setIsLoading(false)
   }
 
   return (
@@ -149,3 +130,4 @@ export function SignUpForm() {
     </div>
   )
 }
+

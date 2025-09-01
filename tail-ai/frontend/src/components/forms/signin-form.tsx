@@ -1,43 +1,31 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import { useAuth } from "@/components/providers/auth-provider"
 
 export function SignInForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
   const router = useRouter()
+  const { login, error } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError("")
 
-    try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      })
-
-      if (result?.error) {
-        setError("Invalid email or password")
-      } else {
-        router.push("/dashboard")
-      }
-    } catch (error) {
-      setError("An error occurred. Please try again.")
-    } finally {
-      setIsLoading(false)
+    const success = await login(email, password)
+    if (success) {
+      router.push("/dashboard")
     }
+    
+    setIsLoading(false)
   }
 
   return (
@@ -100,3 +88,4 @@ export function SignInForm() {
     </div>
   )
 }
+

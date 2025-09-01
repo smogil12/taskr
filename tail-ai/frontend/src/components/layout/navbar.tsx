@@ -1,20 +1,26 @@
 "use client"
 
 import Link from "next/link"
-import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Clock, FolderOpen, Home, LogOut, Menu, User } from "lucide-react"
+import { Clock, FolderOpen, Home, LogOut, Menu, User, Building2 } from "lucide-react"
 import { useState } from "react"
+import { useAuth } from "@/components/providers/auth-provider"
 
 export function Navbar() {
-  const { data: session } = useSession()
+  const { user, logout } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
+    { name: "Clients", href: "/clients", icon: Building2 },
     { name: "Projects", href: "/projects", icon: FolderOpen },
-    { name: "Time Tracking", href: "/time-tracking", icon: Clock },
+    { name: "Tasks", href: "/tasks", icon: Clock },
   ]
+
+  const handleLogout = () => {
+    logout()
+    setIsMobileMenuOpen(false)
+  }
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
@@ -44,15 +50,15 @@ export function Navbar() {
           </div>
 
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {session ? (
+            {user ? (
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  {session.user?.email}
+                  {user.name}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => signOut()}
+                  onClick={handleLogout}
                   className="flex items-center gap-2"
                 >
                   <LogOut className="h-4 w-4" />
@@ -106,18 +112,15 @@ export function Navbar() {
             })}
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
-            {session ? (
+            {user ? (
               <div className="px-3 space-y-2">
                 <div className="text-sm text-gray-700 dark:text-gray-300">
-                  {session.user?.email}
+                  {user.name}
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    signOut()
-                    setIsMobileMenuOpen(false)
-                  }}
+                  onClick={handleLogout}
                   className="w-full flex items-center justify-center gap-2"
                 >
                   <LogOut className="h-4 w-4" />
@@ -144,3 +147,4 @@ export function Navbar() {
     </nav>
   )
 }
+

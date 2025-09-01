@@ -7,14 +7,14 @@ const router = Router();
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-08-27.basil',
 });
 
 // Apply authentication to all routes
 router.use(authenticateToken);
 
 // Get current subscription status
-router.get('/status', async (req, res) => {
+router.get('/status', async (req: any, res: any) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user!.id },
@@ -37,7 +37,7 @@ router.get('/status', async (req, res) => {
     const isExpired = user.subscriptionEnds && user.subscriptionEnds < new Date();
     const currentTier = isExpired ? 'FREE' : user.subscriptionTier;
 
-    res.json({
+    return res.json({
       subscription: {
         tier: currentTier,
         isExpired,
@@ -49,12 +49,12 @@ router.get('/status', async (req, res) => {
     });
   } catch (error) {
     console.error('Get subscription status error:', error);
-    res.status(500).json({ error: 'Failed to get subscription status' });
+    return res.status(500).json({ error: 'Failed to get subscription status' });
   }
 });
 
 // Create checkout session for subscription upgrade
-router.post('/create-checkout-session', async (req, res) => {
+router.post('/create-checkout-session', async (req: any, res: any) => {
   try {
     const { priceId, successUrl, cancelUrl } = req.body;
 
@@ -65,7 +65,7 @@ router.post('/create-checkout-session', async (req, res) => {
     }
 
     // Get or create Stripe customer
-    let customerId = req.user!.stripeCustomerId;
+    let customerId = (req.user as any).stripeCustomerId;
     
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -103,15 +103,15 @@ router.post('/create-checkout-session', async (req, res) => {
       },
     });
 
-    res.json({ sessionId: session.id, url: session.url });
+    return res.json({ sessionId: session.id, url: session.url });
   } catch (error) {
     console.error('Create checkout session error:', error);
-    res.status(500).json({ error: 'Failed to create checkout session' });
+    return res.status(500).json({ error: 'Failed to create checkout session' });
   }
 });
 
 // Create customer portal session for subscription management
-router.post('/create-portal-session', async (req, res) => {
+router.post('/create-portal-session', async (req: any, res: any) => {
   try {
     const { returnUrl } = req.body;
 
@@ -133,15 +133,15 @@ router.post('/create-portal-session', async (req, res) => {
       return_url: returnUrl,
     });
 
-    res.json({ url: session.url });
+    return res.json({ url: session.url });
   } catch (error) {
     console.error('Create portal session error:', error);
-    res.status(500).json({ error: 'Failed to create portal session' });
+    return res.status(500).json({ error: 'Failed to create portal session' });
   }
 });
 
 // Webhook handler for Stripe events (this would be called by Stripe)
-router.post('/webhook', async (req, res) => {
+router.post('/webhook', async (req: any, res: any) => {
   const sig = req.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -149,7 +149,7 @@ router.post('/webhook', async (req, res) => {
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig!, endpointSecret!);
-  } catch (err) {
+  } catch (err: any) {
     console.error('Webhook signature verification failed:', err);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
@@ -181,10 +181,10 @@ router.post('/webhook', async (req, res) => {
         console.log(`Unhandled event type: ${event.type}`);
     }
 
-    res.json({ received: true });
+    return res.json({ received: true });
   } catch (error) {
     console.error('Webhook handler error:', error);
-    res.status(500).json({ error: 'Webhook handler failed' });
+    return res.status(500).json({ error: 'Webhook handler failed' });
   }
 });
 
@@ -205,7 +205,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     data: {
       subscriptionTier: tier,
       subscriptionId: subscription.id,
-      subscriptionEnds: new Date(subscription.current_period_end * 1000),
+      subscriptionEnds: new Date((subscription as any).current_period_end * 1000),
     },
   });
 }
@@ -225,23 +225,23 @@ async function handleSubscriptionCancellation(subscription: Stripe.Subscription)
 }
 
 async function handlePaymentSuccess(invoice: Stripe.Invoice) {
-  const userId = invoice.metadata.userId;
+  const userId = (invoice.metadata as any)?.userId;
   if (!userId) return;
 
   // Extend subscription period
-  if (invoice.subscription) {
-    const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+  if ((invoice as any).subscription) {
+    const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string);
     await prisma.user.update({
       where: { id: userId },
       data: {
-        subscriptionEnds: new Date(subscription.current_period_end * 1000),
+        subscriptionEnds: new Date((subscription as any).current_period_end * 1000),
       },
     });
   }
 }
 
 async function handlePaymentFailure(invoice: Stripe.Invoice) {
-  const userId = invoice.metadata.userId;
+  const userId = (invoice.metadata as any)?.userId;
   if (!userId) return;
 
   // Could implement retry logic or downgrade user
@@ -249,7 +249,7 @@ async function handlePaymentFailure(invoice: Stripe.Invoice) {
 }
 
 // Get subscription plans
-router.get('/plans', async (req, res) => {
+router.get('/plans', async (req: any, res: any) => {
   try {
     const plans = [
       {
@@ -294,11 +294,12 @@ router.get('/plans', async (req, res) => {
       },
     ];
 
-    res.json({ plans });
+    return res.json({ plans });
   } catch (error) {
     console.error('Get plans error:', error);
-    res.status(500).json({ error: 'Failed to fetch subscription plans' });
+    return res.status(500).json({ error: 'Failed to fetch subscription plans' });
   }
 });
 
 export default router;
+

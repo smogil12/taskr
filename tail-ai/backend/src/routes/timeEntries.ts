@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { body, validationResult } from 'express-validator';
+const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
 import { authenticateToken } from '../middleware/auth';
 
@@ -18,7 +18,7 @@ const validateTimeEntry = [
 ];
 
 // Get all time entries for authenticated user
-router.get('/', async (req, res) => {
+router.get('/', async (req: any, res: any) => {
   try {
     const { projectId, taskId, startDate, endDate } = req.query;
 
@@ -53,15 +53,15 @@ router.get('/', async (req, res) => {
       orderBy: { startTime: 'desc' },
     });
 
-    res.json({ timeEntries });
+    return res.json({ timeEntries });
   } catch (error) {
     console.error('Get time entries error:', error);
-    res.status(500).json({ error: 'Failed to fetch time entries' });
+    return res.status(500).json({ error: 'Failed to fetch time entries' });
   }
 });
 
 // Get single time entry by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
@@ -90,15 +90,15 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Time entry not found' });
     }
 
-    res.json({ timeEntry });
+    return res.json({ timeEntry });
   } catch (error) {
     console.error('Get time entry error:', error);
-    res.status(500).json({ error: 'Failed to fetch time entry' });
+    return res.status(500).json({ error: 'Failed to fetch time entry' });
   }
 });
 
 // Create new time entry
-router.post('/', validateTimeEntry, async (req, res) => {
+router.post('/', validateTimeEntry, async (req: any, res: any) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -170,18 +170,18 @@ router.post('/', validateTimeEntry, async (req, res) => {
       },
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Time entry created successfully',
       timeEntry,
     });
   } catch (error) {
     console.error('Create time entry error:', error);
-    res.status(500).json({ error: 'Failed to create time entry' });
+    return res.status(500).json({ error: 'Failed to create time entry' });
   }
 });
 
 // Update time entry
-router.put('/:id', validateTimeEntry, async (req, res) => {
+router.put('/:id', validateTimeEntry, async (req: any, res: any) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -242,18 +242,18 @@ router.put('/:id', validateTimeEntry, async (req, res) => {
       },
     });
 
-    res.json({
+    return res.json({
       message: 'Time entry updated successfully',
       timeEntry: updatedTimeEntry,
     });
   } catch (error) {
     console.error('Update time entry error:', error);
-    res.status(500).json({ error: 'Failed to update time entry' });
+    return res.status(500).json({ error: 'Failed to update time entry' });
   }
 });
 
 // Delete time entry
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
@@ -273,15 +273,15 @@ router.delete('/:id', async (req, res) => {
       where: { id },
     });
 
-    res.json({ message: 'Time entry deleted successfully' });
+    return res.json({ message: 'Time entry deleted successfully' });
   } catch (error) {
     console.error('Delete time entry error:', error);
-    res.status(500).json({ error: 'Failed to delete time entry' });
+    return res.status(500).json({ error: 'Failed to delete time entry' });
   }
 });
 
 // Get time tracking statistics
-router.get('/stats/summary', async (req, res) => {
+router.get('/stats/summary', async (req: any, res: any) => {
   try {
     const { startDate, endDate } = req.query;
 
@@ -332,7 +332,7 @@ router.get('/stats/summary', async (req, res) => {
       };
     });
 
-    res.json({
+    return res.json({
       stats: {
         totalEntries,
         totalHours: totalHoursValue,
@@ -341,8 +341,9 @@ router.get('/stats/summary', async (req, res) => {
     });
   } catch (error) {
     console.error('Get time stats error:', error);
-    res.status(500).json({ error: 'Failed to fetch time statistics' });
+    return res.status(500).json({ error: 'Failed to fetch time statistics' });
   }
 });
 
 export default router;
+

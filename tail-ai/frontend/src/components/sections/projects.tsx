@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { useSession } from "next-auth/react"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/components/providers/auth-provider"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus, FolderOpen, Calendar, Users, Clock, Edit, Trash2 } from "lucide-react"
+import { Plus, FolderOpen, Calendar, Users, Clock, Edit, Trash2, Building2 } from "lucide-react"
 
 interface Project {
   id: number
@@ -17,47 +17,29 @@ interface Project {
   endDate?: string
   progress: number
   teamMembers: string[]
-  totalHours: number
+  allocatedHours: number
+  consumedHours: number
+  remainingHours: number
+  clientId?: string
+  client?: {
+    id: string
+    name: string
+    company?: string
+  }
+}
+
+interface Client {
+  id: string
+  name: string
+  company?: string
 }
 
 export function Projects() {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [showNewProjectForm, setShowNewProjectForm] = useState(false)
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: 1,
-      name: "Website Redesign",
-      description: "Complete overhaul of the company website with modern design and improved UX",
-      status: "In Progress",
-      startDate: "2024-01-15",
-      endDate: "2024-03-15",
-      progress: 75,
-      teamMembers: ["John Doe", "Jane Smith", "Mike Johnson"],
-      totalHours: 120,
-    },
-    {
-      id: 2,
-      name: "Mobile App Development",
-      description: "iOS and Android app for customer engagement and service delivery",
-      status: "Planning",
-      startDate: "2024-02-01",
-      endDate: "2024-06-01",
-      progress: 25,
-      teamMembers: ["Sarah Wilson", "Alex Brown"],
-      totalHours: 45,
-    },
-    {
-      id: 3,
-      name: "Marketing Campaign",
-      description: "Q2 marketing campaign focusing on social media and email marketing",
-      status: "Review",
-      startDate: "2024-01-01",
-      endDate: "2024-03-31",
-      progress: 90,
-      teamMembers: ["Marketing Team"],
-      totalHours: 80,
-    },
-  ])
+  const [clients, setClients] = useState<Client[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
   const [newProject, setNewProject] = useState({
     name: "",
@@ -65,7 +47,50 @@ export function Projects() {
     status: "Planning" as Project["status"],
     startDate: "",
     endDate: "",
+    allocatedHours: "",
+    clientId: ""
   })
+
+  // Fetch projects and clients from API
+  useEffect(() => {
+    fetchProjects()
+    fetchClients()
+  }, [])
+
+  const fetchProjects = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/projects', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('taskr_token')}`
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setProjects(data.projects || data)
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const fetchClients = async () => {
+    try {
+      const response = await fetch('/api/clients', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('taskr_token')}`
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setClients(data)
+      }
+    } catch (error) {
+      console.error('Error fetching clients:', error)
+    }
+  }
 
   const getStatusColor = (status: Project["status"]) => {
     switch (status) {
@@ -89,29 +114,45 @@ export function Projects() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const project: Project = {
-      id: Date.now(),
-      name: newProject.name,
-      description: newProject.description,
-      status: newProject.status,
-      startDate: newProject.startDate,
-      endDate: newProject.endDate || undefined,
-      progress: 0,
-      teamMembers: [],
-      totalHours: 0,
-    }
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('taskr_token')}`
+        },
+        body: JSON.stringify({
+          name: newProject.name,
+          description: newProject.description,
+          status: newProject.status.toUpperCase().replace(' ', '_'),
+          startDate: newProject.startDate,
+          endDate: newProject.endDate || null,
+          allocatedHours: newProject.allocatedHours ? parseFloat(newProject.allocatedHours) : null,
+          clientId: newProject.clientId || null
+        })
+      })
 
-    setProjects([project, ...projects])
-    setNewProject({
-      name: "",
-      description: "",
-      status: "Planning",
-      startDate: "",
-      endDate: "",
-    })
-    setShowNewProjectForm(false)
+      if (response.ok) {
+        await fetchProjects() // Refresh the projects list
+        setNewProject({
+          name: "",
+          description: "",
+          status: "Planning",
+          startDate: "",
+          endDate: "",
+          allocatedHours: "",
+          clientId: ""
+        })
+        setShowNewProjectForm(false)
+      } else {
+        const error = await response.json()
+        console.error('Error creating project:', error)
+      }
+    } catch (error) {
+      console.error('Error creating project:', error)
+    }
   }
 
   const deleteProject = (id: number) => {
@@ -208,6 +249,38 @@ export function Projects() {
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="clientId">Client (Optional)</Label>
+                  <select
+                    id="clientId"
+                    name="clientId"
+                    value={newProject.clientId}
+                    onChange={handleInputChange}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <option value="">Select a client</option>
+                    {clients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name} {client.company && `(${client.company})`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="allocatedHours">Allocated Hours</Label>
+                  <Input
+                    id="allocatedHours"
+                    name="allocatedHours"
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    placeholder="Enter allocated hours"
+                    value={newProject.allocatedHours}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
               <div className="flex gap-2">
                 <Button type="submit">Create Project</Button>
                 <Button
@@ -225,7 +298,16 @@ export function Projects() {
 
       {/* Projects Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {projects.map((project) => (
+        {isLoading ? (
+          <div className="col-span-full text-center py-8">
+            <p className="text-gray-600 dark:text-gray-400">Loading projects...</p>
+          </div>
+        ) : projects.length === 0 ? (
+          <div className="col-span-full text-center py-8">
+            <p className="text-gray-600 dark:text-gray-400">No projects found. Create a new one!</p>
+          </div>
+        ) : (
+          projects.map((project) => (
           <Card key={project.id} className="hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -285,12 +367,47 @@ export function Projects() {
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-gray-500" />
                   <span className="text-gray-600 dark:text-gray-400">
-                    {project.totalHours}h
+                    {project.allocatedHours}h allocated
                   </span>
                 </div>
               </div>
 
-              {project.teamMembers.length > 0 && (
+              {/* Client Information */}
+              {project.client && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Building2 className="h-4 w-4 text-gray-500" />
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {project.client.name} {project.client.company && `(${project.client.company})`}
+                  </span>
+                </div>
+              )}
+
+              {/* Hour Allocation Status */}
+              {project.allocatedHours > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Hours Progress</span>
+                    <span>{project.consumedHours}/{project.allocatedHours}h</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        project.consumedHours / project.allocatedHours > 0.9 
+                          ? 'bg-red-500' 
+                          : project.consumedHours / project.allocatedHours > 0.7 
+                          ? 'bg-yellow-500' 
+                          : 'bg-green-500'
+                      }`}
+                      style={{ width: `${Math.min((project.consumedHours / project.allocatedHours) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-gray-500 text-center">
+                    {project.remainingHours}h remaining
+                  </div>
+                </div>
+              )}
+
+              {project.teamMembers && project.teamMembers.length > 0 && (
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-gray-500" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -305,8 +422,10 @@ export function Projects() {
               </Button>
             </CardContent>
           </Card>
-        ))}
+        ))
+        )}
       </div>
     </div>
   )
 }
+
