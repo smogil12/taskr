@@ -1,7 +1,11 @@
 import { Resend } from 'resend';
 import * as crypto from 'crypto';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only if API key is provided and not a placeholder
+let resend: Resend | null = null;
+if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_placeholder_key_for_staging') {
+  resend = new Resend(process.env.RESEND_API_KEY);
+}
 
 export interface EmailVerificationData {
   name: string;
@@ -34,6 +38,11 @@ export class EmailService {
    */
   static async sendVerificationEmail(data: EmailVerificationData): Promise<{ success: boolean; error?: string }> {
     try {
+      if (!resend) {
+        console.log('Email service not configured - skipping verification email for:', data.email);
+        return { success: true }; // Return success in staging mode
+      }
+
       const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/verify-email?token=${data.verificationToken}`;
       
       const { data: emailData, error } = await resend.emails.send({
@@ -61,6 +70,11 @@ export class EmailService {
    */
   static async sendPasswordResetEmail(email: string, resetToken: string): Promise<{ success: boolean; error?: string }> {
     try {
+      if (!resend) {
+        console.log('Email service not configured - skipping password reset email for:', email);
+        return { success: true }; // Return success in staging mode
+      }
+
       const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}`;
       
       const { data: emailData, error } = await resend.emails.send({

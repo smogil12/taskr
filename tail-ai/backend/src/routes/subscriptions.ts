@@ -5,10 +5,13 @@ import Stripe from 'stripe';
 
 const router = Router();
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+// Initialize Stripe (only if key is provided)
+let stripe: Stripe | null = null;
+if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== 'sk_test_placeholder_key_for_staging') {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-08-27.basil',
+  });
+}
 
 // Apply authentication to all routes
 router.use(authenticateToken);
@@ -56,6 +59,12 @@ router.get('/status', async (req: any, res: any) => {
 // Create checkout session for subscription upgrade
 router.post('/create-checkout-session', async (req: any, res: any) => {
   try {
+    if (!stripe) {
+      return res.status(503).json({ 
+        error: 'Payment processing is not available in staging mode' 
+      });
+    }
+
     const { priceId, successUrl, cancelUrl } = req.body;
 
     if (!priceId || !successUrl || !cancelUrl) {
@@ -113,6 +122,12 @@ router.post('/create-checkout-session', async (req: any, res: any) => {
 // Create customer portal session for subscription management
 router.post('/create-portal-session', async (req: any, res: any) => {
   try {
+    if (!stripe) {
+      return res.status(503).json({ 
+        error: 'Payment processing is not available in staging mode' 
+      });
+    }
+
     const { returnUrl } = req.body;
 
     if (!returnUrl) {
@@ -142,6 +157,12 @@ router.post('/create-portal-session', async (req: any, res: any) => {
 
 // Webhook handler for Stripe events (this would be called by Stripe)
 router.post('/webhook', async (req: any, res: any) => {
+  if (!stripe) {
+    return res.status(503).json({ 
+      error: 'Payment processing is not available in staging mode' 
+    });
+  }
+
   const sig = req.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -225,6 +246,8 @@ async function handleSubscriptionCancellation(subscription: Stripe.Subscription)
 }
 
 async function handlePaymentSuccess(invoice: Stripe.Invoice) {
+  if (!stripe) return;
+  
   const userId = (invoice.metadata as any)?.userId;
   if (!userId) return;
 
