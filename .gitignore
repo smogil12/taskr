@@ -107,3 +107,4 @@ prisma/migrations/
 # Stripe
 .stripe/
 
+.vercel
