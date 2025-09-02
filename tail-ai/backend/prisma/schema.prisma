@@ -45,6 +45,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Email verification fields
+  isEmailVerified           Boolean   @default(false)
+  emailVerificationToken    String?
+  emailVerificationExpires  DateTime?
+
   // Subscription fields
   subscriptionTier SubscriptionTier @default(FREE)
   stripeCustomerId String?

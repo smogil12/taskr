@@ -41,11 +41,22 @@ export const authenticateToken = async (
         name: true,
         subscriptionTier: true,
         subscriptionEnds: true,
+        isEmailVerified: true,
       },
     });
 
     if (!user) {
       res.status(401).json({ error: 'User not found' });
+      return;
+    }
+
+    // Check if email is verified
+    if (!user.isEmailVerified) {
+      res.status(403).json({ 
+        error: 'Email not verified',
+        message: 'Please verify your email address to access this resource.',
+        emailVerified: false
+      });
       return;
     }
 

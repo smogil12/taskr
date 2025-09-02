@@ -3,6 +3,7 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
+import { EmailService } from '../services/emailService';
 
 const router = Router();
 
@@ -44,35 +45,54 @@ router.post('/signup', validateRegistration, async (req: Request, res: Response)
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create user with FREE tier by default
+    // Generate email verification token
+    const verificationToken = EmailService.generateVerificationToken();
+    const verificationExpires = EmailService.getVerificationExpiry();
+
+    // Create user with FREE tier by default and email verification fields
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
         subscriptionTier: 'FREE',
+        isEmailVerified: false,
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires,
       },
       select: {
         id: true,
         name: true,
         email: true,
         subscriptionTier: true,
+        isEmailVerified: true,
         createdAt: true,
       },
     });
 
-    // Generate JWT token
-    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
-    const token = jwt.sign(
-      { userId: user.id },
-      jwtSecret,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
-    );
+    // Send verification email
+    const emailResult = await EmailService.sendVerificationEmail({
+      name: user.name,
+      email: user.email,
+      verificationToken,
+    });
+
+    if (!emailResult.success) {
+      console.error('Failed to send verification email:', emailResult.error);
+      // Don't fail the signup, but log the error
+    }
 
     return res.status(201).json({
-      message: 'User created successfully',
-      user,
-      token,
+      message: 'User created successfully. Please check your email to verify your account.',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        subscriptionTier: user.subscriptionTier,
+        isEmailVerified: user.isEmailVerified,
+        createdAt: user.createdAt,
+      },
+      emailSent: emailResult.success,
     });
   } catch (error) {
     console.error('Signup error:', error);
@@ -108,6 +128,15 @@ router.post('/signin', validateLogin, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    // Check if email is verified
+    if (!user.isEmailVerified) {
+      return res.status(403).json({ 
+        error: 'Email not verified',
+        message: 'Please verify your email address before logging in. Check your inbox for a verification email.',
+        emailVerified: false
+      });
+    }
+
     // Generate JWT token
     const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
     const token = jwt.sign(
@@ -123,6 +152,7 @@ router.post('/signin', validateLogin, async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         subscriptionTier: user.subscriptionTier,
+        isEmailVerified: user.isEmailVerified,
       },
       token,
     });
@@ -176,6 +206,176 @@ router.get('/profile', async (req: Request, res: Response) => {
     }
     console.error('Profile error:', error);
     return res.status(500).json({ error: 'Failed to get user profile' });
+  }
+});
+
+// Verify email endpoint
+router.post('/verify-email', async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+
+    console.log('Email verification request received:', { token: token ? 'present' : 'missing' });
+
+    if (!token) {
+      console.log('No token provided in verification request');
+      return res.status(400).json({ error: 'Verification token is required' });
+    }
+
+    // Find user with the verification token
+    const user = await prisma.user.findFirst({
+      where: {
+        emailVerificationToken: token,
+        emailVerificationExpires: {
+          gt: new Date(), // Token must not be expired
+        },
+      },
+    });
+
+    if (!user) {
+      console.log('No user found with token:', token);
+      // Check if token exists but is expired
+      const expiredUser = await prisma.user.findFirst({
+        where: {
+          emailVerificationToken: token,
+        },
+      });
+      
+      if (expiredUser) {
+        console.log('Token found but expired for user:', expiredUser.email);
+        return res.status(400).json({ 
+          error: 'Verification token has expired',
+          message: 'The verification link has expired. Please request a new verification email.'
+        });
+      }
+      
+      // Check if user is already verified (token was already used)
+      const alreadyVerifiedUser = await prisma.user.findFirst({
+        where: {
+          email: req.body.email || 'unknown',
+          isEmailVerified: true,
+        },
+      });
+      
+      if (alreadyVerifiedUser) {
+        console.log('User already verified:', alreadyVerifiedUser.email);
+        
+        // Generate JWT token for the already verified user
+        const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
+        const authToken = jwt.sign(
+          { userId: alreadyVerifiedUser.id },
+          jwtSecret,
+          { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
+        );
+        
+        return res.status(200).json({ 
+          message: 'Email already verified',
+          user: {
+            id: alreadyVerifiedUser.id,
+            name: alreadyVerifiedUser.name,
+            email: alreadyVerifiedUser.email,
+            isEmailVerified: true,
+          },
+          token: authToken,
+        });
+      }
+      
+      return res.status(400).json({ 
+        error: 'Invalid verification token',
+        message: 'The verification link is invalid. Please request a new verification email.'
+      });
+    }
+
+    // Update user to mark email as verified and clear verification fields
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isEmailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      },
+    });
+
+    console.log('Email verified successfully for user:', user.email);
+
+    // Generate JWT token for the newly verified user
+    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
+    const authToken = jwt.sign(
+      { userId: user.id },
+      jwtSecret,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
+    );
+
+    return res.json({
+      message: 'Email verified successfully',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        isEmailVerified: true,
+      },
+      token: authToken,
+    });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    return res.status(500).json({ error: 'Failed to verify email' });
+  }
+});
+
+// Resend verification email endpoint
+router.post('/resend-verification', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ error: 'Email is already verified' });
+    }
+
+    // Generate new verification token
+    const verificationToken = EmailService.generateVerificationToken();
+    const verificationExpires = EmailService.getVerificationExpiry();
+
+    // Update user with new verification token
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires,
+      },
+    });
+
+    // Send verification email
+    const emailResult = await EmailService.sendVerificationEmail({
+      name: user.name,
+      email: user.email,
+      verificationToken,
+    });
+
+    if (!emailResult.success) {
+      return res.status(500).json({ 
+        error: 'Failed to send verification email',
+        message: emailResult.error 
+      });
+    }
+
+    return res.json({
+      message: 'Verification email sent successfully',
+    });
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    return res.status(500).json({ error: 'Failed to resend verification email' });
   }
 });
 

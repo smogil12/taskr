@@ -8,6 +8,7 @@ interface User {
   email: string
   subscriptionTier: string
   subscriptionEnds?: string
+  isEmailVerified?: boolean
   createdAt: string
   updatedAt: string
   _count?: {
@@ -21,11 +22,13 @@ interface AuthContextType {
   user: User | null
   token: string | null
   login: (email: string, password: string) => Promise<boolean>
-  signup: (name: string, email: string, password: string) => Promise<boolean>
+  signup: (name: string, email: string, password: string) => Promise<{ success: boolean; needsVerification?: boolean; message?: string }>
   logout: () => void
   signOut: () => void
   isLoading: boolean
   error: string | null
+  verifyEmail: (token: string) => Promise<boolean>
+  resendVerification: (email: string) => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -101,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const signup = async (name: string, email: string, password: string): Promise<boolean> => {
+  const signup = async (name: string, email: string, password: string): Promise<{ success: boolean; needsVerification?: boolean; message?: string }> => {
     try {
       setError(null)
       const response = await fetch('/api/auth/signup', {
@@ -114,18 +117,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const data = await response.json()
-        setToken(data.token)
-        setUser(data.user)
-        localStorage.setItem('taskr_token', data.token)
-        return true
+        // Don't set token or user for unverified accounts
+        if (data.user.isEmailVerified) {
+          setToken(data.token)
+          setUser(data.user)
+          localStorage.setItem('taskr_token', data.token)
+          return { success: true }
+        } else {
+          return { 
+            success: true, 
+            needsVerification: true, 
+            message: data.message || 'Please check your email to verify your account.' 
+          }
+        }
       } else {
         const errorData = await response.json()
         setError(errorData.error || 'Signup failed')
-        return false
+        return { success: false, message: errorData.error || 'Signup failed' }
       }
     } catch (error) {
       setError('An error occurred during signup')
-      return false
+      return { success: false, message: 'An error occurred during signup' }
     }
   }
 
@@ -133,6 +145,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
     setToken(null)
     localStorage.removeItem('taskr_token')
+  }
+
+  const verifyEmail = async (token: string): Promise<boolean> => {
+    try {
+      setError(null)
+      const response = await fetch('/api/auth/verify-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data.user)
+        if (data.token) {
+          setToken(data.token)
+          localStorage.setItem('taskr_token', data.token)
+        }
+        return true
+      } else {
+        const errorData = await response.json()
+        setError(errorData.error || 'Email verification failed')
+        return false
+      }
+    } catch (error) {
+      setError('An error occurred during email verification')
+      return false
+    }
+  }
+
+  const resendVerification = async (email: string): Promise<boolean> => {
+    try {
+      setError(null)
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      if (response.ok) {
+        return true
+      } else {
+        const errorData = await response.json()
+        setError(errorData.error || 'Failed to resend verification email')
+        return false
+      }
+    } catch (error) {
+      setError('An error occurred while resending verification email')
+      return false
+    }
   }
 
   const value: AuthContextType = {
@@ -144,6 +210,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut: logout,
     isLoading,
     error,
+    verifyEmail,
+    resendVerification,
   }
 
   return (

@@ -166,3 +166,4 @@ The current schema includes:
 3. Configure your deployment pipeline to use the appropriate environment file
 4. Set up database backups and monitoring
 5. Test migrations in staging before production deployment
+

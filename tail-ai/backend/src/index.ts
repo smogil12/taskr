@@ -30,6 +30,14 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for email verification endpoints in development
+    if (process.env.NODE_ENV === 'development' && 
+        (req.path.includes('/verify-email') || req.path.includes('/resend-verification'))) {
+      return true;
+    }
+    return false;
+  },
 });
 
 // Middleware
