@@ -203,13 +203,25 @@ export function Tasks() {
     }
   }
 
-  const getStatusColor = (status: Task["status"]) => {
+  const formatStatus = (status: string) => {
+    switch (status) {
+      case "TODO":
+        return "Not Started"
+      case "IN_PROGRESS":
+        return "In Progress"
+      case "COMPLETED":
+        return "Complete"
+      default:
+        return status
+    }
+  }
+
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "TODO":
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
       case "IN_PROGRESS":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-
       case "COMPLETED":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
       default:
@@ -217,7 +229,7 @@ export function Tasks() {
     }
   }
 
-  const getPriorityColor = (priority: Task["priority"]) => {
+  const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "LOW":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
@@ -232,13 +244,12 @@ export function Tasks() {
     }
   }
 
-  const getStatusIcon = (status: Task["status"]) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case "TODO":
         return <Square className="h-4 w-4" />
       case "IN_PROGRESS":
         return <Play className="h-4 w-4" />
-
       case "COMPLETED":
         return <CheckCircle className="h-4 w-4" />
       default:
@@ -283,39 +294,6 @@ export function Tasks() {
         </p>
       </div>
 
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Tasks
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Manage your tasks and track their progress
-          </p>
-        </div>
-        <Button onClick={() => setShowNewTaskForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Task
-        </Button>
-      </div>
-
-      {/* Project Filter */}
-      <div className="flex items-center gap-4">
-        <Label htmlFor="project-filter">Filter by Project:</Label>
-        <select
-          id="project-filter"
-          value={selectedProject}
-          onChange={(e) => setSelectedProject(e.target.value)}
-          className="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <option value="all">All Projects</option>
-          {projects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
       {/* New Task Form */}
       {showNewTaskForm && (
         <TaskForm
@@ -346,147 +324,174 @@ export function Tasks() {
         />
       )}
 
-      {/* Tasks Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {isLoading ? (
-          <div className="col-span-full text-center py-8">
-            <p className="text-gray-600 dark:text-gray-400">Loading tasks...</p>
-          </div>
-        ) : filteredTasks.length === 0 ? (
-          <div className="col-span-full text-center py-8">
-            <p className="text-gray-600 dark:text-gray-400">
-              {selectedProject === "all" 
-                ? "No tasks found. Create a new one!" 
-                : "No tasks found for this project. Create a new one!"}
+      {/* Tasks Table */}
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="sm:flex sm:items-center">
+          <div className="sm:flex-auto">
+            <h1 className="text-base font-semibold text-gray-900 dark:text-white">Tasks</h1>
+            <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+              A list of all your tasks including their status, priority, project, and due dates.
             </p>
           </div>
-        ) : (
-          filteredTasks.map((task) => (
-            <Card key={task.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(task.status)}
-                    <CardTitle className="text-lg">{task.title}</CardTitle>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setEditingTask(task)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteTask(task.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <CardDescription className="line-clamp-2">
-                  {task.description || "No description"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
-                                     <span
-                     className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                       task.status
-                     )}`}
-                   >
-                     {task.status === 'TODO' ? 'Not Started' : 
-                      task.status === 'IN_PROGRESS' ? 'In Progress' : 
-                      task.status === 'COMPLETED' ? 'Complete' : task.status}
-                   </span>
-                </div>
+          <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+            <Button
+              onClick={() => setShowNewTaskForm(true)}
+              className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add task
+            </Button>
+          </div>
+        </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Priority</span>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
-                      task.priority
-                    )}`}
-                  >
-                    {task.priority}
-                  </span>
+        {/* Project Filter */}
+        <div className="mt-4 flex items-center gap-4">
+          <Label htmlFor="project-filter" className="text-sm text-gray-700 dark:text-gray-300">Filter by Project:</Label>
+          <select
+            id="project-filter"
+            value={selectedProject}
+            onChange={(e) => setSelectedProject(e.target.value)}
+            className="flex h-8 w-full max-w-xs rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <option value="all">All Projects</option>
+            {projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mt-8 flow-root">
+          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 dark:text-gray-400">Loading tasks...</p>
                 </div>
-
-                <div className="flex items-center gap-2 text-sm">
-                  <FolderOpen className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {task.project.name}
-                  </span>
+              ) : filteredTasks.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {selectedProject === "all" 
+                      ? "No tasks found. Create a new one!" 
+                      : "No tasks found for this project. Create a new one!"}
+                  </p>
                 </div>
-
-                {task.dueDate && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Due: {new Date(task.dueDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Est: {task.estimatedHours || 0}h
-                    </span>
-                  </div>
-                  {task.actualHours !== undefined && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-gray-500" />
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Actual: {task.actualHours}h
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Hours Summary for completed tasks */}
-                {task.status === "COMPLETED" && task.estimatedHours && task.actualHours && (
-                  <div className="p-3 bg-blue-50 rounded-lg dark:bg-blue-900/20">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium">Hours Summary</span>
-                      <span className="text-blue-600 dark:text-blue-400">
-                        {task.actualHours}h / {task.estimatedHours}h
-                      </span>
-                    </div>
-                    <div className="mt-2 w-full bg-blue-200 rounded-full h-2 dark:bg-blue-700">
-                      <div
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          task.actualHours > task.estimatedHours * 1.1
-                            ? 'bg-red-500'
-                            : task.actualHours > task.estimatedHours
-                            ? 'bg-yellow-500'
-                            : 'bg-green-500'
-                        }`}
-                        style={{ 
-                          width: `${Math.min((task.actualHours / task.estimatedHours) * 100, 100)}%` 
-                        }}
-                      ></div>
-                    </div>
-                    <div className="mt-1 text-xs text-blue-600 dark:text-blue-400 text-center">
-                      {task.actualHours > task.estimatedHours
-                        ? `${(task.actualHours - task.estimatedHours).toFixed(1)}h over estimate`
-                        : `${(task.estimatedHours - task.actualHours).toFixed(1)}h under estimate`
-                      }
-                    </div>
-                  </div>
-                )}
-
-                <div className="text-xs text-gray-500">
-                  Created: {new Date(task.createdAt).toLocaleDateString()}
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
+              ) : (
+                <table className="relative min-w-full divide-y divide-gray-300 dark:divide-white/15">
+                  <thead>
+                    <tr>
+                      <th
+                        scope="col"
+                        className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0 dark:text-white"
+                      >
+                        Title
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Status
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Priority
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Project
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Due Date
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Hours
+                      </th>
+                      <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-white/10">
+                    {filteredTasks.map((task) => (
+                      <tr key={task.id}>
+                        <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
+                          <div className="flex items-center gap-2">
+                            {getStatusIcon(task.status)}
+                            {task.title}
+                          </div>
+                          {task.description && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
+                              {task.description}
+                            </p>
+                          )}
+                        </td>
+                        <td className="px-3 py-4 text-sm whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              task.status
+                            )}`}
+                          >
+                            {formatStatus(task.status)}
+                          </span>
+                        </td>
+                        <td className="px-3 py-4 text-sm whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
+                              task.priority
+                            )}`}
+                          >
+                            {task.priority}
+                          </span>
+                        </td>
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <FolderOpen className="h-3 w-3" />
+                            {task.project.name}
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          {task.dueDate ? (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(task.dueDate).toLocaleDateString()}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">No due date</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {task.estimatedHours || 0}h est
+                          </div>
+                          {task.actualHours !== undefined && (
+                            <div className="text-xs text-gray-400 mt-1">
+                              {task.actualHours}h actual
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
+                          <div className="flex gap-2 justify-end">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => setEditingTask(task)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteTask(task.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

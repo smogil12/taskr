@@ -49,26 +49,55 @@ git clone https://github.com/yourusername/tail-ai.git
 cd tail-ai
 ```
 
-### 2. Install Dependencies
+### 2. Database Setup
+
+Choose your setup approach:
+
+**Option A: Quick Local Setup (Recommended for development)**
+```bash
+# One-command setup
+./scripts/setup-environments.sh local
+npm run dev
+```
+
+**Option B: Manual Setup**
+```bash
+# Start database
+npm run setup:db
+
+# Run migrations
+npm run db:migrate
+
+# Start development
+npm run dev
+```
+
+**Option C: Staging/Production Setup**
+- See [Database Setup Guide](DATABASE_SETUP.md) for detailed instructions
+- See [Railway Setup Guide](RAILWAY_SETUP.md) for quick cloud setup
+- See [Droplet Setup Guide](DROPLET_SETUP.md) for using your existing DigitalOcean droplet
+- See [Provider Comparison](PROVIDER_COMPARISON.md) to choose your provider
+
+### 3. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Set Up Environment
+### 4. Set Up Environment
 
 ```bash
-cp .env.example .env
-# Edit .env with your configuration
+cp backend/.env.example backend/.env
+# Edit backend/.env with your configuration
 ```
 
-### 4. Start Infrastructure
+### 5. Start Infrastructure
 
 ```bash
 npm run setup:db
 ```
 
-### 5. Start Development Servers
+### 6. Start Development Servers
 
 ```bash
 npm run dev
@@ -80,6 +109,40 @@ The application will be available at:
 - **Database**: localhost:5432
 - **Redis**: localhost:6379
 - **Mailhog**: http://localhost:8025
+
+## 🗄️ Database Management
+
+### Quick Commands
+
+```bash
+# Set up environments
+./scripts/setup-environments.sh local      # Local development
+./scripts/setup-environments.sh staging    # Staging configuration
+./scripts/setup-environments.sh production # Production configuration
+
+# Database operations
+./scripts/db-manager.sh migrate local      # Run migrations
+./scripts/db-manager.sh studio local       # Open database GUI
+./scripts/db-manager.sh status local       # Check migration status
+
+# Health checks
+./scripts/check-db.sh local                # Check local database
+./scripts/check-db.sh staging              # Check staging database
+./scripts/check-db.sh all                  # Check all databases
+
+# Deployment
+./scripts/deploy.sh staging                # Deploy to staging
+./scripts/deploy.sh production             # Deploy to production
+```
+
+### Database Documentation
+
+- **[Quick Start DB Guide](QUICK_START_DB.md)** - Get started quickly
+- **[Database Setup Guide](DATABASE_SETUP.md)** - Comprehensive setup instructions
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Staging and production setup
+- **[Railway Setup Guide](RAILWAY_SETUP.md)** - Quick cloud database setup
+- **[Droplet Setup Guide](DROPLET_SETUP.md)** - Use your existing DigitalOcean droplet
+- **[Provider Comparison](PROVIDER_COMPARISON.md)** - Compare database providers
 
 ## 📁 Project Structure
 

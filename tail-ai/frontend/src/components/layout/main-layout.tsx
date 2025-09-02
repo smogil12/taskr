@@ -1,9 +1,9 @@
 "use client"
 
-import { Navbar } from "./navbar"
 import { ReactNode, useEffect } from "react"
 import { useAuth } from "@/components/providers/auth-provider"
 import { useRouter } from "next/navigation"
+import ProperShell from "./proper-shell"
 
 interface MainLayoutProps {
   children: ReactNode
@@ -12,6 +12,8 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const { user, isLoading } = useAuth()
   const router = useRouter()
+
+  console.log('🔍 MainLayout rendering with user:', user, 'isLoading:', isLoading)
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -34,13 +36,6 @@ export function MainLayout({ children }: MainLayoutProps) {
     return null // Will redirect in useEffect
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Navbar />
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {children}
-      </main>
-    </div>
-  )
+  return <ProperShell>{children}</ProperShell>
 }
 

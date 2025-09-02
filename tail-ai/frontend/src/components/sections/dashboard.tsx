@@ -329,9 +329,9 @@ export function Dashboard() {
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Button asChild className="h-16 flex-col gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
-              <Link href="/time-tracking/start">
-                <Clock className="h-5 w-5" />
-                Start Time Tracking
+              <Link href="/projects">
+                <FolderOpen className="h-5 w-5" />
+                Manage Projects
               </Link>
             </Button>
             <Button variant="outline" asChild className="h-16 flex-col gap-2 hover:bg-green-50 dark:hover:bg-green-900/10 hover:border-green-200 dark:hover:border-green-700">

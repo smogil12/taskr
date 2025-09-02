@@ -215,21 +215,6 @@ export function Clients() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Clients
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Manage your client relationships and project allocations
-          </p>
-        </div>
-        <Button onClick={() => setShowNewClientForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Client
-        </Button>
-      </div>
-
       {/* New Client Form */}
       {showNewClientForm && (
         <Card>
@@ -560,89 +545,158 @@ export function Clients() {
         </div>
       )}
 
-      {/* Clients Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {clients.map((client) => (
-          <Card key={client.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-blue-600" />
-                  <CardTitle className="text-lg">{client.name}</CardTitle>
+      {/* Clients Table */}
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="sm:flex sm:items-center">
+          <div className="sm:flex-auto">
+            <h1 className="text-base font-semibold text-gray-900 dark:text-white">Clients</h1>
+            <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+              A list of all your clients including their contact information and project allocations.
+            </p>
+          </div>
+          <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+            <Button
+              onClick={() => setShowNewClientForm(true)}
+              className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add client
+            </Button>
+          </div>
+        </div>
+        <div className="mt-8 flow-root">
+          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 dark:text-gray-400">Loading clients...</p>
                 </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openClientDetail(client)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openEditForm(client)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(client.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+              ) : clients.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 dark:text-gray-400">No clients found. Create your first client to get started.</p>
                 </div>
-              </div>
-              <CardDescription>
-                {client.company && `${client.company} • `}
-                {client.projects.length} project{client.projects.length !== 1 ? 's' : ''}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <FolderOpen className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {client.projects.length} projects
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {getTotalAllocatedHours(client.projects)}h allocated
-                  </span>
-                </div>
-              </div>
-
-              {client.hourlyRate && (
-                <div className="flex items-center gap-2 text-sm">
-                  <DollarSign className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-600 dark:text-gray-400">
-                    ${client.hourlyRate}/hour
-                  </span>
-                </div>
+              ) : (
+                <table className="relative min-w-full divide-y divide-gray-300 dark:divide-white/15">
+                  <thead>
+                    <tr>
+                      <th
+                        scope="col"
+                        className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0 dark:text-white"
+                      >
+                        Name
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Company
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Contact
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Projects
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Hours
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Rate
+                      </th>
+                      <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-white/10">
+                    {clients.map((client) => (
+                      <tr key={client.id}>
+                        <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-blue-600" />
+                            {client.name}
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          {client.company || <span className="text-gray-400">No company</span>}
+                        </td>
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          <div className="space-y-1">
+                            {client.email && (
+                              <div className="flex items-center gap-1">
+                                <Mail className="h-3 w-3" />
+                                <span className="text-xs">{client.email}</span>
+                              </div>
+                            )}
+                            {client.phone && (
+                              <div className="flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                <span className="text-xs">{client.phone}</span>
+                              </div>
+                            )}
+                            {!client.email && !client.phone && (
+                              <span className="text-gray-400 text-xs">No contact info</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <FolderOpen className="h-3 w-3" />
+                            {client.projects.length} project{client.projects.length !== 1 ? 's' : ''}
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {getTotalAllocatedHours(client.projects)}h allocated
+                          </div>
+                          {getTotalConsumedHours(client.projects) > 0 && (
+                            <div className="text-xs text-gray-400 mt-1">
+                              {getTotalConsumedHours(client.projects)}h used
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          {client.hourlyRate ? (
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-3 w-3" />
+                              ${client.hourlyRate}/h
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">No rate set</span>
+                          )}
+                        </td>
+                        <td className="py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openClientDetail(client)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openEditForm(client)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(client.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
-
-              <Button variant="outline" className="w-full" onClick={() => openClientDetail(client)}>
-                View Details
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          </div>
+        </div>
       </div>
-
-      {isLoading && (
-        <div className="text-center py-8">
-          <div className="text-gray-600 dark:text-gray-400">Loading clients...</div>
-        </div>
-      )}
-
-      {!isLoading && clients.length === 0 && (
-        <div className="text-center py-8">
-          <div className="text-gray-600 dark:text-gray-400">No clients found. Create your first client to get started.</div>
-        </div>
-      )}
     </div>
   )
 }

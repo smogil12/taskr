@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database - Local Development
   postgres:
     image: postgres:15-alpine
     container_name: tail-ai-postgres
@@ -21,6 +21,29 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # PostgreSQL Database - Staging (Optional local staging)
+  postgres-staging:
+    image: postgres:15-alpine
+    container_name: tail-ai-postgres-staging
+    environment:
+      POSTGRES_DB: tail_ai_staging
+      POSTGRES_USER: tail_ai_staging_user
+      POSTGRES_PASSWORD: tail_ai_staging_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - tail-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tail_ai_staging_user -d tail_ai_staging"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - staging
 
   # Redis for caching and sessions
   redis:
@@ -71,6 +94,7 @@ services:
 
 volumes:
   postgres_data:
+  postgres_staging_data:
   redis_data:
   minio_data:
 
