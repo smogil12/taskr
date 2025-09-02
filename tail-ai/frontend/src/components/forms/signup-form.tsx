@@ -59,7 +59,7 @@ export function SignUpForm() {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Check your email</CardTitle>
             <CardDescription className="text-center">
-              We've sent you a verification link
+              We&apos;ve sent you a verification link
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -77,7 +77,7 @@ export function SignUpForm() {
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Didn't receive the email? Check your spam folder or{" "}
+                  Didn&apos;t receive the email? Check your spam folder or{" "}
                   <button
                     onClick={() => {
                       // TODO: Implement resend functionality

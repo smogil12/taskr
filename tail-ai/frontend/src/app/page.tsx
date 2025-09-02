@@ -13,16 +13,16 @@ export default function Home() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Only render this page if we're actually on the root path
-  if (pathname !== '/') {
-    return null;
-  }
-
   useEffect(() => {
     if (!isLoading && user) {
       router.push('/dashboard');
     }
   }, [user, isLoading, router]);
+
+  // Only render this page if we're actually on the root path
+  if (pathname !== '/') {
+    return null;
+  }
 
   // Show loading while checking auth status
   if (isLoading) {

@@ -51,16 +51,16 @@ sudo systemctl status postgresql
 sudo -u postgres psql
 
 # Create databases
-CREATE DATABASE tail_ai_staging;
-CREATE DATABASE tail_ai_production;
+CREATE DATABASE taskr_staging;
+CREATE DATABASE taskr_production;
 
 # Create users
 CREATE USER staging_user WITH PASSWORD 'your-secure-staging-password';
 CREATE USER production_user WITH PASSWORD 'your-secure-production-password';
 
 # Grant privileges
-GRANT ALL PRIVILEGES ON DATABASE tail_ai_staging TO staging_user;
-GRANT ALL PRIVILEGES ON DATABASE tail_ai_production TO production_user;
+GRANT ALL PRIVILEGES ON DATABASE taskr_staging TO staging_user;
+GRANT ALL PRIVILEGES ON DATABASE taskr_production TO production_user;
 
 # Exit PostgreSQL
 \q
@@ -82,8 +82,8 @@ port = 5432
 sudo nano /etc/postgresql/15/main/pg_hba.conf
 
 # Add these lines at the end:
-host    tail_ai_staging     staging_user     0.0.0.0/0               md5
-host    tail_ai_production  production_user  0.0.0.0/0               md5
+host    taskr_staging     staging_user     0.0.0.0/0               md5
+host    taskr_production  production_user  0.0.0.0/0               md5
 ```
 
 ### Step 5: Configure Firewall
@@ -106,10 +106,10 @@ sudo systemctl restart postgresql
 
 ```bash
 # Test local connection
-psql -h localhost -U staging_user -d tail_ai_staging
+psql -h localhost -U staging_user -d taskr_staging
 
 # Test from your local machine
-psql -h your-droplet-ip -U staging_user -d tail_ai_staging
+psql -h your-droplet-ip -U staging_user -d taskr_staging
 ```
 
 ## Environment Configuration
@@ -118,10 +118,10 @@ psql -h your-droplet-ip -U staging_user -d tail_ai_staging
 
 ```bash
 # backend/.env.staging
-DATABASE_URL="postgresql://staging_user:your-secure-staging-password@your-droplet-ip:5432/tail_ai_staging"
+DATABASE_URL="postgresql://staging_user:your-secure-staging-password@your-droplet-ip:5432/taskr_staging"
 
 # backend/.env.production
-DATABASE_URL="postgresql://production_user:your-secure-production-password@your-droplet-ip:5432/tail_ai_production"
+DATABASE_URL="postgresql://production_user:your-secure-production-password@your-droplet-ip:5432/taskr_production"
 ```
 
 ### Run Migrations
@@ -158,8 +158,8 @@ Instead of allowing all IPs, restrict to specific IPs:
 sudo nano /etc/postgresql/15/main/pg_hba.conf
 
 # Replace 0.0.0.0/0 with your specific IPs:
-host    tail_ai_staging     staging_user     your-ip/32               md5
-host    tail_ai_production  production_user  your-ip/32               md5
+host    taskr_staging     staging_user     your-ip/32               md5
+host    taskr_production  production_user  your-ip/32               md5
 ```
 
 ### 3. Enable SSL (Recommended)
@@ -188,10 +188,10 @@ DATE=$(date +%Y%m%d_%H%M%S)
 mkdir -p $BACKUP_DIR
 
 # Backup staging
-pg_dump -h localhost -U staging_user tail_ai_staging > $BACKUP_DIR/staging_$DATE.sql
+pg_dump -h localhost -U staging_user taskr_staging > $BACKUP_DIR/staging_$DATE.sql
 
 # Backup production
-pg_dump -h localhost -U production_user tail_ai_production > $BACKUP_DIR/production_$DATE.sql
+pg_dump -h localhost -U production_user taskr_production > $BACKUP_DIR/production_$DATE.sql
 
 # Keep only last 7 days of backups
 find $BACKUP_DIR -name "*.sql" -mtime +7 -delete
@@ -228,15 +228,15 @@ sudo -u postgres psql -c "SELECT datname, pg_size_pretty(pg_database_size(datnam
 sudo -u postgres psql -c "SELECT query, mean_time, calls FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 10;"
 
 # Check table sizes
-sudo -u postgres psql -d tail_ai_staging -c "SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size FROM pg_tables ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;"
+sudo -u postgres psql -d taskr_staging -c "SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size FROM pg_tables ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;"
 ```
 
 ### 3. Regular Maintenance
 
 ```bash
 # Vacuum and analyze databases
-sudo -u postgres psql -d tail_ai_staging -c "VACUUM ANALYZE;"
-sudo -u postgres psql -d tail_ai_production -c "VACUUM ANALYZE;"
+sudo -u postgres psql -d taskr_staging -c "VACUUM ANALYZE;"
+sudo -u postgres psql -d taskr_production -c "VACUUM ANALYZE;"
 
 # Check for long-running queries
 sudo -u postgres psql -c "SELECT pid, now() - pg_stat_activity.query_start AS duration, query FROM pg_stat_activity WHERE (now() - pg_stat_activity.query_start) > interval '5 minutes';"
@@ -267,7 +267,7 @@ sudo tail -f /var/log/postgresql/postgresql-15-main.log
 sudo -u postgres psql -c "\du"
 
 # Grant additional permissions if needed
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE tail_ai_staging TO staging_user;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE taskr_staging TO staging_user;"
 ```
 
 ### Performance Issues

@@ -82,15 +82,15 @@ npm run docker:down:staging
 
 ### Local Development
 - **Host**: localhost:5432
-- **Database**: tail_ai_dev
-- **User**: tail_ai_user
-- **Password**: tail_ai_password
+- **Database**: taskr_dev
+- **User**: taskr_user
+- **Password**: taskr_password
 
 ### Local Staging (Optional)
 - **Host**: localhost:5433
-- **Database**: tail_ai_staging
-- **User**: tail_ai_staging_user
-- **Password**: tail_ai_staging_password
+- **Database**: taskr_staging
+- **User**: taskr_staging_user
+- **Password**: taskr_staging_password
 
 ### Prisma Studio
 - **URL**: http://localhost:5555 (when running `npm run db:studio`)

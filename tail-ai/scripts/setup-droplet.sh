@@ -71,20 +71,20 @@ systemctl enable postgresql
 
 # Create databases and users
 sudo -u postgres psql << EOSQL
-CREATE DATABASE tail_ai_staging;
-CREATE DATABASE tail_ai_production;
+CREATE DATABASE taskr_staging;
+CREATE DATABASE taskr_production;
 CREATE USER staging_user WITH PASSWORD '$staging_password';
 CREATE USER production_user WITH PASSWORD '$production_password';
-GRANT ALL PRIVILEGES ON DATABASE tail_ai_staging TO staging_user;
-GRANT ALL PRIVILEGES ON DATABASE tail_ai_production TO production_user;
+GRANT ALL PRIVILEGES ON DATABASE taskr_staging TO staging_user;
+GRANT ALL PRIVILEGES ON DATABASE taskr_production TO production_user;
 EOSQL
 
 # Configure PostgreSQL for remote connections
 sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/*/main/postgresql.conf
 
 # Add authentication rules
-echo "host    tail_ai_staging     staging_user     0.0.0.0/0               md5" >> /etc/postgresql/*/main/pg_hba.conf
-echo "host    tail_ai_production  production_user  0.0.0.0/0               md5" >> /etc/postgresql/*/main/pg_hba.conf
+echo "host    taskr_staging     staging_user     0.0.0.0/0               md5" >> /etc/postgresql/*/main/pg_hba.conf
+echo "host    taskr_production  production_user  0.0.0.0/0               md5" >> /etc/postgresql/*/main/pg_hba.conf
 
 # Configure firewall
 ufw allow 5432
@@ -114,7 +114,7 @@ EOF
 NODE_ENV=staging
 
 # Database - Your Droplet
-DATABASE_URL="postgresql://staging_user:$staging_password@$droplet_ip:5432/tail_ai_staging"
+DATABASE_URL="postgresql://staging_user:$staging_password@$droplet_ip:5432/taskr_staging"
 
 # JWT
 JWT_SECRET="staging-jwt-secret-key-$(date +%s)"
@@ -141,7 +141,7 @@ EOF
 NODE_ENV=production
 
 # Database - Your Droplet
-DATABASE_URL="postgresql://production_user:$production_password@$droplet_ip:5432/tail_ai_production"
+DATABASE_URL="postgresql://production_user:$production_password@$droplet_ip:5432/taskr_production"
 
 # JWT
 JWT_SECRET="production-jwt-secret-key-$(date +%s)"
@@ -163,8 +163,8 @@ STRIPE_PRICE_ID_ENTERPRISE="price_your_enterprise_plan_price_id"
 EOF
     
     print_success "Environment files created!"
-    print_status "Staging database: tail_ai_staging"
-    print_status "Production database: tail_ai_production"
+    print_status "Staging database: taskr_staging"
+    print_status "Production database: taskr_production"
     print_status "Droplet IP: $droplet_ip"
     
     # Test connections

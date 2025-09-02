@@ -17,14 +17,14 @@ This project uses PostgreSQL with Prisma ORM and supports multiple environments:
 
 **Database**: Uses Docker Compose container
 - Host: `localhost:5432`
-- Database: `tail_ai_dev`
-- User: `tail_ai_user`
-- Password: `tail_ai_password`
+- Database: `taskr_dev`
+- User: `taskr_user`
+- Password: `taskr_password`
 
 **Environment Variables** (create `.env.local` in backend directory):
 ```bash
 NODE_ENV=development
-DATABASE_URL="postgresql://tail_ai_user:tail_ai_password@localhost:5432/tail_ai_dev"
+DATABASE_URL="postgresql://taskr_user:taskr_password@localhost:5432/taskr_dev"
 JWT_SECRET="local-development-jwt-secret-key"
 JWT_EXPIRES_IN="7d"
 PORT=3001
@@ -40,13 +40,13 @@ STRIPE_PRICE_ID_ENTERPRISE="price_your_enterprise_plan_price_id"
 ### 2. Staging Environment
 
 **Database**: External PostgreSQL instance (e.g., AWS RDS, DigitalOcean, etc.)
-- Create a separate database: `tail_ai_staging`
+- Create a separate database: `taskr_staging`
 - Use staging-specific credentials
 
 **Environment Variables** (create `.env.staging` in backend directory):
 ```bash
 NODE_ENV=staging
-DATABASE_URL="postgresql://staging_user:staging_password@staging-db-host:5432/tail_ai_staging"
+DATABASE_URL="postgresql://staging_user:staging_password@staging-db-host:5432/taskr_staging"
 JWT_SECRET="staging-jwt-secret-key-change-this"
 JWT_EXPIRES_IN="7d"
 PORT=3001
@@ -62,7 +62,7 @@ STRIPE_PRICE_ID_ENTERPRISE="price_your_enterprise_plan_price_id"
 ### 3. Production Environment
 
 **Database**: Production PostgreSQL instance (e.g., AWS RDS, Google Cloud SQL, etc.)
-- Create a separate database: `tail_ai_production`
+- Create a separate database: `taskr_production`
 - Use production-specific credentials
 - Enable SSL connections
 - Configure backup and monitoring
@@ -70,7 +70,7 @@ STRIPE_PRICE_ID_ENTERPRISE="price_your_enterprise_plan_price_id"
 **Environment Variables** (create `.env.production` in backend directory):
 ```bash
 NODE_ENV=production
-DATABASE_URL="postgresql://prod_user:prod_password@prod-db-host:5432/tail_ai_production?sslmode=require"
+DATABASE_URL="postgresql://prod_user:prod_password@prod-db-host:5432/taskr_production?sslmode=require"
 JWT_SECRET="production-jwt-secret-key-change-this-to-very-secure-key"
 JWT_EXPIRES_IN="7d"
 PORT=3001

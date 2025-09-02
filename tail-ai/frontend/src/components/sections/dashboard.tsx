@@ -129,7 +129,7 @@ export function Dashboard() {
             Welcome back, {user?.name || "User"}! 👋
           </h1>
           <p className="text-xl text-blue-100">
-            Here's what's happening with your projects today.
+            Here&apos;s what&apos;s happening with your projects today.
           </p>
         </div>
         <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-white/10 to-transparent"></div>
