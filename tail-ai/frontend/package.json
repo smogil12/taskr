@@ -6,8 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "postinstall": "next telemetry disable"
+    "lint": "eslint"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",
