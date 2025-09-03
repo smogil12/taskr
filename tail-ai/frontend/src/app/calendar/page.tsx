@@ -1,4 +1,5 @@
 import React from 'react';
+import GoogleCalendarIntegration from '@/components/calendar/GoogleCalendarIntegration';
 
 export default function CalendarPage() {
   return (
@@ -10,13 +11,8 @@ export default function CalendarPage() {
             Manage your calendar and schedule tasks.
           </p>
         </div>
-        
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Calendar View</h2>
-          <p className="text-gray-600">
-            Calendar functionality coming soon! This page is now accessible from the navigation.
-          </p>
-        </div>
+
+        <GoogleCalendarIntegration />
       </div>
     </div>
   );
