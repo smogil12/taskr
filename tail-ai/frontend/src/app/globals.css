@@ -2,6 +2,173 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Force compact form styling - Ultra aggressive overrides */
+.compact-form input[type="text"],
+.compact-form input[type="email"],
+.compact-form input[type="number"],
+.compact-form select,
+.compact-form textarea {
+  padding: 2px 4px !important;
+  font-size: 11px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  line-height: 1.2 !important;
+  border-radius: 4px !important;
+}
+
+.compact-form textarea {
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  resize: none !important;
+}
+
+.compact-form label {
+  font-size: 10px !important;
+  margin-bottom: 1px !important;
+  line-height: 1.2 !important;
+}
+
+.compact-form .form-section {
+  margin-bottom: 4px !important;
+  padding: 4px !important;
+}
+
+.compact-form h1 {
+  font-size: 12px !important;
+  margin-bottom: 4px !important;
+  line-height: 1.2 !important;
+}
+
+.compact-form h2 {
+  font-size: 10px !important;
+  margin-bottom: 2px !important;
+  line-height: 1.2 !important;
+}
+
+.compact-form div {
+  margin-bottom: 2px !important;
+}
+
+.compact-form .mt-1 {
+  margin-top: 2px !important;
+}
+
+.compact-form .mt-2 {
+  margin-top: 4px !important;
+}
+
+.compact-form .mb-2 {
+  margin-bottom: 4px !important;
+}
+
+.compact-form .mb-3 {
+  margin-bottom: 6px !important;
+}
+
+.compact-form .space-y-2 > * + * {
+  margin-top: 4px !important;
+}
+
+.compact-form .space-y-3 > * + * {
+  margin-top: 6px !important;
+}
+
+/* Override custom UI components */
+.compact-form .h-10 {
+  height: 20px !important;
+}
+
+.compact-form .py-2 {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+
+.compact-form .px-3 {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+.compact-form .text-sm {
+  font-size: 11px !important;
+}
+
+/* Force all form elements to be tiny */
+.compact-form * {
+  box-sizing: border-box !important;
+}
+
+.compact-form input,
+.compact-form select,
+.compact-form textarea {
+  all: unset !important;
+  display: block !important;
+  width: 100% !important;
+  padding: 2px 4px !important;
+  font-size: 11px !important;
+  height: 20px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 4px !important;
+  background: white !important;
+  color: #111827 !important;
+}
+
+.compact-form textarea {
+  height: 40px !important;
+  resize: none !important;
+}
+
+.compact-form select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+  background-position: right 4px center !important;
+  background-repeat: no-repeat !important;
+  background-size: 8px !important;
+  padding-right: 16px !important;
+}
+
+/* Remove or minimize large arrow icons and spacing */
+.compact-form svg {
+  width: 8px !important;
+  height: 8px !important;
+  margin: 0 !important;
+}
+
+.compact-form .size-4 {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.compact-form .size-3 {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+.compact-form .mr-2 {
+  margin-right: 2px !important;
+}
+
+.compact-form .mr-1 {
+  margin-right: 1px !important;
+}
+
+/* Remove large spacing around icons */
+.compact-form .grid {
+  gap: 2px !important;
+}
+
+.compact-form .gap-x-3 {
+  column-gap: 2px !important;
+}
+
+.compact-form .gap-y-2 {
+  row-gap: 2px !important;
+}
+
+.compact-form .gap-y-1 {
+  row-gap: 1px !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

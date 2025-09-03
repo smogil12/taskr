@@ -41,7 +41,6 @@ export function Clients() {
     name: "",
     email: "",
     phone: "",
-    company: "",
     address: "",
     notes: "",
     hourlyRate: ""
@@ -51,7 +50,6 @@ export function Clients() {
     name: "",
     email: "",
     phone: "",
-    company: "",
     address: "",
     notes: "",
     hourlyRate: ""
@@ -108,6 +106,7 @@ export function Clients() {
         },
         body: JSON.stringify({
           ...newClient,
+          company: "", // Company field removed from UI, set to empty string for backend
           hourlyRate: newClient.hourlyRate ? parseFloat(newClient.hourlyRate) : null
         })
       })
@@ -118,7 +117,6 @@ export function Clients() {
           name: "",
           email: "",
           phone: "",
-          company: "",
           address: "",
           notes: "",
           hourlyRate: ""
@@ -143,6 +141,7 @@ export function Clients() {
         },
         body: JSON.stringify({
           ...editClient,
+          company: "", // Company field removed from UI, set to empty string for backend
           hourlyRate: editClient.hourlyRate ? parseFloat(editClient.hourlyRate) : null
         })
       })
@@ -154,7 +153,6 @@ export function Clients() {
           name: "",
           email: "",
           phone: "",
-          company: "",
           address: "",
           notes: "",
           hourlyRate: ""
@@ -189,7 +187,6 @@ export function Clients() {
       name: client.name,
       email: client.email || "",
       phone: client.phone || "",
-      company: client.company || "",
       address: client.address || "",
       notes: client.notes || "",
       hourlyRate: client.hourlyRate?.toString() || ""
@@ -217,218 +214,309 @@ export function Clients() {
     <div className="space-y-6">
       {/* New Client Form */}
       {showNewClientForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Create New Client</CardTitle>
-            <CardDescription>
-              Add a new client to your portfolio
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Client Name *</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="Enter client name"
-                    value={newClient.name}
-                    onChange={handleInputChange}
-                    required
-                  />
+        <div className="compact-form bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-3">
+          <div className="mb-3">
+            <h1 className="text-base font-bold text-gray-900 dark:text-white">Add a new client to your portfolio</h1>
+          </div>
+          
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-3">
+              <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
+                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Client Information</h2>
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                  Basic information about your client and their company.
+                </p>
+
+                                  <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
+                    <div className="sm:col-span-4">
+                      <label htmlFor="name" className="block text-xs font-medium text-gray-900 dark:text-white">
+                        Client *
+                      </label>
+                      <div className="mt-1">
+                        <input
+                          id="name"
+                          name="name"
+                          type="text"
+                          placeholder="Enter client name or company"
+                          value={newClient.name}
+                          onChange={handleInputChange}
+                          required
+                          className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        />
+                      </div>
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Enter the client's name or company name.</p>
+                    </div>
+
+                  <div className="sm:col-span-4">
+                    <label htmlFor="email" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Email address
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="Enter email address"
+                        value={newClient.email}
+                        onChange={handleInputChange}
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label htmlFor="phone" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Phone
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="text"
+                        placeholder="Enter phone number"
+                        value={newClient.phone}
+                        onChange={handleInputChange}
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-span-full">
+                    <label htmlFor="address" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Address
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="address"
+                        name="address"
+                        type="text"
+                        placeholder="Enter address"
+                        value={newClient.address}
+                        onChange={handleInputChange}
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-3">
+                    <label htmlFor="hourlyRate" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Hourly Rate ($)
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="hourlyRate"
+                        name="hourlyRate"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="Enter hourly rate"
+                        value={newClient.hourlyRate}
+                        onChange={handleInputChange}
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="company">Company</Label>
-                  <Input
-                    id="company"
-                    name="company"
-                    placeholder="Enter company name"
-                    value={newClient.company}
-                    onChange={handleInputChange}
-                  />
+              </div>
+
+              <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
+                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Additional Information</h2>
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                  Any additional notes or information about this client.
+                </p>
+
+                <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
+                  <div className="col-span-full">
+                    <label htmlFor="notes" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Notes
+                    </label>
+                    <div className="mt-1">
+                      <textarea
+                        id="notes"
+                        name="notes"
+                        rows={3}
+                        placeholder="Enter any additional notes"
+                        value={newClient.notes}
+                        onChange={handleInputChange}
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Add any relevant notes about this client.</p>
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="Enter email address"
-                    value={newClient.email}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    placeholder="Enter phone number"
-                    value={newClient.phone}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  name="address"
-                  placeholder="Enter address"
-                  value={newClient.address}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="hourlyRate">Hourly Rate ($)</Label>
-                  <Input
-                    id="hourlyRate"
-                    name="hourlyRate"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="Enter hourly rate"
-                    value={newClient.hourlyRate}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  placeholder="Enter any additional notes"
-                  value={newClient.notes}
-                  onChange={handleInputChange}
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit">Create Client</Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowNewClientForm(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-x-6">
+              <button 
+                type="button" 
+                onClick={() => setShowNewClientForm(false)}
+                className="text-xs font-semibold text-gray-900 dark:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500"
+              >
+                Create Client
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       {/* Edit Client Form */}
       {showEditForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Edit Client</CardTitle>
-            <CardDescription>
-              Update client information
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleEdit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-name">Client Name *</Label>
-                  <Input
-                    id="edit-name"
-                    name="name"
-                    placeholder="Enter client name"
-                    value={editClient.name}
-                    onChange={handleEditInputChange}
-                    required
-                  />
+        <div className="bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-6">
+          <div className="mb-6">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Edit Client</h1>
+          </div>
+          
+          <form onSubmit={handleEdit}>
+            <div className="space-y-8">
+              <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
+                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Client Information</h2>
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                  Update your client's information.
+                </p>
+
+                <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
+                  <div className="sm:col-span-4">
+                    <label htmlFor="edit-name" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Client *
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="edit-name"
+                        name="name"
+                        type="text"
+                        placeholder="Enter client name or company"
+                        value={editClient.name}
+                        onChange={handleEditInputChange}
+                        required
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Enter the client's name or company name.</p>
+                  </div>
+                  <div className="sm:col-span-4">
+                    <label htmlFor="edit-email" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Email address
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="edit-email"
+                        name="email"
+                        type="email"
+                        placeholder="Enter email address"
+                        value={editClient.email}
+                        onChange={handleEditInputChange}
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label htmlFor="edit-phone" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Phone
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="edit-phone"
+                        name="phone"
+                        type="text"
+                        placeholder="Enter phone number"
+                        value={editClient.phone}
+                        onChange={handleEditInputChange}
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-span-full">
+                    <label htmlFor="edit-address" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Address
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="edit-address"
+                        name="address"
+                        type="text"
+                        placeholder="Enter address"
+                        value={editClient.address}
+                        onChange={handleEditInputChange}
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-3">
+                    <label htmlFor="edit-hourlyRate" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Hourly Rate ($)
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="edit-hourlyRate"
+                        name="hourlyRate"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="Enter hourly rate"
+                        value={editClient.hourlyRate}
+                        onChange={handleEditInputChange}
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-company">Company</Label>
-                  <Input
-                    id="edit-company"
-                    name="company"
-                    placeholder="Enter company name"
-                    value={editClient.company}
-                    onChange={handleEditInputChange}
-                  />
+              </div>
+
+              <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
+                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Additional Information</h2>
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                  Any additional notes or information about this client.
+                </p>
+
+                <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
+                  <div className="col-span-full">
+                    <label htmlFor="edit-notes" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Notes
+                    </label>
+                    <div className="mt-1">
+                      <textarea
+                        id="edit-notes"
+                        name="notes"
+                        rows={3}
+                        placeholder="Enter any additional notes"
+                        value={editClient.notes}
+                        onChange={handleEditInputChange}
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Add any relevant notes about this client.</p>
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-email">Email</Label>
-                  <Input
-                    id="edit-email"
-                    name="email"
-                    type="email"
-                    placeholder="Enter email address"
-                    value={editClient.email}
-                    onChange={handleEditInputChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-phone">Phone</Label>
-                  <Input
-                    id="edit-phone"
-                    name="phone"
-                    placeholder="Enter phone number"
-                    value={editClient.phone}
-                    onChange={handleEditInputChange}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-address">Address</Label>
-                <Input
-                  id="edit-address"
-                  name="address"
-                  placeholder="Enter address"
-                  value={editClient.address}
-                  onChange={handleEditInputChange}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-hourlyRate">Hourly Rate ($)</Label>
-                  <Input
-                    id="edit-hourlyRate"
-                    name="hourlyRate"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="Enter hourly rate"
-                    value={editClient.hourlyRate}
-                    onChange={handleEditInputChange}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-notes">Notes</Label>
-                <textarea
-                  id="edit-notes"
-                  name="notes"
-                  placeholder="Enter any additional notes"
-                  value={editClient.notes}
-                  onChange={handleEditInputChange}
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit">Update Client</Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowEditForm(null)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-x-6">
+              <button 
+                type="button" 
+                onClick={() => setShowEditForm(null)}
+                className="text-xs font-semibold text-gray-900 dark:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500"
+              >
+                Update Client
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       {/* Client Detail Modal */}
@@ -550,14 +638,14 @@ export function Clients() {
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
             <h1 className="text-base font-semibold text-gray-900 dark:text-white">Clients</h1>
-            <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
               A list of all your clients including their contact information and project allocations.
             </p>
           </div>
           <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
             <Button
               onClick={() => setShowNewClientForm(true)}
-              className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
+              className="block rounded-md bg-indigo-600 px-3 py-1.5 text-center text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add client
@@ -566,7 +654,7 @@ export function Clients() {
         </div>
         <div className="mt-8 flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            <div className="inline-block min-w-full py-1.5 align-middle sm:px-6 lg:px-8">
               {isLoading ? (
                 <div className="text-center py-8">
                   <p className="text-gray-600 dark:text-gray-400">Loading clients...</p>
@@ -581,23 +669,20 @@ export function Clients() {
                     <tr>
                       <th
                         scope="col"
-                        className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0 dark:text-white"
+                        className="py-3.5 pr-3 pl-4 text-left text-xs font-semibold text-gray-900 sm:pl-0 dark:text-white"
                       >
-                        Name
+                        Client
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Company
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
                         Contact
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
                         Projects
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
                         Hours
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
                         Rate
                       </th>
                       <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
@@ -608,14 +693,11 @@ export function Clients() {
                   <tbody className="divide-y divide-gray-200 dark:divide-white/10">
                     {clients.map((client) => (
                       <tr key={client.id}>
-                        <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
+                        <td className="py-4 pr-3 pl-4 text-xs font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
                           <div className="flex items-center gap-2">
                             <Building2 className="h-4 w-4 text-blue-600" />
                             {client.name}
                           </div>
-                        </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          {client.company || <span className="text-gray-400">No company</span>}
                         </td>
                         <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           <div className="space-y-1">
@@ -663,7 +745,7 @@ export function Clients() {
                             <span className="text-gray-400">No rate set</span>
                           )}
                         </td>
-                        <td className="py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
+                        <td className="py-4 pr-4 pl-3 text-right text-xs font-medium whitespace-nowrap sm:pr-0">
                           <div className="flex gap-2 justify-end">
                             <Button
                               variant="ghost"

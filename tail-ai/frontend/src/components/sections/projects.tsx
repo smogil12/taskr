@@ -197,122 +197,207 @@ export function Projects() {
       
       {/* New Project Form */}
       {showNewProjectForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Create New Project</CardTitle>
-            <CardDescription>
-              Add a new project to your portfolio
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Project Name</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="Enter project name"
-                    value={newProject.name}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={newProject.status}
-                    onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  >
-                    <option value="Planning">Planning</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Review">Review</option>
-                    <option value="Completed">Completed</option>
-                  </select>
+        <div className="compact-form bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-2">
+          <div className="mb-2">
+            <h1 className="text-sm font-bold text-gray-900 dark:text-white">Add a new project to your portfolio</h1>
+          </div>
+          
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <div className="border-b border-gray-900/10 pb-2 dark:border-white/10">
+                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Project Information</h2>
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                  Basic information about your project and its timeline.
+                </p>
+
+                <div className="mt-2 grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-6">
+                  <div className="sm:col-span-4">
+                    <label htmlFor="name" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Project Name *
+                    </label>
+                    <div className="mt-0.5">
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        placeholder="Enter project name"
+                        value={newProject.name}
+                        onChange={handleInputChange}
+                        required
+                        className="block w-full rounded-md bg-white px-1.5 py-0.5 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label htmlFor="status" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Status
+                    </label>
+                    <div className="mt-1 grid grid-cols-1">
+                      <select
+                        id="status"
+                        name="status"
+                        value={newProject.status}
+                        onChange={handleInputChange}
+                        className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1 pr-6 pl-2 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
+                      >
+                        <option value="Planning">Planning</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Review">Review</option>
+                        <option value="Completed">Completed</option>
+                      </select>
+                      <svg
+                        aria-hidden="true"
+                        className="pointer-events-none col-start-1 row-start-1 mr-1 size-3 self-center justify-self-end text-gray-500 dark:text-gray-400"
+                        fill="none"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M6 8l4 4 4-4"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div className="col-span-full">
+                    <label htmlFor="description" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Description *
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="description"
+                        name="description"
+                        type="text"
+                        placeholder="Describe your project"
+                        value={newProject.description}
+                        onChange={handleInputChange}
+                        required
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-3">
+                    <label htmlFor="startDate" className="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                      Start Date *
+                    </label>
+                    <div className="mt-2">
+                      <input
+                        id="startDate"
+                        name="startDate"
+                        type="date"
+                        value={newProject.startDate}
+                        onChange={handleInputChange}
+                        required
+                        className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-3">
+                    <label htmlFor="endDate" className="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                      End Date (Optional)
+                    </label>
+                    <div className="mt-2">
+                      <input
+                        id="endDate"
+                        name="endDate"
+                        type="date"
+                        value={newProject.endDate}
+                        onChange={handleInputChange}
+                        className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  name="description"
-                  placeholder="Describe your project"
-                  value={newProject.description}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date</Label>
-                  <Input
-                    id="startDate"
-                    name="startDate"
-                    type="date"
-                    value={newProject.startDate}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="endDate">End Date (Optional)</Label>
-                  <Input
-                    id="endDate"
-                    name="endDate"
-                    type="date"
-                    value={newProject.endDate}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="clientId">Client (Optional)</Label>
-                  <select
-                    id="clientId"
-                    name="clientId"
-                    value={newProject.clientId}
-                    onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  >
-                    <option value="">Select a client</option>
-                    {clients.map((client) => (
-                      <option key={client.id} value={client.id}>
-                        {client.name} {client.company && `(${client.company})`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="allocatedHours">Allocated Hours</Label>
-                  <Input
-                    id="allocatedHours"
-                    name="allocatedHours"
-                    type="number"
-                    step="0.5"
-                    min="0"
-                    placeholder="Enter allocated hours"
-                    value={newProject.allocatedHours}
-                    onChange={handleInputChange}
-                  />
+
+              <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
+                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Project Details</h2>
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                  Additional project configuration and client assignment.
+                </p>
+
+                <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
+                  <div className="sm:col-span-3">
+                    <label htmlFor="clientId" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Client (Optional)
+                    </label>
+                    <div className="mt-1 grid grid-cols-1">
+                      <select
+                        id="clientId"
+                        name="clientId"
+                        value={newProject.clientId}
+                        onChange={handleInputChange}
+                        className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1 pr-6 pl-2 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
+                      >
+                        <option value="">Select a client</option>
+                        {clients.map((client) => (
+                          <option key={client.id} value={client.id}>
+                            {client.name} {client.company && `(${client.company})`}
+                          </option>
+                        ))}
+                      </select>
+                      <svg
+                        aria-hidden="true"
+                        className="pointer-events-none col-start-1 row-start-1 mr-1 size-3 self-center justify-self-end text-gray-500 dark:text-gray-400"
+                        fill="none"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M6 8l4 4 4-4"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-3">
+                    <label htmlFor="allocatedHours" className="block text-xs font-medium text-gray-900 dark:text-white">
+                      Allocated Hours
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="allocatedHours"
+                        name="allocatedHours"
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        placeholder="Enter allocated hours"
+                        value={newProject.allocatedHours}
+                        onChange={handleInputChange}
+                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button type="submit">Create Project</Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowNewProjectForm(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-x-6">
+              <button 
+                type="button" 
+                onClick={() => setShowNewProjectForm(false)}
+                className="text-sm/6 font-semibold text-gray-900 dark:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500"
+              >
+                Create Project
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
                   {/* Projects Table */}
