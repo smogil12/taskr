@@ -56,6 +56,11 @@ model User {
   subscriptionId   String?
   subscriptionEnds DateTime?
 
+  // Google Calendar Integration
+  googleCalendarConnected Boolean @default(false)
+  googleAccessToken       String?
+  googleRefreshToken      String?
+
   // Relations
   projects   Project[]
   tasks      Task[]
@@ -157,6 +162,10 @@ model Task {
   actualHours    Float?   // Actual hours spent (from time entries)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  // Google Calendar Integration
+  calendarEventId    String? // Google Calendar event ID
+  calendarEventUrl   String? // Link to the calendar event
 
   // Relations
   projectId   String

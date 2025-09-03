@@ -1,75 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Mock data for testing - replace with actual API calls to backend
-const mockClients = [
-  {
-    id: "1",
-    name: "Acme Corp",
-    email: "contact@acmecorp.com",
-    phone: "+1-555-0123",
-    company: "Acme Corporation",
-    address: "123 Business St, City, State 12345",
-    notes: "Long-term client with multiple projects",
-    hourlyRate: 85,
-    projects: [
-      {
-        id: "1",
-        name: "Website Redesign",
-        status: "IN_PROGRESS",
-        allocatedHours: 120,
-        consumedHours: 90,
-        remainingHours: 30
-      }
-    ]
-  },
-  {
-    id: "2",
-    name: "TechStart Inc",
-    email: "hello@techstart.com",
-    phone: "+1-555-0456",
-    company: "TechStart Inc",
-    address: "456 Innovation Ave, Tech City, TC 67890",
-    notes: "Startup company, budget-conscious",
-    hourlyRate: 75,
-    projects: [
-      {
-        id: "2",
-        name: "Mobile App Development",
-        status: "PLANNING",
-        allocatedHours: 200,
-        consumedHours: 50,
-        remainingHours: 150
-      }
-    ]
-  },
-  {
-    id: "3",
-    name: "Growth Marketing",
-    email: "info@growthmarketing.com",
-    phone: "+1-555-0789",
-    company: "Growth Marketing LLC",
-    address: "789 Marketing Blvd, Growth City, GC 11111",
-    notes: "Marketing agency, regular projects",
-    hourlyRate: 90,
-    projects: [
-      {
-        id: "3",
-        name: "Marketing Campaign",
-        status: "REVIEW",
-        allocatedHours: 80,
-        consumedHours: 72,
-        remainingHours: 8
-      }
-    ]
-  }
-]
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const authHeader = request.headers.get('authorization')
+    
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Authorization header required' }, { status: 401 })
+    }
+
+    const { id } = await params
     const body = await request.json()
     
     // Validate required fields
@@ -80,30 +24,24 @@ export async function PUT(
       )
     }
 
-    // Find and update client
-    const clientIndex = mockClients.findIndex(client => client.id === id)
-    if (clientIndex === -1) {
-      return NextResponse.json(
-        { error: 'Client not found' },
-        { status: 404 }
-      )
+    const response = await fetch(`${BACKEND_URL}/api/clients/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      return NextResponse.json(error, { status: response.status })
     }
 
-    const updatedClient = {
-      ...mockClients[clientIndex],
-      name: body.name,
-      email: body.email || null,
-      phone: body.phone || null,
-      company: body.company || null,
-      address: body.address || null,
-      notes: body.notes || null,
-      hourlyRate: body.hourlyRate || null
-    }
-
-    mockClients[clientIndex] = updatedClient
-
-    return NextResponse.json(updatedClient)
+    const data = await response.json()
+    return NextResponse.json(data)
   } catch (error) {
+    console.error('Error updating client:', error)
     return NextResponse.json(
       { error: 'Failed to update client' },
       { status: 500 }
@@ -113,33 +51,34 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const authHeader = request.headers.get('authorization')
     
-    // Find and delete client
-    const clientIndex = mockClients.findIndex(client => client.id === id)
-    if (clientIndex === -1) {
-      return NextResponse.json(
-        { error: 'Client not found' },
-        { status: 404 }
-      )
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Authorization header required' }, { status: 401 })
     }
 
-    // Check if client has projects
-    const client = mockClients[clientIndex]
-    if (client.projects && client.projects.length > 0) {
-      return NextResponse.json(
-        { error: 'Cannot delete client with existing projects. Please reassign or delete projects first.' },
-        { status: 400 }
-      )
+    const { id } = await params
+
+    const response = await fetch(`${BACKEND_URL}/api/clients/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      return NextResponse.json(error, { status: response.status })
     }
 
-    mockClients.splice(clientIndex, 1)
-
-    return NextResponse.json({ message: 'Client deleted successfully' })
+    const data = await response.json()
+    return NextResponse.json(data)
   } catch (error) {
+    console.error('Error deleting client:', error)
     return NextResponse.json(
       { error: 'Failed to delete client' },
       { status: 500 }

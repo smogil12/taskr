@@ -4,7 +4,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization')
@@ -17,8 +17,9 @@ export async function GET(
     }
 
     const token = authHeader.split(' ')[1]
+    const { id } = await params
 
-    const response = await fetch(`${BACKEND_URL}/api/time-entries/${params.id}`, {
+    const response = await fetch(`${BACKEND_URL}/api/time-entries/${id}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -47,7 +48,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization')
@@ -61,8 +62,9 @@ export async function PUT(
 
     const token = authHeader.split(' ')[1]
     const body = await request.json()
+    const { id } = await params
 
-    const response = await fetch(`${BACKEND_URL}/api/time-entries/${params.id}`, {
+    const response = await fetch(`${BACKEND_URL}/api/time-entries/${id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -92,7 +94,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization')
@@ -105,8 +107,9 @@ export async function DELETE(
     }
 
     const token = authHeader.split(' ')[1]
+    const { id } = await params
 
-    const response = await fetch(`${BACKEND_URL}/api/time-entries/${params.id}`, {
+    const response = await fetch(`${BACKEND_URL}/api/time-entries/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,

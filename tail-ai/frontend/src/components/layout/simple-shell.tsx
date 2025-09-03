@@ -3,13 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/components/providers/auth-provider'
-import { HomeIcon, FolderIcon, DocumentDuplicateIcon, UserGroupIcon, ChartPieIcon } from '@heroicons/react/24/outline'
+import { HomeIcon, FolderIcon, DocumentDuplicateIcon, UserGroupIcon, ChartPieIcon, CalendarIcon } from '@heroicons/react/24/outline'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Projects', href: '/projects', icon: FolderIcon },
   { name: 'Tasks', href: '/tasks', icon: DocumentDuplicateIcon },
   { name: 'Clients', href: '/clients', icon: UserGroupIcon },
+  { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
   { name: 'Reports', href: '/reports', icon: ChartPieIcon },
 ]
 

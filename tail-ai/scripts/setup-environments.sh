@@ -67,7 +67,7 @@ setup_local() {
 NODE_ENV=development
 
 # Database - Local Docker
-DATABASE_URL="postgresql://tail_ai_user:tail_ai_password@localhost:5432/tail_ai_dev"
+DATABASE_URL="postgresql://taskr_user:taskr_password@localhost:5432/taskr_dev"
 
 # JWT
 JWT_SECRET="local-development-jwt-secret-key-$(date +%s)"
@@ -86,6 +86,15 @@ STRIPE_SECRET_KEY="sk_test_your_local_stripe_secret_key"
 STRIPE_WEBHOOK_SECRET="whsec_your_local_stripe_webhook_secret"
 STRIPE_PRICE_ID_PRO="price_your_pro_plan_price_id"
 STRIPE_PRICE_ID_ENTERPRISE="price_your_enterprise_plan_price_id"
+
+# Email Service (Resend)
+RESEND_API_KEY="re_g5M8foZk_ELF1mUPd1zsqNXK5k3dbB5K1"
+FRONTEND_URL="http://localhost:3000"
+
+# Google Calendar Integration
+GOOGLE_CLIENT_ID="29558875450-1ueo1kqp6tndelbkd69p9vl6nnj8cov4.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="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"
+GOOGLE_REDIRECT_URI="http://localhost:3001/api/calendar/oauth/callback"
 EOF
         print_success "Created backend/.env.local"
     else
@@ -115,7 +124,7 @@ setup_staging() {
 NODE_ENV=staging
 
 # Database - Staging (Replace with your staging database URL)
-DATABASE_URL="postgresql://staging_user:staging_password@staging-db-host:5432/tail_ai_staging"
+DATABASE_URL="postgresql://staging_user:staging_password@staging-db-host:5432/taskr_staging"
 
 # JWT
 JWT_SECRET="staging-jwt-secret-key-$(date +%s)"
@@ -134,6 +143,15 @@ STRIPE_SECRET_KEY="sk_test_your_staging_stripe_secret_key"
 STRIPE_WEBHOOK_SECRET="whsec_your_staging_stripe_webhook_secret"
 STRIPE_PRICE_ID_PRO="price_your_pro_plan_price_id"
 STRIPE_PRICE_ID_ENTERPRISE="price_your_enterprise_plan_price_id"
+
+# Email Service (Resend)
+RESEND_API_KEY="re_g5M8foZk_ELF1mUPd1zsqNXK5k3dbB5K1"
+FRONTEND_URL="https://staging.yourdomain.com"
+
+# Google Calendar Integration
+GOOGLE_CLIENT_ID="29558875450-1ueo1kqp6tndelbkd69p9vl6nnj8cov4.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="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"
+GOOGLE_REDIRECT_URI="https://staging.yourdomain.com/api/calendar/oauth/callback"
 EOF
         print_success "Created backend/.env.staging"
         print_warning "Please update the DATABASE_URL in backend/.env.staging with your actual staging database connection string"
@@ -160,7 +178,7 @@ setup_production() {
 NODE_ENV=production
 
 # Database - Production (Replace with your production database URL)
-DATABASE_URL="postgresql://prod_user:prod_password@prod-db-host:5432/tail_ai_production?sslmode=require"
+DATABASE_URL="postgresql://prod_user:prod_password@prod-db-host:5432/taskr_production?sslmode=require"
 
 # JWT
 JWT_SECRET="production-jwt-secret-key-$(date +%s)"
@@ -179,6 +197,15 @@ STRIPE_SECRET_KEY="sk_live_your_production_stripe_secret_key"
 STRIPE_WEBHOOK_SECRET="whsec_your_production_stripe_webhook_secret"
 STRIPE_PRICE_ID_PRO="price_your_pro_plan_price_id"
 STRIPE_PRICE_ID_ENTERPRISE="price_your_enterprise_plan_price_id"
+
+# Email Service (Resend)
+RESEND_API_KEY="re_g5M8foZk_ELF1mUPd1zsqNXK5k3dbB5K1"
+FRONTEND_URL="https://yourdomain.com"
+
+# Google Calendar Integration
+GOOGLE_CLIENT_ID="29558875450-1ueo1kqp6tndelbkd69p9vl6nnj8cov4.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="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"
+GOOGLE_REDIRECT_URI="https://yourdomain.com/api/calendar/oauth/callback"
 EOF
         print_success "Created backend/.env.production"
         print_warning "Please update the DATABASE_URL in backend/.env.production with your actual production database connection string"
@@ -236,4 +263,3 @@ case "${1:-help}" in
         show_help
         ;;
 esac
-

@@ -3,7 +3,7 @@ import * as crypto from 'crypto';
 
 // Initialize Resend only if API key is provided and not a placeholder
 let resend: Resend | null = null;
-if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_placeholder_key_for_staging') {
+if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_placeholder_key_for_staging' && process.env.RESEND_API_KEY !== 're_your_resend_api_key_here') {
   resend = new Resend(process.env.RESEND_API_KEY);
 }
 

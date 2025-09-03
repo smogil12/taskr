@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Clock, FolderOpen, Home, LogOut, Menu, User, Building2 } from "lucide-react"
+import { Clock, FolderOpen, Home, LogOut, Menu, User, Building2, Calendar } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "@/components/providers/auth-provider"
 
@@ -15,6 +15,7 @@ export function Navbar() {
     { name: "Clients", href: "/clients", icon: Building2 },
     { name: "Projects", href: "/projects", icon: FolderOpen },
     { name: "Tasks", href: "/tasks", icon: Clock },
+    { name: "Calendar", href: "/calendar", icon: Calendar },
   ]
 
   const handleLogout = () => {

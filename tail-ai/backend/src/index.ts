@@ -13,6 +13,7 @@ import projectRoutes from './routes/projects';
 import taskRoutes from './routes/tasks';
 import timeEntryRoutes from './routes/timeEntries';
 import subscriptionRoutes from './routes/subscriptions';
+import calendarRoutes from './routes/calendar';
 
 // Load environment variables
 dotenv.config();
@@ -67,6 +68,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/time-entries', timeEntryRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/calendar', calendarRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

@@ -92,6 +92,33 @@ services:
       timeout: 20s
       retries: 3
 
+  # Backend API
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: tail-ai-backend
+    environment:
+      DATABASE_URL: "postgresql://taskr_user:taskr_password@postgres:5432/taskr_dev"
+      JWT_SECRET: "your-super-secret-jwt-key-here"
+      JWT_EXPIRES_IN: "7d"
+      PORT: 3001
+      NODE_ENV: "development"
+      CORS_ORIGIN: "http://localhost:3000"
+      GOOGLE_CLIENT_ID: "29558875450-1ueo1kqp6tndelbkd69p9vl6nnj8cov4.apps.googleusercontent.com"
+      GOOGLE_CLIENT_SECRET: "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"
+      GOOGLE_REDIRECT_URI: "http://localhost:3001/api/calendar/oauth/callback"
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tail-ai-network
+    volumes:
+      - ../backend:/app
+      - /app/node_modules
+
 volumes:
   postgres_data:
   postgres_staging_data:

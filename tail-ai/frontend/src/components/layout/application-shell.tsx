@@ -22,6 +22,7 @@ const navigation = [
   { name: 'Projects', href: '/projects', icon: FolderIcon },
   { name: 'Tasks', href: '/tasks', icon: DocumentDuplicateIcon },
   { name: 'Clients', href: '/clients', icon: UserGroupIcon },
+  { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
   { name: 'Reports', href: '/reports', icon: ChartPieIcon },
 ]
 
