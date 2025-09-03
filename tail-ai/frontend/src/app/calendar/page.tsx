@@ -1,10 +1,8 @@
 import React from 'react';
-import GoogleCalendarIntegration from '@/components/calendar/GoogleCalendarIntegration';
-import { MainLayout } from '@/components/layout/main-layout';
 
 export default function CalendarPage() {
   return (
-    <MainLayout>
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
@@ -14,11 +12,16 @@ export default function CalendarPage() {
             </p>
           </div>
 
-          <GoogleCalendarIntegration />
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Calendar Integration</h2>
+            <p className="text-gray-600">
+              Calendar functionality is now accessible! This is a test to see if the page loads without MainLayout.
+            </p>
+          </div>
         </div>
       </div>
-    </MainLayout>
+    </div>
   );
 }
 
-// Force deployment Wed Sep  3 18:40:54 EDT 2025
+
