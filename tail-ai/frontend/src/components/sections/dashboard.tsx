@@ -9,8 +9,8 @@ import Link from "next/link"
 
 export function Dashboard() {
   const { user } = useAuth()
-  const [clients, setClients] = useState<any[]>([])
-  const [projects, setProjects] = useState<any[]>([])
+  const [clients, setClients] = useState<unknown[]>([])
+  const [projects, setProjects] = useState<unknown[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   // Fetch data from API

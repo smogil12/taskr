@@ -111,7 +111,7 @@ export function Tasks() {
     }
   }
 
-  const handleCreateTask = async (taskData: any) => {
+  const handleCreateTask = async (taskData: unknown) => {
     if (!token) {
       console.error('No authentication token available')
       return
@@ -157,7 +157,7 @@ export function Tasks() {
     }
   }
 
-  const handleUpdateTask = async (taskData: any) => {
+  const handleUpdateTask = async (taskData: unknown) => {
     if (!editingTask) return
 
     try {
