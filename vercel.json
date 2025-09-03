@@ -1,6 +1,7 @@
 {
-  "buildCommand": "cd tail-ai/frontend && npm run build",
-  "outputDirectory": "tail-ai/frontend/.next",
-  "installCommand": "cd tail-ai/frontend && npm install",
-  "framework": "nextjs"
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "rootDirectory": "tail-ai/frontend"
 }
