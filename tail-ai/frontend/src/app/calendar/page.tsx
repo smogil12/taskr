@@ -1,9 +1,10 @@
 import React from 'react';
 import GoogleCalendarIntegration from '@/components/calendar/GoogleCalendarIntegration';
+import { MainLayout } from '@/components/layout/main-layout';
 
 export default function CalendarPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <MainLayout>
       <div className="container mx-auto py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
@@ -16,7 +17,7 @@ export default function CalendarPage() {
           <GoogleCalendarIntegration />
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }
 
