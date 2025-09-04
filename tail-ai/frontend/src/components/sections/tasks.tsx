@@ -82,6 +82,12 @@ export function Tasks() {
         const data = await response.json()
         console.log('Tasks fetched successfully:', data)
         setTasks(data.tasks || data)
+      } else if (response.status === 401) {
+        // Token expired, clear it
+        console.log('Token expired, clearing auth state')
+        localStorage.removeItem('taskr_token')
+        // Optionally redirect to login
+        window.location.href = '/auth/signin'
       } else {
         const errorText = await response.text()
         console.error('Error fetching tasks - response text:', errorText)
@@ -105,6 +111,12 @@ export function Tasks() {
       if (response.ok) {
         const data = await response.json()
         setProjects(data.projects || data)
+      } else if (response.status === 401) {
+        // Token expired, clear it
+        console.log('Token expired, clearing auth state')
+        localStorage.removeItem('taskr_token')
+        // Optionally redirect to login
+        window.location.href = '/auth/signin'
       }
     } catch (error) {
       console.error('Error fetching projects:', error)

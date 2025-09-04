@@ -30,7 +30,16 @@ export const authenticateToken = async (
       return;
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      res.status(500).json({ error: 'Server configuration error' });
+      return;
+    }
+
+    const decoded = jwt.verify(token, jwtSecret, {
+      issuer: 'tail-ai',
+      audience: 'tail-ai-users'
+    }) as any;
     
     // Get fresh user data from database
     const user = await prisma.user.findUnique({

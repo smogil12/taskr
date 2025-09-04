@@ -68,6 +68,11 @@ export function Projects() {
       const token = localStorage.getItem('taskr_token')
       console.log('🔍 Token:', token ? 'Present' : 'Missing')
       
+      if (!token) {
+        console.log('🔍 No token available, skipping projects fetch')
+        return
+      }
+      
       const response = await fetch('/api/projects', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -79,6 +84,12 @@ export function Projects() {
         const data = await response.json()
         console.log('🔍 Projects data:', data)
         setProjects(data.projects || data)
+      } else if (response.status === 401) {
+        // Token expired, clear it
+        console.log('🔍 Token expired, clearing auth state')
+        localStorage.removeItem('taskr_token')
+        // Optionally redirect to login
+        window.location.href = '/auth/signin'
       } else {
         const errorText = await response.text()
         console.error('🔍 Projects API error:', response.status, errorText)

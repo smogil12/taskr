@@ -4,6 +4,7 @@ import * as jwt from 'jsonwebtoken';
 const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
 import { EmailService } from '../services/emailService';
+import { securityLogger } from '../utils/securityLogger';
 
 const router = Router();
 
@@ -11,7 +12,10 @@ const router = Router();
 const validateRegistration = [
   body('name').trim().isLength({ min: 2, max: 50 }).withMessage('Name must be between 2 and 50 characters'),
   body('email').isEmail().normalizeEmail().withMessage('Must be a valid email'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('password')
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number')
+    .matches(/^(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/).withMessage('Password must contain at least one special character'),
 ];
 
 const validateLogin = [
@@ -119,12 +123,14 @@ router.post('/signin', validateLogin, async (req: Request, res: Response) => {
     });
 
     if (!user) {
+      securityLogger.logLoginAttempt(req, email, false);
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
+      securityLogger.logLoginAttempt(req, email, false, user.id);
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
@@ -138,12 +144,28 @@ router.post('/signin', validateLogin, async (req: Request, res: Response) => {
     }
 
     // Generate JWT token
-    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('JWT_SECRET environment variable is not set');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+    
     const token = jwt.sign(
-      { userId: user.id },
+      { 
+        userId: user.id,
+        email: user.email,
+        iat: Math.floor(Date.now() / 1000)
+      },
       jwtSecret,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
+      { 
+        expiresIn: process.env.JWT_EXPIRES_IN || '15m',
+        issuer: 'tail-ai',
+        audience: 'tail-ai-users'
+      } as jwt.SignOptions
     );
+
+    // Log successful login
+    securityLogger.logLoginAttempt(req, email, true, user.id);
 
     return res.json({
       message: 'Login successful',

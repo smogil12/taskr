@@ -62,15 +62,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         const data = await response.json()
         setUser(data.user)
-      } else {
-        // Token is invalid, remove it
+      } else if (response.status === 401) {
+        // Token is invalid or expired, remove it and redirect to login
+        console.log('Token expired or invalid, clearing auth state')
         localStorage.removeItem('taskr_token')
         setToken(null)
+        setUser(null)
+        // Optionally redirect to login page
+        // window.location.href = '/auth/signin'
+      } else {
+        console.error('Failed to fetch user profile:', response.status)
       }
     } catch (error) {
       console.error('Failed to fetch user profile:', error)
       localStorage.removeItem('taskr_token')
       setToken(null)
+      setUser(null)
     } finally {
       setIsLoading(false)
     }

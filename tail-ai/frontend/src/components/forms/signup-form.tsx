@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { useAuth } from "@/components/providers/auth-provider"
+import { validatePassword, getPasswordStrengthColor, getPasswordStrengthText, isCommonPassword } from "@/utils/passwordValidation"
 
 export function SignUpForm() {
   const [formData, setFormData] = useState({
@@ -19,19 +20,44 @@ export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [showVerificationMessage, setShowVerificationMessage] = useState(false)
   const [verificationMessage, setVerificationMessage] = useState("")
+  const [passwordValidation, setPasswordValidation] = useState<any>(null)
   const router = useRouter()
   const { signup, error } = useAuth()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
+    const newFormData = {
       ...formData,
       [e.target.name]: e.target.value,
-    })
+    }
+    setFormData(newFormData)
+
+    // Validate password in real-time
+    if (e.target.name === 'password') {
+      const validation = validatePassword(e.target.value)
+      if (isCommonPassword(e.target.value)) {
+        validation.errors.push('This password is too common. Please choose a more unique password.')
+        validation.isValid = false
+      }
+      setPasswordValidation(validation)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+
+    // Validate password before submission
+    const validation = validatePassword(formData.password)
+    if (isCommonPassword(formData.password)) {
+      validation.errors.push('This password is too common. Please choose a more unique password.')
+      validation.isValid = false
+    }
+
+    if (!validation.isValid) {
+      setPasswordValidation(validation)
+      setIsLoading(false)
+      return
+    }
 
     if (formData.password !== formData.confirmPassword) {
       // Handle password mismatch through the auth context
@@ -150,6 +176,36 @@ export function SignUpForm() {
                 onChange={handleChange}
                 required
               />
+              {passwordValidation && formData.password && (
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600">Password strength:</span>
+                    <span className={`text-sm font-medium ${getPasswordStrengthColor(passwordValidation.strength)}`}>
+                      {getPasswordStrengthText(passwordValidation.strength)}
+                    </span>
+                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          passwordValidation.strength === 'weak' ? 'bg-red-500 w-1/4' :
+                          passwordValidation.strength === 'medium' ? 'bg-yellow-500 w-1/2' :
+                          passwordValidation.strength === 'strong' ? 'bg-blue-500 w-3/4' :
+                          'bg-green-500 w-full'
+                        }`}
+                      />
+                    </div>
+                  </div>
+                  {passwordValidation.errors.length > 0 && (
+                    <ul className="text-sm text-red-600 space-y-1">
+                      {passwordValidation.errors.map((error: string, index: number) => (
+                        <li key={index} className="flex items-center space-x-1">
+                          <span>•</span>
+                          <span>{error}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
