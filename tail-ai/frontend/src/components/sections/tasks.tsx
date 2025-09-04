@@ -286,14 +286,6 @@ export function Tasks() {
 
   return (
     <div className="space-y-6">
-      {/* Debug Info */}
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-blue-800 text-sm">
-          <strong>Debug Info:</strong> User: {user?.name} ({user?.email}) | 
-          Token: {token ? `${token.substring(0, 20)}...` : 'None'}
-        </p>
-      </div>
-
       {/* New Task Form */}
       {showNewTaskForm && (
         <TaskForm
