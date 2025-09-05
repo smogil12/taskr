@@ -665,25 +665,25 @@ export function Clients() {
                   <p className="text-gray-600 dark:text-gray-400">No clients found. Create your first client to get started.</p>
                 </div>
               ) : (
-                <table className="relative min-w-full divide-y divide-gray-300 dark:divide-white/15">
+                                  <table className="relative min-w-full border-collapse">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-white/5">
                       <th
                         scope="col"
-                        className="py-3.5 pr-3 pl-4 text-left text-xs font-semibold text-gray-900 sm:pl-0 dark:text-white border-r border-gray-200 dark:border-white/10"
+                        className="py-3.5 pr-3 pl-4 text-left text-xs font-semibold text-gray-900 sm:pl-0 dark:text-white"
                       >
                         Client
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
                         Contact
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
                         Projects
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
                         Hours
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
                         Rate
                       </th>
                       <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
@@ -691,16 +691,16 @@ export function Clients() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-white/10 mt-2">
-                    {clients.map((client) => (
-                      <tr key={client.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
-                        <td className="py-4 pr-3 pl-4 text-xs font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white border-r border-gray-200 dark:border-white/10">
+                  <tbody>
+                    {clients.map((client, index) => (
+                      <tr key={client.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150 border-t border-gray-200 dark:border-gray-700">
+                        <td className="py-4 pr-3 pl-4 text-xs font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
                           <div className="flex items-center gap-2">
                             <Building2 className="h-4 w-4 text-blue-600" />
                             {client.name}
                           </div>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           <div className="space-y-1">
                             {client.email && (
                               <div className="flex items-center gap-1">
@@ -719,13 +719,13 @@ export function Clients() {
                             )}
                           </div>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           <div className="flex items-center gap-1">
                             <FolderOpen className="h-3 w-3" />
                             {client.projects.length} project{client.projects.length !== 1 ? 's' : ''}
                           </div>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {getTotalAllocatedHours(client.projects)}h allocated
@@ -736,7 +736,7 @@ export function Clients() {
                             </div>
                           )}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {client.hourlyRate ? (
                             <div className="flex items-center gap-1">
                               <DollarSign className="h-3 w-3" />

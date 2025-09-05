@@ -383,28 +383,28 @@ export function Tasks() {
                   </p>
                 </div>
               ) : (
-                <table className="relative min-w-full divide-y divide-gray-300 dark:divide-white/15">
+                                  <table className="relative min-w-full border-collapse">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-white/5">
                       <th
                         scope="col"
-                        className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0 dark:text-white border-r border-gray-200 dark:border-white/10"
+                        className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0 dark:text-white"
                       >
                         Title
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Status
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Priority
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Project
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Due Date
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Hours
                       </th>
                       <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
@@ -412,10 +412,10 @@ export function Tasks() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-white/10 mt-2">
-                    {filteredTasks.map((task) => (
-                      <tr key={task.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
-                        <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white border-r border-gray-200 dark:border-white/10">
+                  <tbody>
+                    {filteredTasks.map((task, index) => (
+                      <tr key={task.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150 border-t border-gray-200 dark:border-gray-700">
+                        <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
                           <div className="flex items-center gap-2">
                             {getStatusIcon(task.status)}
                             {task.title}
@@ -426,7 +426,7 @@ export function Tasks() {
                             </p>
                           )}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap border-r border-gray-200 dark:border-white/10">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap">
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                               task.status
@@ -435,7 +435,7 @@ export function Tasks() {
                             {formatStatus(task.status)}
                           </span>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap border-r border-gray-200 dark:border-white/10">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap">
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
                               task.priority
@@ -444,13 +444,13 @@ export function Tasks() {
                             {task.priority}
                           </span>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           <div className="flex items-center gap-1">
                             <FolderOpen className="h-3 w-3" />
                             {task.project.name}
                           </div>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {task.dueDate ? (
                             <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
@@ -460,7 +460,7 @@ export function Tasks() {
                             <span className="text-gray-400">No due date</span>
                           )}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {task.estimatedHours || 0}h est
