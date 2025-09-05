@@ -357,7 +357,7 @@ export function Clients() {
               </button>
               <button
                 type="submit"
-                className="rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500"
+                className="rounded-full bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
               >
                 Create Client
               </button>
@@ -642,17 +642,18 @@ export function Clients() {
               A list of all your clients including their contact information and project allocations.
             </p>
           </div>
-          <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-            <Button
+          <div className="mt-6 sm:mt-0 sm:ml-16 sm:flex-none">
+            <button
+              type="button"
               onClick={() => setShowNewClientForm(true)}
-              className="block rounded-md bg-indigo-600 px-3 py-1.5 text-center text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
+              className="rounded-full bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-2"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4" />
               Add client
-            </Button>
+            </button>
           </div>
         </div>
-        <div className="mt-8 flow-root">
+        <div className="mt-12 flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-1.5 align-middle sm:px-6 lg:px-8">
               {isLoading ? (
@@ -666,23 +667,23 @@ export function Clients() {
               ) : (
                 <table className="relative min-w-full divide-y divide-gray-300 dark:divide-white/15">
                   <thead>
-                    <tr>
+                    <tr className="bg-gray-50 dark:bg-white/5">
                       <th
                         scope="col"
-                        className="py-3.5 pr-3 pl-4 text-left text-xs font-semibold text-gray-900 sm:pl-0 dark:text-white"
+                        className="py-3.5 pr-3 pl-4 text-left text-xs font-semibold text-gray-900 sm:pl-0 dark:text-white border-r border-gray-200 dark:border-white/10"
                       >
                         Client
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
                         Contact
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
                         Projects
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
                         Hours
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
                         Rate
                       </th>
                       <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
@@ -690,16 +691,16 @@ export function Clients() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-white/10">
+                  <tbody className="divide-y divide-gray-200 dark:divide-white/10 mt-2">
                     {clients.map((client) => (
-                      <tr key={client.id}>
-                        <td className="py-4 pr-3 pl-4 text-xs font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
+                      <tr key={client.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
+                        <td className="py-4 pr-3 pl-4 text-xs font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white border-r border-gray-200 dark:border-white/10">
                           <div className="flex items-center gap-2">
                             <Building2 className="h-4 w-4 text-blue-600" />
                             {client.name}
                           </div>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
                           <div className="space-y-1">
                             {client.email && (
                               <div className="flex items-center gap-1">
@@ -718,13 +719,13 @@ export function Clients() {
                             )}
                           </div>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
                           <div className="flex items-center gap-1">
                             <FolderOpen className="h-3 w-3" />
                             {client.projects.length} project{client.projects.length !== 1 ? 's' : ''}
                           </div>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {getTotalAllocatedHours(client.projects)}h allocated
@@ -735,7 +736,7 @@ export function Clients() {
                             </div>
                           )}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
                           {client.hourlyRate ? (
                             <div className="flex items-center gap-1">
                               <DollarSign className="h-3 w-3" />
@@ -747,27 +748,30 @@ export function Clients() {
                         </td>
                         <td className="py-4 pr-4 pl-3 text-right text-xs font-medium whitespace-nowrap sm:pr-0">
                           <div className="flex gap-2 justify-end">
-                            <Button
-                              variant="ghost"
-                              size="sm"
+                            <button
+                              type="button"
                               onClick={() => openClientDetail(client)}
+                              className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
                             >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
+                              <Eye className="h-3 w-3" />
+                              View
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => openEditForm(client)}
+                              className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
                             >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
+                              <Edit className="h-3 w-3" />
+                              Edit
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => handleDelete(client.id)}
+                              className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-500 dark:shadow-none dark:hover:bg-red-400 dark:focus-visible:outline-red-500 flex items-center gap-1"
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                              <Trash2 className="h-3 w-3" />
+                              Delete
+                            </button>
                           </div>
                         </td>
                       </tr>

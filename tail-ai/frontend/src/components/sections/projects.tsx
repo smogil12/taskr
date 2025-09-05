@@ -420,17 +420,18 @@ export function Projects() {
               A list of all your projects including their status, client, start date, and allocated hours.
             </p>
           </div>
-          <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-            <Button
+          <div className="mt-6 sm:mt-0 sm:ml-16 sm:flex-none">
+            <button
+              type="button"
               onClick={() => setShowNewProjectForm(true)}
-              className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
+              className="rounded-full bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-2"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4" />
               Add project
-            </Button>
+            </button>
           </div>
         </div>
-        <div className="mt-8 flow-root">
+        <div className="mt-12 flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               {isLoading ? (
@@ -444,26 +445,26 @@ export function Projects() {
               ) : (
                 <table className="relative min-w-full divide-y divide-gray-300 dark:divide-white/15">
                     <thead>
-                      <tr>
+                      <tr className="bg-gray-50 dark:bg-white/5">
                       <th
                         scope="col"
-                        className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0 dark:text-white"
+                        className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0 dark:text-white border-r border-gray-200 dark:border-white/10"
                       >
                         Name
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
                         Status
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
                         Client
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
                         Start Date
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
                         Allocated Hours
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white border-r border-gray-200 dark:border-white/10">
                         Progress
                       </th>
                       <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
@@ -471,10 +472,10 @@ export function Projects() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-white/10">
+                  <tbody className="divide-y divide-gray-200 dark:divide-white/10 mt-2">
                     {projects.map((project) => (
-                      <tr key={project.id}>
-                        <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
+                      <tr key={project.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
+                        <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white border-r border-gray-200 dark:border-white/10">
                           <div className="flex items-center gap-2">
                             <FolderOpen className="h-4 w-4 text-blue-600" />
                             {project.name}
@@ -483,7 +484,7 @@ export function Projects() {
                             {project.description}
                           </p>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap border-r border-gray-200 dark:border-white/10">
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                               project.status
@@ -492,7 +493,7 @@ export function Projects() {
                             {formatStatus(project.status)}
                           </span>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
                           {project.client ? (
                             <div className="flex items-center gap-1">
                               <Building2 className="h-3 w-3" />
@@ -505,13 +506,13 @@ export function Projects() {
                             <span className="text-gray-400">No client</span>
                           )}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             {new Date(project.startDate).toLocaleDateString()}
                           </div>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {project.allocatedHours || 0}h
@@ -522,7 +523,7 @@ export function Projects() {
                             </div>
                           )}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-white/10">
                           <div className="flex items-center gap-2">
                             <span>{project.progress || 0}%</span>
                             <div className="w-16 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
@@ -535,16 +536,21 @@ export function Projects() {
                         </td>
                         <td className="py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
                           <div className="flex gap-2 justify-end">
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteProject(project.id)}
+                            <button
+                              type="button"
+                              className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                              <Edit className="h-3 w-3" />
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteProject(project.id)}
+                              className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-500 dark:shadow-none dark:hover:bg-red-400 dark:focus-visible:outline-red-500 flex items-center gap-1"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              Delete
+                            </button>
                           </div>
                         </td>
                       </tr>
