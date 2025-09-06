@@ -52,7 +52,56 @@ router.get('/', async (req: any, res: any) => {
       orderBy: { updatedAt: 'desc' },
     });
 
-    return res.json({ projects });
+    // Calculate consumed hours for each project
+    const projectsWithConsumedHours = await Promise.all(
+      projects.map(async (project) => {
+        // Get all completed tasks for this project
+        const completedTasks = await prisma.task.findMany({
+          where: {
+            projectId: project.id,
+            status: 'COMPLETED'
+          },
+          select: {
+            actualHours: true
+          }
+        });
+
+        // Also check all tasks for this project to see what exists
+        const allTasks = await prisma.task.findMany({
+          where: {
+            projectId: project.id
+          },
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            actualHours: true
+          }
+        });
+
+        console.log(`Project ${project.name} (${project.id}): Found ${completedTasks.length} completed tasks out of ${allTasks.length} total tasks`);
+        console.log('All tasks:', allTasks);
+        console.log('Completed tasks:', completedTasks);
+
+        // Calculate consumed hours from completed tasks
+        const consumedHours = completedTasks.reduce((total, task) => {
+          return total + (task.actualHours || 0);
+        }, 0);
+
+        console.log(`Project ${project.name}: consumedHours = ${consumedHours}`);
+
+        // Calculate remaining hours
+        const remainingHours = Math.max(0, (project.allocatedHours || 0) - consumedHours);
+
+        return {
+          ...project,
+          consumedHours,
+          remainingHours
+        };
+      })
+    );
+
+    return res.json({ projects: projectsWithConsumedHours });
   } catch (error) {
     console.error('Get projects error:', error);
     return res.status(500).json({ error: 'Failed to fetch projects' });

@@ -465,6 +465,9 @@ export function Projects() {
                         Allocated Hours
                       </th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Hours Remaining
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Progress
                       </th>
                       <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
@@ -474,14 +477,14 @@ export function Projects() {
                   </thead>
                   <tbody>
                     {projects.map((project, index) => (
-                      <tr key={project.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150 border-t border-gray-200 dark:border-gray-700">
-                        <td className="py-6 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
+                      <tr key={project.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
+                        <td className="text-sm font-medium whitespace-nowrap text-gray-900 dark:text-white">
                           {project.name}
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
                             {project.description}
                           </p>
                         </td>
-                        <td className="px-3 py-6 text-sm whitespace-nowrap">
+                        <td className="text-sm whitespace-nowrap">
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                               project.status
@@ -490,7 +493,7 @@ export function Projects() {
                             {formatStatus(project.status)}
                           </span>
                         </td>
-                        <td className="px-3 py-6 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {project.client ? (
                             <div>
                               {project.client.name}
@@ -502,10 +505,10 @@ export function Projects() {
                             <span className="text-gray-400">No client</span>
                           )}
                         </td>
-                        <td className="px-3 py-6 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {new Date(project.startDate).toLocaleDateString()}
                         </td>
-                        <td className="px-3 py-6 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {project.allocatedHours || 0}h
                           {project.allocatedHours > 0 && (
                             <div className="text-xs text-gray-400 mt-1">
@@ -513,7 +516,10 @@ export function Projects() {
                             </div>
                           )}
                         </td>
-                        <td className="px-3 py-6 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          {project.allocatedHours ? (project.allocatedHours - (project.consumedHours || 0)) : 0}h
+                        </td>
+                        <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           <div className="flex items-center gap-2">
                             <span>{project.progress || 0}%</span>
                             <div className="w-16 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
@@ -524,7 +530,7 @@ export function Projects() {
                             </div>
                           </div>
                         </td>
-                        <td className="py-6 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
+                        <td className=" text-right text-sm font-medium whitespace-nowrap sm:pr-0">
                           <div className="flex gap-2 justify-end">
                             <button
                               type="button"
