@@ -24,10 +24,12 @@ const PORT = process.env.PORT || 3001;
 // Initialize Prisma
 export const prisma = new PrismaClient();
 
-// General rate limiting
+// General rate limiting - much more lenient in development
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // limit each IP to 100 requests per windowMs
+  max: process.env.NODE_ENV === 'development' 
+    ? parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '10000') // 10,000 requests in dev
+    : parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // 100 requests in production
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -41,10 +43,10 @@ const limiter = rateLimit({
   },
 });
 
-// Strict rate limiting for authentication endpoints
+// Authentication rate limiting - more lenient in development
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  max: process.env.NODE_ENV === 'development' ? 100 : 5, // 100 requests in dev, 5 in production
   message: 'Too many authentication attempts from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,

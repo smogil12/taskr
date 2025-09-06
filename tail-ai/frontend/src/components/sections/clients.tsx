@@ -653,7 +653,7 @@ export function Clients() {
             </button>
           </div>
         </div>
-        <div className="mt-12 flow-root">
+        <div className="mt-16 flow-root clients-table-container">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-1.5 align-middle sm:px-6 lg:px-8">
               {isLoading ? (
@@ -665,7 +665,7 @@ export function Clients() {
                   <p className="text-gray-600 dark:text-gray-400">No clients found. Create your first client to get started.</p>
                 </div>
               ) : (
-                                  <table className="relative min-w-full border-collapse">
+                                  <table className="relative min-w-full border-collapse clients-table">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-white/5">
                       <th
@@ -693,14 +693,11 @@ export function Clients() {
                   </thead>
                   <tbody>
                     {clients.map((client, index) => (
-                      <tr key={client.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150 border-t border-gray-200 dark:border-gray-700">
-                        <td className="py-4 pr-3 pl-4 text-xs font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4 text-blue-600" />
-                            {client.name}
-                          </div>
+                      <tr key={client.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
+                        <td className="py-8 pr-3 pl-4 text-xs font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
+                          {client.name}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className="px-3 py-8 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           <div className="space-y-1">
                             {client.email && (
                               <div className="flex items-center gap-1">
@@ -719,24 +716,18 @@ export function Clients() {
                             )}
                           </div>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <FolderOpen className="h-3 w-3" />
-                            {client.projects.length} project{client.projects.length !== 1 ? 's' : ''}
-                          </div>
+                        <td className="px-3 py-8 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          {client.projects.length} project{client.projects.length !== 1 ? 's' : ''}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {getTotalAllocatedHours(client.projects)}h allocated
-                          </div>
+                        <td className="px-3 py-8 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          {getTotalAllocatedHours(client.projects)}h allocated
                           {getTotalConsumedHours(client.projects) > 0 && (
                             <div className="text-xs text-gray-400 mt-1">
                               {getTotalConsumedHours(client.projects)}h used
                             </div>
                           )}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className="px-3 py-8 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {client.hourlyRate ? (
                             <div className="flex items-center gap-1">
                               <DollarSign className="h-3 w-3" />
@@ -746,7 +737,7 @@ export function Clients() {
                             <span className="text-gray-400">No rate set</span>
                           )}
                         </td>
-                        <td className="py-4 pr-4 pl-3 text-right text-xs font-medium whitespace-nowrap sm:pr-0">
+                        <td className="py-8 pr-4 pl-3 text-right text-xs font-medium whitespace-nowrap sm:pr-0">
                           <div className="flex gap-2 justify-end">
                             <button
                               type="button"

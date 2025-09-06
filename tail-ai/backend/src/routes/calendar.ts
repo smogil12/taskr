@@ -44,7 +44,7 @@ router.get('/oauth/callback', async (req: any, res: any) => {
     });
 
     // Redirect back to the frontend calendar page
-    res.redirect('http://localhost:3002/calendar?connected=true');
+    res.redirect('http://localhost:3000/calendar?connected=true');
   } catch (error) {
     console.error('Error handling OAuth callback:', error);
     res.status(500).json({ error: 'Failed to connect Google Calendar' });

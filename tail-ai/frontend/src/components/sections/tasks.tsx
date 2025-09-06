@@ -350,7 +350,7 @@ export function Tasks() {
         </div>
 
         {/* Project Filter */}
-        <div className="mt-8 flex items-center gap-4">
+        <div className="mt-8 flex items-center gap-4 tasks-table-container">
           <Label htmlFor="project-filter" className="text-sm text-gray-700 dark:text-gray-300">Filter by Project:</Label>
           <select
             id="project-filter"
@@ -383,7 +383,7 @@ export function Tasks() {
                   </p>
                 </div>
               ) : (
-                                  <table className="relative min-w-full border-collapse">
+                                  <table className="relative min-w-full border-collapse tasks-table">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-white/5">
                       <th
@@ -415,18 +415,15 @@ export function Tasks() {
                   <tbody>
                     {filteredTasks.map((task, index) => (
                       <tr key={task.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150 border-t border-gray-200 dark:border-gray-700">
-                        <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
-                          <div className="flex items-center gap-2">
-                            {getStatusIcon(task.status)}
-                            {task.title}
-                          </div>
+                        <td className="py-6 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
+                          {task.title}
                           {task.description && (
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
                               {task.description}
                             </p>
                           )}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap">
+                        <td className="px-3 py-6 text-sm whitespace-nowrap">
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                               task.status
@@ -435,7 +432,7 @@ export function Tasks() {
                             {formatStatus(task.status)}
                           </span>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap">
+                        <td className="px-3 py-6 text-sm whitespace-nowrap">
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
                               task.priority
@@ -444,34 +441,25 @@ export function Tasks() {
                             {task.priority}
                           </span>
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <FolderOpen className="h-3 w-3" />
-                            {task.project.name}
-                          </div>
+                        <td className="px-3 py-6 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          {task.project.name}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        <td className="px-3 py-6 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {task.dueDate ? (
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(task.dueDate).toLocaleDateString()}
-                            </div>
+                            new Date(task.dueDate).toLocaleDateString()
                           ) : (
                             <span className="text-gray-400">No due date</span>
                           )}
                         </td>
-                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {task.estimatedHours || 0}h est
-                          </div>
+                        <td className="px-3 py-6 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          {task.estimatedHours || 0}h est
                           {task.actualHours !== undefined && (
                             <div className="text-xs text-gray-400 mt-1">
                               {task.actualHours}h actual
                             </div>
                           )}
                         </td>
-                        <td className="py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
+                        <td className="py-6 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
                           <div className="flex gap-2 justify-end">
                             <button
                               type="button"
