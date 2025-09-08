@@ -18,7 +18,6 @@ function PlansPageContent() {
     // Check if payment was completed
     const paymentCompleted = searchParams.get('payment_completed');
     if (paymentCompleted === 'true') {
-      localStorage.setItem('stripe_payment_completed', 'true');
       setShowSuccessMessage(true);
       // Remove the parameter from URL
       window.history.replaceState({}, '', '/plans');
@@ -33,14 +32,11 @@ function PlansPageContent() {
   useEffect(() => {
     if (!authLoading && authUser) {
       // Convert auth user to our User type
-      // For testing: if user completed a payment, show them as PAID
-      const isPaidUser = authUser.subscriptionTier === 'PAID' || 
-                        localStorage.getItem('stripe_payment_completed') === 'true';
-      
+      // Use actual subscription tier from backend, default to FREE for new users
       const convertedUser: User = {
         id: authUser.id,
         email: authUser.email,
-        tier: isPaidUser ? 'PAID' : 'FREE',
+        tier: authUser.subscriptionTier || 'FREE',
         projectCount: authUser._count?.projects || 0,
         stripeCustomerId: undefined, // Will be updated by webhook
         stripeSubscriptionId: undefined, // Will be updated by webhook
@@ -113,7 +109,7 @@ function PlansPageContent() {
       
       // Alternative: Try to create a proper portal session first
       try {
-        const customerId = localStorage.getItem('stripe_customer_id') || user?.stripeCustomerId || 'cus_test_customer';
+        const customerId = user?.stripeCustomerId || 'cus_test_customer';
         
         const response = await fetch('/api/stripe/create-portal-session', {
           method: 'POST',
