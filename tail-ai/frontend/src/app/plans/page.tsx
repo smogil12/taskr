@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { User } from '@/lib/user-tiers';
 import { MainLayout } from '@/components/layout/main-layout';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useSearchParams } from 'next/navigation';
 
-export default function PlansPage() {
+function PlansPageContent() {
   const { user: authUser, isLoading: authLoading } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -316,5 +316,24 @@ export default function PlansPage() {
         </div>
       </div>
     </MainLayout>
+  );
+}
+
+export default function PlansPage() {
+  return (
+    <Suspense fallback={
+      <MainLayout>
+        <div className="py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    }>
+      <PlansPageContent />
+    </Suspense>
   );
 }
