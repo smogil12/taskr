@@ -3,9 +3,7 @@ import { stripeConfig } from './stripe-config';
 
 // Server-side Stripe instance
 export const stripe = new Stripe(
-  process.env.NODE_ENV === 'production' 
-    ? stripeConfig.production.secretKey 
-    : stripeConfig.development.secretKey,
+  process.env.STRIPE_SECRET_KEY || 'sk_test_your_test_secret_key_here',
   {
     apiVersion: '2023-10-16',
     typescript: true,
@@ -14,13 +12,9 @@ export const stripe = new Stripe(
 
 // Client-side Stripe instance
 export const getStripePublishableKey = () => {
-  return process.env.NODE_ENV === 'production' 
-    ? stripeConfig.production.publishableKey 
-    : stripeConfig.development.publishableKey;
+  return process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_your_publishable_key_here';
 };
 
 export const getStripeProductId = () => {
-  return process.env.NODE_ENV === 'production' 
-    ? stripeConfig.production.productId 
-    : stripeConfig.development.productId;
+  return process.env.STRIPE_PRODUCT_ID || 'prod_RSpk9sbDrDqZSu';
 };
