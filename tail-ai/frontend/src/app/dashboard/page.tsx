@@ -188,7 +188,7 @@ export default function DashboardPage() {
 
   return (
     <MainLayout>
-      <div className="xl:pl-72">
+      <div className="max-w-full overflow-x-hidden">
         {/* Sticky search header */}
         <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-6 border-b border-gray-200 bg-white px-4 shadow-xs sm:px-6 lg:px-8 dark:border-white/5 dark:bg-gray-900 dark:shadow-none">
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
@@ -208,8 +208,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex">
-          <main className="flex-1 lg:pr-96">
+        <div className="flex min-h-screen">
+          <main className="flex-1 max-w-4xl">
             <header className="flex items-center justify-between border-b border-gray-200 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-white/5">
               <h1 className="text-base/7 font-semibold text-gray-900 dark:text-white">Projects</h1>
 
@@ -298,8 +298,7 @@ export default function DashboardPage() {
           </main>
 
           {/* Activity feed */}
-          <aside className="lg:block lg:w-96 lg:flex-shrink-0">
-            <div className="bg-gray-50 h-full overflow-y-auto border-l border-gray-200 dark:bg-black/10 dark:border-white/5">
+          <aside className="w-96 bg-gray-50 border-l border-gray-200 dark:bg-gray-900 dark:border-white/5 overflow-y-auto">
               <header className="flex items-center justify-between border-b border-gray-200 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-white/5">
                 <h2 className="text-base/7 font-semibold text-gray-900 dark:text-white">Activity feed</h2>
                 <a href="/tasks" className="text-sm/6 font-semibold text-indigo-600 dark:text-indigo-400">
@@ -337,7 +336,6 @@ export default function DashboardPage() {
                   ))}
                 </ul>
               )}
-            </div>
           </aside>
         </div>
       </div>
