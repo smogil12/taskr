@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { PricingCard } from '@/components/stripe/pricing-card';
 import { UserTier, userTiers } from '@/lib/stripe-config';
 import { User } from '@/lib/user-tiers';
@@ -8,7 +8,7 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { useSearchParams } from 'next/navigation';
 
-export default function PricingPage() {
+function PricingPageContent() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' });
@@ -282,5 +282,24 @@ export default function PricingPage() {
       </div>
       </div>
     </MainLayout>
+  );
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={
+      <MainLayout>
+        <div className="py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    }>
+      <PricingPageContent />
+    </Suspense>
   );
 }
