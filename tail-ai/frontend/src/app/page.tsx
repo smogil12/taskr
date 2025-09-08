@@ -15,6 +15,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!isLoading && user) {
+      console.log('🔍 Root page: User is authenticated, redirecting to dashboard')
       router.push('/dashboard');
     }
   }, [user, isLoading, router]);
@@ -38,9 +39,14 @@ export default function Home() {
 
   // Don't show landing page if user is authenticated
   if (user) {
-    console.log('🔍 Root page: User is authenticated, redirecting to dashboard')
-    router.push('/dashboard');
-    return null;
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(to bottom right, #eff6ff, #ffffff, #e0e7ff)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ animation: 'spin 1s linear infinite', borderRadius: '50%', height: '48px', width: '48px', borderBottom: '2px solid #2563eb', margin: '0 auto' }}></div>
+          <p style={{ marginTop: '1rem', color: '#6b7280' }}>Redirecting to dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   const features = [
@@ -85,6 +91,9 @@ export default function Home() {
             Taskr
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
+            <Link href="/pricing">
+              <Button variant="outline">Pricing</Button>
+            </Link>
             <Link href="/auth/signin">
               <Button variant="outline">Sign In</Button>
             </Link>
