@@ -208,25 +208,25 @@ export function Projects() {
       
       {/* New Project Form */}
       {showNewProjectForm && (
-        <div className="compact-form bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-2">
-          <div className="mb-2">
-            <h1 className="text-sm font-bold text-gray-900 dark:text-white">Add a new project to your portfolio</h1>
+        <div className="bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-6">
+          <div className="mb-6">
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Add a new project to your portfolio</h1>
           </div>
           
           <form onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <div className="border-b border-gray-900/10 pb-2 dark:border-white/10">
-                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Project Information</h2>
-                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+              <div className="border-b border-gray-900/10 pb-4 dark:border-white/10">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Project Information</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   Basic information about your project and its timeline.
                 </p>
 
-                <div className="mt-2 grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-6">
-                  <div className="sm:col-span-4">
-                    <label htmlFor="name" className="block text-xs font-medium text-gray-900 dark:text-white">
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="sm:col-span-2 lg:col-span-1">
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Project Name *
                     </label>
-                    <div className="mt-0.5">
+                    <div className="mt-1">
                       <input
                         id="name"
                         name="name"
@@ -235,22 +235,22 @@ export function Projects() {
                         value={newProject.name}
                         onChange={handleInputChange}
                         required
-                        className="block w-full rounded-md bg-white px-1.5 py-0.5 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label htmlFor="status" className="block text-xs font-medium text-gray-900 dark:text-white">
+                  <div className="sm:col-span-1">
+                    <label htmlFor="status" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Status
                     </label>
-                    <div className="mt-1 grid grid-cols-1">
+                    <div className="mt-1 relative">
                       <select
                         id="status"
                         name="status"
                         value={newProject.status}
                         onChange={handleInputChange}
-                        className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1 pr-6 pl-2 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
+                        className="block w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
                       >
                         <option value="Planning">Planning</option>
                         <option value="In Progress">In Progress</option>
@@ -259,7 +259,7 @@ export function Projects() {
                       </select>
                       <svg
                         aria-hidden="true"
-                        className="pointer-events-none col-start-1 row-start-1 mr-1 size-3 self-center justify-self-end text-gray-500 dark:text-gray-400"
+                        className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-gray-400"
                         fill="none"
                         viewBox="0 0 20 20"
                       >
@@ -275,28 +275,28 @@ export function Projects() {
                   </div>
 
                   <div className="col-span-full">
-                    <label htmlFor="description" className="block text-xs font-medium text-gray-900 dark:text-white">
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Description *
                     </label>
                     <div className="mt-1">
-                      <input
+                      <textarea
                         id="description"
                         name="description"
-                        type="text"
+                        rows={3}
                         placeholder="Describe your project"
                         value={newProject.description}
                         onChange={handleInputChange}
                         required
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
 
-                  <div className="sm:col-span-3">
-                    <label htmlFor="startDate" className="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                  <div className="sm:col-span-1">
+                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Start Date *
                     </label>
-                    <div className="mt-2">
+                    <div className="mt-1">
                       <input
                         id="startDate"
                         name="startDate"
@@ -304,47 +304,47 @@ export function Projects() {
                         value={newProject.startDate}
                         onChange={handleInputChange}
                         required
-                        className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
 
-                  <div className="sm:col-span-3">
-                    <label htmlFor="endDate" className="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                  <div className="sm:col-span-1">
+                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-900 dark:text-white">
                       End Date (Optional)
                     </label>
-                    <div className="mt-2">
+                    <div className="mt-1">
                       <input
                         id="endDate"
                         name="endDate"
                         type="date"
                         value={newProject.endDate}
                         onChange={handleInputChange}
-                        className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
-                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Project Details</h2>
-                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+              <div className="border-b border-gray-900/10 pb-4 dark:border-white/10">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Project Details</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   Additional project configuration and client assignment.
                 </p>
 
-                <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
-                  <div className="sm:col-span-3">
-                    <label htmlFor="clientId" className="block text-xs font-medium text-gray-900 dark:text-white">
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="clientId" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Client (Optional)
                     </label>
-                    <div className="mt-1 grid grid-cols-1">
+                    <div className="mt-1 relative">
                       <select
                         id="clientId"
                         name="clientId"
                         value={newProject.clientId}
                         onChange={handleInputChange}
-                        className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1 pr-6 pl-2 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
+                        className="block w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
                       >
                         <option value="">Select a client</option>
                         {clients.map((client) => (
@@ -355,7 +355,7 @@ export function Projects() {
                       </select>
                       <svg
                         aria-hidden="true"
-                        className="pointer-events-none col-start-1 row-start-1 mr-1 size-3 self-center justify-self-end text-gray-500 dark:text-gray-400"
+                        className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-gray-400"
                         fill="none"
                         viewBox="0 0 20 20"
                       >
@@ -370,8 +370,8 @@ export function Projects() {
                     </div>
                   </div>
 
-                  <div className="sm:col-span-3">
-                    <label htmlFor="allocatedHours" className="block text-xs font-medium text-gray-900 dark:text-white">
+                  <div>
+                    <label htmlFor="allocatedHours" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Allocated Hours
                     </label>
                     <div className="mt-1">
@@ -384,7 +384,7 @@ export function Projects() {
                         placeholder="Enter allocated hours"
                         value={newProject.allocatedHours}
                         onChange={handleInputChange}
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
