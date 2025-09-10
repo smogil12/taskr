@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Plus, FolderOpen, Calendar, Users, Clock, Edit, Trash2, Building2 } from "lucide-react"
+import { ErrorAlert } from "@/components/ui/error-alert"
 
 interface Project {
   id: number
@@ -37,15 +38,29 @@ interface Client {
 export function Projects() {
   const { user } = useAuth()
   const [showNewProjectForm, setShowNewProjectForm] = useState(false)
+  const [showEditProjectForm, setShowEditProjectForm] = useState(false)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [clients, setClients] = useState<Client[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [editError, setEditError] = useState<string | null>(null)
 
   console.log('🔍 Projects component rendering with user:', user)
   console.log('🔍 Projects state:', projects)
   console.log('🔍 Loading state:', isLoading)
 
   const [newProject, setNewProject] = useState({
+    name: "",
+    description: "",
+    status: "Planning" as Project["status"],
+    startDate: "",
+    endDate: "",
+    allocatedHours: "",
+    clientId: ""
+  })
+
+  const [editProject, setEditProject] = useState({
     name: "",
     description: "",
     status: "Planning" as Project["status"],
@@ -158,8 +173,17 @@ export function Projects() {
     })
   }
 
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setEditProject({
+      ...editProject,
+      [e.target.name]: e.target.value,
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null) // Clear any previous errors
+    
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
@@ -191,12 +215,145 @@ export function Projects() {
         })
         setShowNewProjectForm(false)
       } else {
-        const error = await response.json()
-        console.error('Error creating project:', error)
+        let errorMessage = 'Failed to create project. Please try again.'
+        
+        try {
+          const errorData = await response.json()
+          console.error('Error creating project:', errorData)
+          
+          // Set user-friendly error message based on status and response
+          if (response.status === 400) {
+            errorMessage = errorData.message || 'Invalid project data. Please check your inputs.'
+          } else if (response.status === 409) {
+            errorMessage = 'A project with this name already exists. Please choose a different name.'
+          } else if (response.status === 403) {
+            errorMessage = 'You have reached the maximum number of projects for your plan. Please upgrade to create more projects.'
+          } else if (errorData.message) {
+            errorMessage = errorData.message
+          } else if (response.status === 500) {
+            errorMessage = 'Server error. Please try again later.'
+          } else if (response.status === 401) {
+            errorMessage = 'Authentication required. Please log in again.'
+          }
+        } catch (jsonError) {
+          // If response is not valid JSON, use status-based messages
+          console.error('Error parsing response:', jsonError)
+          if (response.status === 400) {
+            errorMessage = 'Invalid project data. Please check your inputs.'
+          } else if (response.status === 409) {
+            errorMessage = 'A project with this name already exists. Please choose a different name.'
+          } else if (response.status === 403) {
+            errorMessage = 'You have reached the maximum number of projects for your plan. Please upgrade to create more projects.'
+          } else if (response.status === 500) {
+            errorMessage = 'Server error. Please try again later.'
+          } else if (response.status === 401) {
+            errorMessage = 'Authentication required. Please log in again.'
+          }
+        }
+        
+        setError(errorMessage)
       }
     } catch (error) {
       console.error('Error creating project:', error)
+      setError('Network error. Please check your connection and try again.')
     }
+  }
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingProject) return
+
+    setEditError(null) // Clear any previous errors
+
+    try {
+      const response = await fetch(`/api/projects/${editingProject.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('taskr_token')}`
+        },
+        body: JSON.stringify({
+          name: editProject.name,
+          description: editProject.description,
+          status: editProject.status.toUpperCase().replace(' ', '_'),
+          startDate: editProject.startDate,
+          endDate: editProject.endDate || null,
+          allocatedHours: editProject.allocatedHours ? parseFloat(editProject.allocatedHours) : null,
+          clientId: editProject.clientId || null
+        })
+      })
+
+      if (response.ok) {
+        await fetchProjects() // Refresh the projects list
+        setEditProject({
+          name: "",
+          description: "",
+          status: "Planning",
+          startDate: "",
+          endDate: "",
+          allocatedHours: "",
+          clientId: ""
+        })
+        setShowEditProjectForm(false)
+        setEditingProject(null)
+      } else {
+        let errorMessage = 'Failed to update project. Please try again.'
+        
+        try {
+          const errorData = await response.json()
+          console.error('Error updating project:', errorData)
+          
+          // Set user-friendly error message based on status and response
+          if (response.status === 400) {
+            errorMessage = errorData.message || 'Invalid project data. Please check your inputs.'
+          } else if (response.status === 409) {
+            errorMessage = 'A project with this name already exists. Please choose a different name.'
+          } else if (response.status === 404) {
+            errorMessage = 'Project not found. It may have been deleted.'
+          } else if (errorData.message) {
+            errorMessage = errorData.message
+          } else if (response.status === 500) {
+            errorMessage = 'Server error. Please try again later.'
+          } else if (response.status === 401) {
+            errorMessage = 'Authentication required. Please log in again.'
+          }
+        } catch (jsonError) {
+          // If response is not valid JSON, use status-based messages
+          console.error('Error parsing response:', jsonError)
+          if (response.status === 400) {
+            errorMessage = 'Invalid project data. Please check your inputs.'
+          } else if (response.status === 409) {
+            errorMessage = 'A project with this name already exists. Please choose a different name.'
+          } else if (response.status === 404) {
+            errorMessage = 'Project not found. It may have been deleted.'
+          } else if (response.status === 500) {
+            errorMessage = 'Server error. Please try again later.'
+          } else if (response.status === 401) {
+            errorMessage = 'Authentication required. Please log in again.'
+          }
+        }
+        
+        setEditError(errorMessage)
+      }
+    } catch (error) {
+      console.error('Error updating project:', error)
+      setEditError('Network error. Please check your connection and try again.')
+    }
+  }
+
+  const openEditForm = (project: Project) => {
+    setEditError(null) // Clear any previous errors
+    setEditProject({
+      name: project.name,
+      description: project.description,
+      status: project.status,
+      startDate: project.startDate,
+      endDate: project.endDate || "",
+      allocatedHours: project.allocatedHours?.toString() || "",
+      clientId: project.clientId || ""
+    })
+    setEditingProject(project)
+    setShowEditProjectForm(true)
   }
 
   const deleteProject = (id: number) => {
@@ -206,12 +363,35 @@ export function Projects() {
   return (
     <div className="space-y-6">
       
-      {/* New Project Form */}
+      {/* New Project Form Modal */}
       {showNewProjectForm && (
-        <div className="bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-6">
-          <div className="mb-6">
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Add a new project to your portfolio</h1>
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={(e) => e.target === e.currentTarget && setShowNewProjectForm(false)}
+        >
+          <div className="bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="mb-6 flex items-center justify-between">
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Add a new project to your portfolio</h1>
+              <button
+                type="button"
+                onClick={() => setShowNewProjectForm(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
           </div>
+          
+          {error && (
+            <div className="mb-4">
+              <ErrorAlert 
+                title="Error Creating Project"
+                message={error}
+                onDismiss={() => setError(null)}
+              />
+            </div>
+          )}
           
           <form onSubmit={handleSubmit}>
             <div className="space-y-2">
@@ -396,7 +576,7 @@ export function Projects() {
               <button 
                 type="button" 
                 onClick={() => setShowNewProjectForm(false)}
-                className="text-sm/6 font-semibold text-gray-900 dark:text-white"
+                className="text-sm font-semibold text-gray-900 dark:text-white"
               >
                 Cancel
               </button>
@@ -408,6 +588,236 @@ export function Projects() {
               </button>
             </div>
           </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Project Form Modal */}
+      {showEditProjectForm && editingProject && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={(e) => e.target === e.currentTarget && setShowEditProjectForm(false)}
+        >
+          <div className="bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="mb-6 flex items-center justify-between">
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Project</h1>
+              <button
+                type="button"
+                onClick={() => setShowEditProjectForm(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          
+          {editError && (
+            <div className="mb-4">
+              <ErrorAlert 
+                title="Error Updating Project"
+                message={editError}
+                onDismiss={() => setEditError(null)}
+              />
+            </div>
+          )}
+          
+          <form onSubmit={handleEditSubmit}>
+            <div className="space-y-2">
+              <div className="border-b border-gray-900/10 pb-4 dark:border-white/10">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Project Information</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Basic information about your project and its timeline.
+                </p>
+
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="sm:col-span-2 lg:col-span-1">
+                    <label htmlFor="edit-name" className="block text-sm font-medium text-gray-900 dark:text-white">
+                      Project Name *
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="edit-name"
+                        name="name"
+                        type="text"
+                        placeholder="Enter project name"
+                        value={editProject.name}
+                        onChange={handleEditInputChange}
+                        required
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label htmlFor="edit-status" className="block text-sm font-medium text-gray-900 dark:text-white">
+                      Status
+                    </label>
+                    <div className="mt-1 relative">
+                      <select
+                        id="edit-status"
+                        name="status"
+                        value={editProject.status}
+                        onChange={handleEditInputChange}
+                        className="block w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
+                      >
+                        <option value="Planning">Planning</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Review">Review</option>
+                        <option value="Completed">Completed</option>
+                      </select>
+                      <svg
+                        aria-hidden="true"
+                        className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+                        fill="none"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M6 8l4 4 4-4"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div className="col-span-full">
+                    <label htmlFor="edit-description" className="block text-sm font-medium text-gray-900 dark:text-white">
+                      Description *
+                    </label>
+                    <div className="mt-1">
+                      <textarea
+                        id="edit-description"
+                        name="description"
+                        rows={3}
+                        placeholder="Describe your project"
+                        value={editProject.description}
+                        onChange={handleEditInputChange}
+                        required
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label htmlFor="edit-startDate" className="block text-sm font-medium text-gray-900 dark:text-white">
+                      Start Date *
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="edit-startDate"
+                        name="startDate"
+                        type="date"
+                        value={editProject.startDate}
+                        onChange={handleEditInputChange}
+                        required
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-1">
+                    <label htmlFor="edit-endDate" className="block text-sm font-medium text-gray-900 dark:text-white">
+                      End Date (Optional)
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="edit-endDate"
+                        name="endDate"
+                        type="date"
+                        value={editProject.endDate}
+                        onChange={handleEditInputChange}
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-b border-gray-900/10 pb-4 dark:border-white/10">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Project Details</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Additional project configuration and client assignment.
+                </p>
+
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="edit-clientId" className="block text-sm font-medium text-gray-900 dark:text-white">
+                      Client (Optional)
+                    </label>
+                    <div className="mt-1 relative">
+                      <select
+                        id="edit-clientId"
+                        name="clientId"
+                        value={editProject.clientId}
+                        onChange={handleEditInputChange}
+                        className="block w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
+                      >
+                        <option value="">Select a client</option>
+                        {clients.map((client) => (
+                          <option key={client.id} value={client.id}>
+                            {client.name} {client.company && `(${client.company})`}
+                          </option>
+                        ))}
+                      </select>
+                      <svg
+                        aria-hidden="true"
+                        className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+                        fill="none"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M6 8l4 4 4-4"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="edit-allocatedHours" className="block text-sm font-medium text-gray-900 dark:text-white">
+                      Allocated Hours
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="edit-allocatedHours"
+                        name="allocatedHours"
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        placeholder="Enter allocated hours"
+                        value={editProject.allocatedHours}
+                        onChange={handleEditInputChange}
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-x-6">
+              <button 
+                type="button" 
+                onClick={() => setShowEditProjectForm(false)}
+                className="text-sm font-semibold text-gray-900 dark:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500"
+              >
+                Update Project
+              </button>
+            </div>
+          </form>
+          </div>
         </div>
       )}
 
@@ -423,7 +833,10 @@ export function Projects() {
           <div className="mt-6 sm:mt-0 sm:ml-16 sm:flex-none">
             <button
               type="button"
-              onClick={() => setShowNewProjectForm(true)}
+              onClick={() => {
+                setError(null) // Clear any previous errors
+                setShowNewProjectForm(true)
+              }}
               className="rounded-full bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
@@ -534,6 +947,7 @@ export function Projects() {
                           <div className="flex gap-2 justify-end">
                             <button
                               type="button"
+                              onClick={() => openEditForm(project)}
                               className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
                             >
                               <Edit className="h-3 w-3" />

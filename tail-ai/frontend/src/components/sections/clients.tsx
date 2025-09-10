@@ -212,43 +212,56 @@ export function Clients() {
 
   return (
     <div className="space-y-6">
-      {/* New Client Form */}
+      {/* New Client Form Modal */}
       {showNewClientForm && (
-        <div className="compact-form bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-3">
-          <div className="mb-3">
-            <h1 className="text-base font-bold text-gray-900 dark:text-white">Add a new client to your portfolio</h1>
-          </div>
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={(e) => e.target === e.currentTarget && setShowNewClientForm(false)}
+        >
+          <div className="bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="mb-6 flex items-center justify-between">
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Add a new client to your portfolio</h1>
+              <button
+                type="button"
+                onClick={() => setShowNewClientForm(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           
           <form onSubmit={handleSubmit}>
             <div className="space-y-3">
-              <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
-                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Client Information</h2>
-                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+              <div className="border-b border-gray-900/10 pb-4 dark:border-white/10">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Client Information</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   Basic information about your client and their company.
                 </p>
 
-                                  <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
-                    <div className="sm:col-span-4">
-                      <label htmlFor="name" className="block text-xs font-medium text-gray-900 dark:text-white">
-                        Client *
-                      </label>
-                      <div className="mt-1">
-                        <input
-                          id="name"
-                          name="name"
-                          type="text"
-                          placeholder="Enter client name or company"
-                          value={newClient.name}
-                          onChange={handleInputChange}
-                          required
-                          className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
-                        />
-                      </div>
-                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Enter the client's name or company name.</p>
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="sm:col-span-2 lg:col-span-1">
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-900 dark:text-white">
+                      Client *
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        placeholder="Enter client name or company"
+                        value={newClient.name}
+                        onChange={handleInputChange}
+                        required
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                      />
                     </div>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Enter the client's name or company name.</p>
+                  </div>
 
-                  <div className="sm:col-span-4">
-                    <label htmlFor="email" className="block text-xs font-medium text-gray-900 dark:text-white">
+                  <div className="sm:col-span-1">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Email address
                     </label>
                     <div className="mt-1">
@@ -259,13 +272,13 @@ export function Clients() {
                         placeholder="Enter email address"
                         value={newClient.email}
                         onChange={handleInputChange}
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label htmlFor="phone" className="block text-xs font-medium text-gray-900 dark:text-white">
+                  <div className="sm:col-span-1">
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Phone
                     </label>
                     <div className="mt-1">
@@ -276,13 +289,13 @@ export function Clients() {
                         placeholder="Enter phone number"
                         value={newClient.phone}
                         onChange={handleInputChange}
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
 
                   <div className="col-span-full">
-                    <label htmlFor="address" className="block text-xs font-medium text-gray-900 dark:text-white">
+                    <label htmlFor="address" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Address
                     </label>
                     <div className="mt-1">
@@ -293,13 +306,13 @@ export function Clients() {
                         placeholder="Enter address"
                         value={newClient.address}
                         onChange={handleInputChange}
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
 
-                  <div className="sm:col-span-3">
-                    <label htmlFor="hourlyRate" className="block text-xs font-medium text-gray-900 dark:text-white">
+                  <div className="sm:col-span-1">
+                    <label htmlFor="hourlyRate" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Hourly Rate ($)
                     </label>
                     <div className="mt-1">
@@ -312,22 +325,22 @@ export function Clients() {
                         placeholder="Enter hourly rate"
                         value={newClient.hourlyRate}
                         onChange={handleInputChange}
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
-                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Additional Information</h2>
-                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+              <div className="border-b border-gray-900/10 pb-4 dark:border-white/10">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Additional Information</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   Any additional notes or information about this client.
                 </p>
 
-                <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
-                  <div className="col-span-full">
-                    <label htmlFor="notes" className="block text-xs font-medium text-gray-900 dark:text-white">
+                <div className="mt-4">
+                  <div>
+                    <label htmlFor="notes" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Notes
                     </label>
                     <div className="mt-1">
@@ -338,7 +351,7 @@ export function Clients() {
                         placeholder="Enter any additional notes"
                         value={newClient.notes}
                         onChange={handleInputChange}
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                     <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Add any relevant notes about this client.</p>
@@ -351,39 +364,53 @@ export function Clients() {
               <button 
                 type="button" 
                 onClick={() => setShowNewClientForm(false)}
-                className="text-xs font-semibold text-gray-900 dark:text-white"
+                className="text-sm font-semibold text-gray-900 dark:text-white"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="rounded-full bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
+                className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
               >
                 Create Client
               </button>
             </div>
           </form>
+          </div>
         </div>
       )}
 
-      {/* Edit Client Form */}
+      {/* Edit Client Form Modal */}
       {showEditForm && (
-        <div className="bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-6">
-          <div className="mb-6">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Edit Client</h1>
-          </div>
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={(e) => e.target === e.currentTarget && setShowEditForm(null)}
+        >
+          <div className="bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="mb-6 flex items-center justify-between">
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Client</h1>
+              <button
+                type="button"
+                onClick={() => setShowEditForm(null)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           
           <form onSubmit={handleEdit}>
             <div className="space-y-8">
-              <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
-                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Client Information</h2>
-                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+              <div className="border-b border-gray-900/10 pb-4 dark:border-white/10">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Client Information</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   Update your client's information.
                 </p>
 
-                <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
-                  <div className="sm:col-span-4">
-                    <label htmlFor="edit-name" className="block text-xs font-medium text-gray-900 dark:text-white">
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="sm:col-span-2 lg:col-span-1">
+                    <label htmlFor="edit-name" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Client *
                     </label>
                     <div className="mt-1">
@@ -395,13 +422,13 @@ export function Clients() {
                         value={editClient.name}
                         onChange={handleEditInputChange}
                         required
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                     <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Enter the client's name or company name.</p>
                   </div>
-                  <div className="sm:col-span-4">
-                    <label htmlFor="edit-email" className="block text-xs font-medium text-gray-900 dark:text-white">
+                  <div className="sm:col-span-1">
+                    <label htmlFor="edit-email" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Email address
                     </label>
                     <div className="mt-1">
@@ -412,13 +439,13 @@ export function Clients() {
                         placeholder="Enter email address"
                         value={editClient.email}
                         onChange={handleEditInputChange}
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label htmlFor="edit-phone" className="block text-xs font-medium text-gray-900 dark:text-white">
+                  <div className="sm:col-span-1">
+                    <label htmlFor="edit-phone" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Phone
                     </label>
                     <div className="mt-1">
@@ -429,13 +456,13 @@ export function Clients() {
                         placeholder="Enter phone number"
                         value={editClient.phone}
                         onChange={handleEditInputChange}
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
 
                   <div className="col-span-full">
-                    <label htmlFor="edit-address" className="block text-xs font-medium text-gray-900 dark:text-white">
+                    <label htmlFor="edit-address" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Address
                     </label>
                     <div className="mt-1">
@@ -446,13 +473,13 @@ export function Clients() {
                         placeholder="Enter address"
                         value={editClient.address}
                         onChange={handleEditInputChange}
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
 
-                  <div className="sm:col-span-3">
-                    <label htmlFor="edit-hourlyRate" className="block text-xs font-medium text-gray-900 dark:text-white">
+                  <div className="sm:col-span-1">
+                    <label htmlFor="edit-hourlyRate" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Hourly Rate ($)
                     </label>
                     <div className="mt-1">
@@ -465,22 +492,22 @@ export function Clients() {
                         placeholder="Enter hourly rate"
                         value={editClient.hourlyRate}
                         onChange={handleEditInputChange}
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
-                <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Additional Information</h2>
-                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+              <div className="border-b border-gray-900/10 pb-4 dark:border-white/10">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Additional Information</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   Any additional notes or information about this client.
                 </p>
 
-                <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
-                  <div className="col-span-full">
-                    <label htmlFor="edit-notes" className="block text-xs font-medium text-gray-900 dark:text-white">
+                <div className="mt-4">
+                  <div>
+                    <label htmlFor="edit-notes" className="block text-sm font-medium text-gray-900 dark:text-white">
                       Notes
                     </label>
                     <div className="mt-1">
@@ -491,7 +518,7 @@ export function Clients() {
                         placeholder="Enter any additional notes"
                         value={editClient.notes}
                         onChange={handleEditInputChange}
-                        className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                        className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                       />
                     </div>
                     <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Add any relevant notes about this client.</p>
@@ -504,18 +531,19 @@ export function Clients() {
               <button 
                 type="button" 
                 onClick={() => setShowEditForm(null)}
-                className="text-xs font-semibold text-gray-900 dark:text-white"
+                className="text-sm font-semibold text-gray-900 dark:text-white"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500"
+                className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500"
               >
                 Update Client
               </button>
             </div>
           </form>
+          </div>
         </div>
       )}
 

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, ExternalLink, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface CalendarStatus {
@@ -184,46 +183,46 @@ export default function GoogleCalendarIntegration() {
 
   if (!status.connected) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <div className="w-full">
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <Calendar className="h-5 w-5" />
             Google Calendar Integration
-          </CardTitle>
-          <CardDescription>
+          </h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             Connect your Google Calendar to automatically create tasks from calendar events.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="p-6">
           <Button onClick={connectCalendar} className="w-full">
             <Calendar className="h-4 w-4 mr-2" />
             Connect Google Calendar
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <div className="w-full">
+      <div className="mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <Calendar className="h-5 w-5" />
               Google Calendar Integration
-            </CardTitle>
-            <CardDescription className="flex items-center gap-2">
+            </h2>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
               Connected to Google Calendar
-            </CardDescription>
+            </p>
           </div>
           <Button variant="outline" size="sm" onClick={disconnectCalendar}>
             Disconnect
           </Button>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      </div>
+      <div className="space-y-4">
         <div className="flex gap-2">
           <Button 
             onClick={fetchCalendarEvents} 
@@ -244,7 +243,7 @@ export default function GoogleCalendarIntegration() {
                 <select 
                   value={selectedProject} 
                   onChange={(e) => setSelectedProject(e.target.value)}
-                  className="px-3 py-1 border rounded text-sm"
+                  className="px-3 py-1 border rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                 >
                   <option value="">Select Project</option>
                   {projects.map(project => (
@@ -315,7 +314,7 @@ export default function GoogleCalendarIntegration() {
             <p className="text-sm">Click "Preview Events" to load your calendar events</p>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

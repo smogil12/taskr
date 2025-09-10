@@ -109,27 +109,40 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
   const isCompleted = task.status === "COMPLETED"
 
   return (
-    <div className="compact-form bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-2">
-      <div className="mb-2">
-        <h1 className="text-sm font-bold text-gray-900 dark:text-white">
-          {isEditing ? "Edit Task" : "Add a new task to your project"}
-        </h1>
-      </div>
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      onClick={(e) => e.target === e.currentTarget && onCancel()}
+    >
+      <div className="bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {isEditing ? "Edit Task" : "Add a new task to your project"}
+          </h1>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       
       <form onSubmit={handleSubmit}>
         <div className="space-y-2">
-          <div className="border-b border-gray-900/10 pb-2 dark:border-white/10">
-            <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Task Information</h2>
-            <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+          <div className="border-b border-gray-900/10 pb-4 dark:border-white/10">
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Task Information</h2>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               Basic information about your task and its requirements.
             </p>
 
-            <div className="mt-2 grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-6">
-              <div className="col-span-full">
-                <label htmlFor="title" className="block text-xs font-medium text-gray-900 dark:text-white">
+            <div className="mt-4 grid grid-cols-1 gap-4">
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-900 dark:text-white">
                   Task Title *
                 </label>
-                <div className="mt-0.5">
+                <div className="mt-1">
                   <input
                     id="title"
                     name="title"
@@ -137,7 +150,7 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                     placeholder="Enter task title"
                     value={task.title}
                     onChange={handleInputChange}
-                    className={`block w-full rounded-md bg-white px-1.5 py-0.5 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 ${errors.title ? "border-red-500" : ""}`}
+                    className={`block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 ${errors.title ? "border-red-500" : ""}`}
                   />
                 </div>
                 {errors.title && (
@@ -148,18 +161,18 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                 )}
               </div>
 
-              <div className="col-span-full">
-                <label htmlFor="projectId" className="block text-xs font-medium text-gray-900 dark:text-white">
+              <div>
+                <label htmlFor="projectId" className="block text-sm font-medium text-gray-900 dark:text-white">
                   Project *
                 </label>
-                <div className="mt-0.5 grid grid-cols-1">
+                <div className="mt-1 relative">
                   <select
                     id="projectId"
                     name="projectId"
                     value={task.projectId}
                     onChange={handleInputChange}
                     disabled={isEditing}
-                    className={`col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-0.5 pr-4 pl-1.5 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500 ${errors.projectId ? "border-red-500" : ""}`}
+                    className={`block w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500 ${errors.projectId ? "border-red-500" : ""}`}
                   >
                     <option value="">Select a project</option>
                     {projects.map((project) => (
@@ -170,7 +183,7 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                   </select>
                   <svg
                     aria-hidden="true"
-                    className="pointer-events-none col-start-1 row-start-1 mr-2 size-4 self-center justify-self-end text-gray-500 dark:text-gray-400"
+                    className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-gray-400"
                     fill="none"
                     viewBox="0 0 20 20"
                   >
@@ -191,44 +204,44 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                 )}
               </div>
 
-              <div className="col-span-full">
-                <label htmlFor="description" className="block text-xs font-medium text-gray-900 dark:text-white">
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-900 dark:text-white">
                   Description
                 </label>
-                <div className="mt-0.5">
+                <div className="mt-1">
                   <textarea
                     id="description"
                     name="description"
-                    rows={2}
+                    rows={3}
                     placeholder="Describe the task in detail"
                     value={task.description}
                     onChange={handleInputChange}
-                    className="block w-full rounded-md bg-white px-1.5 py-0.5 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                    className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                   />
                 </div>
-                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">Provide a detailed description of what needs to be done.</p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Provide a detailed description of what needs to be done.</p>
               </div>
             </div>
           </div>
 
-          <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
-            <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Task Configuration</h2>
-            <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+          <div className="border-b border-gray-900/10 pb-4 dark:border-white/10">
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Task Configuration</h2>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               Set the priority, status, and timeline for this task.
             </p>
 
-            <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
-              <div className="sm:col-span-2">
-                <label htmlFor="priority" className="block text-xs font-medium text-gray-900 dark:text-white">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <label htmlFor="priority" className="block text-sm font-medium text-gray-900 dark:text-white">
                   Priority
                 </label>
-                <div className="mt-1 grid grid-cols-1">
+                <div className="mt-1 relative">
                   <select
                     id="priority"
                     name="priority"
                     value={task.priority}
                     onChange={handleInputChange}
-                    className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1 pr-6 pl-2 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
+                    className="block w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
                   >
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
@@ -237,7 +250,7 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                   </select>
                   <svg
                     aria-hidden="true"
-                    className="pointer-events-none col-start-1 row-start-1 mr-2 size-4 self-center justify-self-end text-gray-500 dark:text-gray-400"
+                    className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-gray-400"
                     fill="none"
                     viewBox="0 0 20 20"
                   >
@@ -252,17 +265,17 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                 </div>
               </div>
 
-              <div className="sm:col-span-2">
-                <label htmlFor="status" className="block text-xs font-medium text-gray-900 dark:text-white">
+              <div>
+                <label htmlFor="status" className="block text-sm font-medium text-gray-900 dark:text-white">
                   Status
                 </label>
-                <div className="mt-1 grid grid-cols-1">
+                <div className="mt-1 relative">
                   <select
                     id="status"
                     name="status"
                     value={task.status}
                     onChange={handleInputChange}
-                    className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1 pr-6 pl-2 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
+                    className="block w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
                   >
                     <option value="TODO">Not Started</option>
                     <option value="IN_PROGRESS">In Progress</option>
@@ -270,7 +283,7 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                   </select>
                   <svg
                     aria-hidden="true"
-                    className="pointer-events-none col-start-1 row-start-1 mr-2 size-4 self-center justify-self-end text-gray-500 dark:text-gray-400"
+                    className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-gray-400"
                     fill="none"
                     viewBox="0 0 20 20"
                   >
@@ -285,8 +298,8 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                 </div>
               </div>
 
-              <div className="sm:col-span-2">
-                <label htmlFor="dueDate" className="block text-xs font-medium text-gray-900 dark:text-white">
+              <div>
+                <label htmlFor="dueDate" className="block text-sm font-medium text-gray-900 dark:text-white">
                   Due Date
                 </label>
                 <div className="mt-1">
@@ -296,22 +309,22 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                     type="date"
                     value={task.dueDate}
                     onChange={handleInputChange}
-                    className="block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:focus:outline-indigo-500"
+                    className="block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:focus:outline-indigo-500"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="border-b border-gray-900/10 pb-3 dark:border-white/10">
-            <h2 className="text-xs font-semibold text-gray-900 dark:text-white">Time Tracking</h2>
-            <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+          <div className="border-b border-gray-900/10 pb-4 dark:border-white/10">
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Time Tracking</h2>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               Estimate and track the time spent on this task.
             </p>
 
-            <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
-              <div className="sm:col-span-3">
-                <label htmlFor="estimatedHours" className="block text-xs font-medium text-gray-900 dark:text-white">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="estimatedHours" className="block text-sm font-medium text-gray-900 dark:text-white">
                   <Clock className="h-4 w-4 inline mr-2" />
                   Estimated Hours *
                 </label>
@@ -325,7 +338,7 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                     placeholder="Enter estimated hours"
                     value={task.estimatedHours}
                     onChange={handleInputChange}
-                    className={`block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 ${errors.estimatedHours ? "border-red-500" : ""}`}
+                    className={`block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 ${errors.estimatedHours ? "border-red-500" : ""}`}
                   />
                 </div>
                 {errors.estimatedHours && (
@@ -336,8 +349,8 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                 )}
               </div>
 
-              <div className="sm:col-span-3">
-                <label htmlFor="actualHours" className="block text-xs font-medium text-gray-900 dark:text-white">
+              <div>
+                <label htmlFor="actualHours" className="block text-sm font-medium text-gray-900 dark:text-white">
                   <Clock className="h-4 w-4 inline mr-2" />
                   Actual Hours {isCompleted && "*"}
                 </label>
@@ -352,7 +365,7 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                     value={task.actualHours}
                     onChange={handleInputChange}
                     disabled={!isCompleted}
-                    className={`block w-full rounded-md bg-white px-2 py-1 text-xs text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 ${errors.actualHours ? "border-red-500" : ""}`}
+                    className={`block w-full rounded-md bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 ${errors.actualHours ? "border-red-500" : ""}`}
                   />
                 </div>
                 {errors.actualHours && (
@@ -405,18 +418,19 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
           <button 
             type="button" 
             onClick={onCancel}
-            className="text-xs font-semibold text-gray-900 dark:text-white"
+            className="text-sm font-semibold text-gray-900 dark:text-white"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500"
+            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:focus-visible:outline-indigo-500"
           >
             {isEditing ? "Update Task" : "Create Task"}
           </button>
         </div>
       </form>
+      </div>
     </div>
   )
 }
