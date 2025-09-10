@@ -37,8 +37,8 @@ export default function ProperShell({ children }: ProperShellProps) {
   }
 
   return (
-    <div style={{ height: '100%', backgroundColor: 'transparent' }}>
-      <div style={{ display: 'flex', height: '100%' }}>
+    <div style={{ backgroundColor: 'transparent' }}>
+      <div style={{ display: 'flex' }}>
         {/* Sidebar */}
         <div style={{
           position: 'fixed',
@@ -253,7 +253,7 @@ export default function ProperShell({ children }: ProperShellProps) {
         </div>
 
         {/* Main content */}
-        <main style={{ paddingTop: '2.5rem', paddingLeft: '288px', backgroundColor: 'transparent' }}>
+        <main style={{ paddingTop: '2.5rem', paddingLeft: '288px', backgroundColor: 'transparent', minHeight: '100vh' }}>
           <div style={{ padding: '0 1rem', backgroundColor: 'transparent' }}>
             {children}
           </div>

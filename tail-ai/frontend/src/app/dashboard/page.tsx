@@ -208,8 +208,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex min-h-screen">
-          <main className="flex-1 max-w-4xl">
+        <div className="flex">
+          <main className="flex-1 max-w-4xl min-h-0">
             <header className="flex items-center justify-between border-b border-gray-200 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-white/5">
               <h1 className="text-base/7 font-semibold text-gray-900 dark:text-white">Projects</h1>
 
