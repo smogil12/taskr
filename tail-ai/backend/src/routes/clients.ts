@@ -5,13 +5,31 @@ import { authenticateToken } from '../middleware/auth'
 const router = express.Router()
 const prisma = new PrismaClient()
 
-// Get all clients for the authenticated user
+// Get all clients for the authenticated user (including team clients)
 router.get('/', authenticateToken, async (req: any, res: any) => {
   try {
-    const clients = await prisma.client.findMany({
+    // Check if user is a team member
+    const teamMember = await prisma.teamMember.findFirst({
       where: {
-        userId: req.user.id
-      },
+        userId: req.user.id,
+        status: 'ACCEPTED'
+      }
+    });
+
+    let whereClause: any = { userId: req.user.id };
+
+    // If user is a team member, also include clients from their team owner
+    if (teamMember) {
+      whereClause = {
+        OR: [
+          { userId: req.user.id }, // User's own clients
+          { userId: teamMember.ownerId } // Team owner's clients
+        ]
+      };
+    }
+
+    const clients = await prisma.client.findMany({
+      where: whereClause,
       include: {
         projects: {
           select: {

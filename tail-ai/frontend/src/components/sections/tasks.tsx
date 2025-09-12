@@ -19,9 +19,15 @@ interface Task {
   estimatedHours?: number
   actualHours?: number
   projectId: string
+  assignedTo?: string
   project: {
     id: string
     name: string
+  }
+  assignedUser?: {
+    id: string
+    name: string
+    email: string
   }
   createdAt: string
   updatedAt: string
@@ -50,6 +56,7 @@ export function Tasks() {
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [selectedProject, setSelectedProject] = useState<string>("all")
+  const [assignedToMe, setAssignedToMe] = useState(false)
 
   // Fetch tasks and projects from API
   useEffect(() => {
@@ -58,6 +65,13 @@ export function Tasks() {
       fetchProjects()
     }
   }, [token])
+
+  // Refetch tasks when filters change
+  useEffect(() => {
+    if (token) {
+      fetchTasks()
+    }
+  }, [selectedProject, assignedToMe])
 
   const fetchTasks = async () => {
     if (!token) {
@@ -69,7 +83,12 @@ export function Tasks() {
     
     try {
       setIsLoading(true)
-      const response = await fetch('/api/tasks', {
+      const params = new URLSearchParams()
+      if (selectedProject !== "all") params.append('projectId', selectedProject)
+      if (assignedToMe) params.append('assignedToMe', 'true')
+      
+      const url = `/api/tasks${params.toString() ? `?${params.toString()}` : ''}`
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -139,10 +158,7 @@ export function Tasks() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          ...taskData,
-          projectId: taskData.projectId
-        })
+        body: JSON.stringify(taskData)
       })
 
       console.log('Response status:', response.status)
@@ -169,7 +185,7 @@ export function Tasks() {
     }
   }
 
-  const handleUpdateTask = async (taskData: unknown) => {
+  const handleUpdateTask = async (taskData: any) => {
     if (!editingTask) return
 
     try {
@@ -321,7 +337,8 @@ export function Tasks() {
             status: editingTask.status,
             dueDate: editingTask.dueDate || "",
             estimatedHours: editingTask.estimatedHours?.toString() || "",
-            actualHours: editingTask.actualHours?.toString() || ""
+            actualHours: editingTask.actualHours?.toString() || "",
+            assignedTo: editingTask.assignedTo || ""
           }}
           isEditing={true}
           projects={projects}
@@ -349,22 +366,37 @@ export function Tasks() {
           </div>
         </div>
 
-        {/* Project Filter */}
-        <div className="mt-8 flex items-center gap-4 tasks-table-container">
-          <Label htmlFor="project-filter" className="text-sm text-gray-700 dark:text-gray-300">Filter by Project:</Label>
-          <select
-            id="project-filter"
-            value={selectedProject}
-            onChange={(e) => setSelectedProject(e.target.value)}
-            className="flex h-8 w-full max-w-xs rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            <option value="all">All Projects</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
+        {/* Filters */}
+        <div className="mt-8 flex items-center gap-6 tasks-table-container">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="project-filter" className="text-sm text-gray-700 dark:text-gray-300">Filter by Project:</Label>
+            <select
+              id="project-filter"
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+              className="flex h-8 w-full max-w-xs rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="all">All Projects</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="assigned-to-me"
+              checked={assignedToMe}
+              onChange={(e) => setAssignedToMe(e.target.checked)}
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            />
+            <Label htmlFor="assigned-to-me" className="text-sm text-gray-700 dark:text-gray-300">
+              Show only tasks assigned to me
+            </Label>
+          </div>
         </div>
 
         <div className="mt-12 flow-root">
@@ -400,6 +432,9 @@ export function Tasks() {
                       </th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Project
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Assigned To
                       </th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Due Date
@@ -443,6 +478,16 @@ export function Tasks() {
                         </td>
                         <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {task.project.name}
+                        </td>
+                        <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          {task.assignedUser ? (
+                            <div>
+                              <div className="font-medium">{task.assignedUser.name}</div>
+                              <div className="text-xs text-gray-400">{task.assignedUser.email}</div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">Unassigned</span>
+                          )}
                         </td>
                         <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {task.dueDate ? (

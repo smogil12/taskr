@@ -2,6 +2,8 @@ import { Router } from 'express';
 const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
 import { authenticateToken } from '../middleware/auth';
+import { requirePermission, requireTaskAccess, requireProjectAccess } from '../middleware/permissions';
+import { Permission, UserRole, PermissionChecker } from '../utils/permissions';
 
 const router = Router();
 
@@ -59,20 +61,41 @@ async function updateProjectHours(projectId: string) {
 }
 
 // Get all tasks for authenticated user
-router.get('/', async (req: any, res: any) => {
+router.get('/', 
+  requirePermission(Permission.VIEW_ALL_TASKS),
+  async (req: any, res: any) => {
   try {
-    const { projectId, status, priority, assignedTo } = req.query;
+    const { projectId, status, priority, assignedTo, assignedToMe } = req.query;
+
+    // Check if user is a team member
+    const teamMember = await prisma.teamMember.findFirst({
+      where: {
+        userId: req.user!.id,
+        status: 'ACCEPTED'
+      }
+    });
+
+    let projectWhere: any = { userId: req.user!.id };
+
+    // If user is a team member, also include projects from their team owner
+    if (teamMember) {
+      projectWhere = {
+        OR: [
+          { userId: req.user!.id }, // User's own projects
+          { userId: teamMember.ownerId } // Team owner's projects
+        ]
+      };
+    }
 
     const where: any = {
-      project: {
-        userId: req.user!.id,
-      },
+      project: projectWhere,
     };
 
     if (projectId) where.projectId = projectId as string;
     if (status) where.status = status as string;
     if (priority) where.priority = priority as string;
     if (assignedTo) where.assignedTo = assignedTo as string;
+    if (assignedToMe === 'true') where.assignedTo = req.user!.id;
 
     const tasks = await prisma.task.findMany({
       where,
@@ -146,7 +169,10 @@ router.get('/:id', async (req: any, res: any) => {
 });
 
 // Create new task
-router.post('/', validateTask, async (req: any, res: any) => {
+router.post('/', 
+  requirePermission(Permission.CREATE_TASKS),
+  validateTask, 
+  async (req: any, res: any) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -156,7 +182,7 @@ router.post('/', validateTask, async (req: any, res: any) => {
       });
     }
 
-    const { title, description, priority, status, dueDate, estimatedHours, projectId } = req.body;
+    const { title, description, priority, status, dueDate, estimatedHours, projectId, assignedTo } = req.body;
 
     // Verify project belongs to user
     const project = await prisma.project.findFirst({
@@ -170,6 +196,27 @@ router.post('/', validateTask, async (req: any, res: any) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
+    // Validate assignedTo if provided
+    if (assignedTo) {
+      // Check if assignedTo is the owner (current user)
+      if (assignedTo === req.user!.id) {
+        // This is valid - user can assign to themselves
+      } else {
+        // Check if assignedTo is a team member
+        const teamMember = await prisma.teamMember.findFirst({
+          where: {
+            ownerId: req.user!.id,
+            userId: assignedTo,
+            status: 'ACCEPTED'
+          }
+        });
+
+        if (!teamMember) {
+          return res.status(400).json({ error: 'Invalid team member assignment' });
+        }
+      }
+    }
+
     const task = await prisma.task.create({
       data: {
         title,
@@ -179,6 +226,7 @@ router.post('/', validateTask, async (req: any, res: any) => {
         dueDate: dueDate ? new Date(dueDate) : null,
         estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null,
         projectId,
+        assignedTo: assignedTo || null,
       },
       include: {
         project: {
@@ -201,7 +249,10 @@ router.post('/', validateTask, async (req: any, res: any) => {
 });
 
 // Update task
-router.put('/:id', validateTask, async (req: any, res: any) => {
+router.put('/:id', 
+  requireTaskAccess,
+  validateTask, 
+  async (req: any, res: any) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -226,6 +277,28 @@ router.put('/:id', validateTask, async (req: any, res: any) => {
 
     if (!existingTask) {
       return res.status(404).json({ error: 'Task not found' });
+    }
+
+    // Validate assignedTo if provided
+    if (assignedTo !== undefined) {
+      if (assignedTo === null) {
+        // This is valid - unassigning the task
+      } else if (assignedTo === req.user!.id) {
+        // This is valid - user can assign to themselves
+      } else {
+        // Check if assignedTo is a team member
+        const teamMember = await prisma.teamMember.findFirst({
+          where: {
+            ownerId: req.user!.id,
+            userId: assignedTo,
+            status: 'ACCEPTED'
+          }
+        });
+
+        if (!teamMember) {
+          return res.status(400).json({ error: 'Invalid team member assignment' });
+        }
+      }
     }
 
     const updatedTask = await prisma.task.update({
@@ -273,7 +346,9 @@ router.put('/:id', validateTask, async (req: any, res: any) => {
 });
 
 // Delete task
-router.delete('/:id', async (req: any, res: any) => {
+router.delete('/:id', 
+  requireTaskAccess,
+  async (req: any, res: any) => {
   try {
     const { id } = req.params;
 

@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Clock, Calendar, AlertCircle } from "lucide-react"
+import { Clock, Calendar, AlertCircle, Users } from "lucide-react"
+import { useAuth } from "@/components/providers/auth-provider"
 
 interface TaskFormProps {
   projectId: string
@@ -22,6 +23,13 @@ interface Project {
   description?: string
 }
 
+interface TeamMember {
+  id: string
+  name: string
+  email: string
+  isOwner?: boolean
+}
+
 interface TaskData {
   title: string
   description: string
@@ -31,9 +39,11 @@ interface TaskData {
   estimatedHours: string
   actualHours?: string
   projectId: string
+  assignedTo?: string
 }
 
 export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing = false, projects = [] }: TaskFormProps) {
+  const { token } = useAuth()
   const [task, setTask] = useState<TaskData>({
     title: initialData?.title || "",
     description: initialData?.description || "",
@@ -42,10 +52,42 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
     dueDate: initialData?.dueDate || "",
     estimatedHours: initialData?.estimatedHours || "",
     actualHours: initialData?.actualHours || "",
-    projectId: initialData?.projectId || projectId || ""
+    projectId: initialData?.projectId || projectId || "",
+    assignedTo: initialData?.assignedTo || ""
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [isLoadingTeamMembers, setIsLoadingTeamMembers] = useState(false)
+
+  // Fetch team members when component mounts
+  useEffect(() => {
+    if (token) {
+      fetchTeamMembers()
+    }
+  }, [token])
+
+  const fetchTeamMembers = async () => {
+    if (!token) return
+    
+    try {
+      setIsLoadingTeamMembers(true)
+      const response = await fetch('/api/team-members?assignable=true', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setTeamMembers(data.teamMembers || [])
+      }
+    } catch (error) {
+      console.error('Error fetching team members:', error)
+    } finally {
+      setIsLoadingTeamMembers(false)
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -202,6 +244,48 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                     {errors.projectId}
                   </div>
                 )}
+              </div>
+
+              <div>
+                <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-900 dark:text-white">
+                  <Users className="h-4 w-4 inline mr-2" />
+                  Assign To
+                </label>
+                <div className="mt-1 relative">
+                  <select
+                    id="assignedTo"
+                    name="assignedTo"
+                    value={task.assignedTo}
+                    onChange={handleInputChange}
+                    className="block w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
+                  >
+                    <option value="">Unassigned</option>
+                    {isLoadingTeamMembers ? (
+                      <option disabled>Loading team members...</option>
+                    ) : (
+                      teamMembers.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.name} {member.isOwner ? '(You)' : ''} - {member.email}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  <svg
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+                    fill="none"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M6 8l4 4 4-4"
+                    />
+                  </svg>
+                </div>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Assign this task to yourself or a team member.</p>
               </div>
 
               <div>

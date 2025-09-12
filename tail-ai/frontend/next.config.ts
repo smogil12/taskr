@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
     
     if (isDevelopment) {
       // Local development - proxy to local backend
-      backendUrl = 'http://localhost:3001';
+      backendUrl = 'http://localhost:3002';
     } else if (isStaging) {
       // Staging environment - proxy to staging backend
       backendUrl = 'https://staging-api.tailapp.ai';

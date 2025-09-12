@@ -13,6 +13,14 @@ export interface EmailVerificationData {
   verificationToken: string;
 }
 
+export interface TeamInvitationData {
+  name: string;
+  email: string;
+  verificationToken: string;
+  inviterName: string;
+  role: string;
+}
+
 export class EmailService {
   private static readonly FROM_EMAIL = 'Taskr <notifications@notifications.tailapp.ai>';
   private static readonly VERIFICATION_EXPIRY_HOURS = 24;
@@ -269,6 +277,134 @@ export class EmailService {
             </div>
             
             <p>If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
+          </div>
+          
+          <div class="footer">
+            <p>This email was sent by Taskr. If you have any questions, please contact our support team.</p>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Send team invitation email
+   */
+  static async sendTeamInvitationEmail(data: TeamInvitationData): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (!resend) {
+        console.log('Email service not configured - skipping team invitation email for:', data.email);
+        return { success: true }; // Return success in staging mode
+      }
+
+      const invitationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/setup-password?token=${data.verificationToken}&email=${encodeURIComponent(data.email)}`;
+      
+      const { data: emailData, error } = await resend.emails.send({
+        from: this.FROM_EMAIL,
+        to: [data.email],
+        subject: `You've been invited to join ${data.inviterName}'s team on Taskr`,
+        html: this.getTeamInvitationEmailTemplate(data.name, data.inviterName, data.role, invitationUrl),
+      });
+
+      if (error) {
+        console.error('Resend error:', error);
+        return { success: false, error: 'Failed to send team invitation email' };
+      }
+
+      console.log('Team invitation email sent successfully:', emailData);
+      return { success: true };
+    } catch (error) {
+      console.error('Email service error:', error);
+      return { success: false, error: 'Failed to send team invitation email' };
+    }
+  }
+
+  /**
+   * Get team invitation email template
+   */
+  private static getTeamInvitationEmailTemplate(name: string, inviterName: string, role: string, invitationUrl: string): string {
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Team Invitation - Taskr</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .logo {
+              font-size: 24px;
+              font-weight: bold;
+              color: #2563eb;
+            }
+            .content {
+              background: #f8fafc;
+              padding: 30px;
+              border-radius: 8px;
+              margin-bottom: 20px;
+            }
+            .button {
+              display: inline-block;
+              background: #2563eb;
+              color: white;
+              padding: 12px 24px;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: 500;
+              margin: 20px 0;
+            }
+            .role-badge {
+              display: inline-block;
+              background: #10b981;
+              color: white;
+              padding: 4px 12px;
+              border-radius: 20px;
+              font-size: 12px;
+              font-weight: 500;
+              text-transform: uppercase;
+            }
+            .footer {
+              text-align: center;
+              color: #6b7280;
+              font-size: 14px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">Taskr</div>
+          </div>
+          
+          <div class="content">
+            <h1>You've been invited to join a team!</h1>
+            <p>Hi ${name},</p>
+            <p><strong>${inviterName}</strong> has invited you to join their team on Taskr as a <span class="role-badge">${role}</span>.</p>
+            
+            <p>Taskr is a powerful project management tool that will help you collaborate with your team and stay organized.</p>
+            
+            <div style="text-align: center;">
+              <a href="${invitationUrl}" class="button">Accept Invitation & Set Password</a>
+            </div>
+            
+            <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #2563eb;">${invitationUrl}</p>
+            
+            <div class="warning">
+              <strong>Important:</strong> This invitation link will expire in 24 hours. If you don't accept the invitation within this time, you'll need to ask ${inviterName} to send you a new invitation.
+            </div>
+            
+            <p>If you don't want to join this team, you can safely ignore this email.</p>
           </div>
           
           <div class="footer">

@@ -2,6 +2,8 @@ import { Router } from 'express';
 const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
 import { authenticateToken, checkProjectLimit } from '../middleware/auth';
+import { requirePermission, requireProjectAccess } from '../middleware/permissions';
+import { Permission, UserRole, PermissionChecker } from '../utils/permissions';
 
 const router = Router();
 
@@ -19,11 +21,33 @@ const validateProject = [
   body('clientId').optional().isString().withMessage('Client ID must be a string'),
 ];
 
-// Get all projects for authenticated user
-router.get('/', async (req: any, res: any) => {
+// Get all projects for authenticated user (including team projects)
+router.get('/', 
+  requirePermission(Permission.VIEW_ALL_PROJECTS),
+  async (req: any, res: any) => {
   try {
+    // Check if user is a team member
+    const teamMember = await prisma.teamMember.findFirst({
+      where: {
+        userId: req.user!.id,
+        status: 'ACCEPTED'
+      }
+    });
+
+    let whereClause: any = { userId: req.user!.id };
+
+    // If user is a team member, also include projects from their team owner
+    if (teamMember) {
+      whereClause = {
+        OR: [
+          { userId: req.user!.id }, // User's own projects
+          { userId: teamMember.ownerId } // Team owner's projects
+        ]
+      };
+    }
+
     const projects = await prisma.project.findMany({
-      where: { userId: req.user!.id },
+      where: whereClause,
       include: {
         client: {
           select: {
@@ -109,7 +133,9 @@ router.get('/', async (req: any, res: any) => {
 });
 
 // Get single project by ID
-router.get('/:id', async (req: any, res: any) => {
+router.get('/:id', 
+  requireProjectAccess,
+  async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
@@ -173,7 +199,11 @@ router.get('/:id', async (req: any, res: any) => {
 });
 
 // Create new project (with subscription limit check)
-router.post('/', validateProject, checkProjectLimit, async (req: any, res: any) => {
+router.post('/', 
+  requirePermission(Permission.CREATE_PROJECTS),
+  validateProject, 
+  checkProjectLimit, 
+  async (req: any, res: any) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -212,7 +242,10 @@ router.post('/', validateProject, checkProjectLimit, async (req: any, res: any) 
 });
 
 // Update project
-router.put('/:id', validateProject, async (req: any, res: any) => {
+router.put('/:id', 
+  requireProjectAccess,
+  validateProject, 
+  async (req: any, res: any) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -270,7 +303,9 @@ router.put('/:id', validateProject, async (req: any, res: any) => {
 });
 
 // Delete project
-router.delete('/:id', async (req: any, res: any) => {
+router.delete('/:id', 
+  requireProjectAccess,
+  async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
@@ -299,7 +334,9 @@ router.delete('/:id', async (req: any, res: any) => {
 });
 
 // Get project statistics
-router.get('/:id/stats', async (req: any, res: any) => {
+router.get('/:id/stats', 
+  requireProjectAccess,
+  async (req: any, res: any) => {
   try {
     const { id } = req.params;
 

@@ -184,6 +184,66 @@ router.post('/signin', validateLogin, async (req: Request, res: Response) => {
   }
 });
 
+// Resend verification email
+router.post('/resend-verification', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Find the user
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ error: 'Email is already verified' });
+    }
+
+    // Generate new verification token
+    const verificationToken = EmailService.generateVerificationToken();
+    const verificationExpires = EmailService.getVerificationExpiry();
+
+    // Update user with new token
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires
+      }
+    });
+
+    // Send verification email
+    const result = await EmailService.sendVerificationEmail({
+      name: user.name,
+      email: user.email,
+      verificationToken
+    });
+
+    if (result.success) {
+      return res.json({
+        message: 'Verification email sent successfully',
+        emailSent: true
+      });
+    } else {
+      return res.status(500).json({
+        error: 'Failed to send verification email',
+        details: result.error
+      });
+    }
+
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    return res.status(500).json({ error: 'Failed to resend verification email' });
+  }
+});
+
 // Get user profile
 router.get('/profile', async (req: Request, res: Response) => {
   try {
@@ -340,6 +400,84 @@ router.post('/verify-email', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Email verification error:', error);
     return res.status(500).json({ error: 'Failed to verify email' });
+  }
+});
+
+// Setup password for team member (after email verification)
+router.post('/setup-password', async (req: Request, res: Response) => {
+  try {
+    const { email, password, token } = req.body;
+
+    if (!email || !password || !token) {
+      return res.status(400).json({ error: 'Email, password, and verification token are required' });
+    }
+
+    // Find user with the verification token
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+        emailVerificationToken: token,
+        emailVerificationExpires: {
+          gt: new Date(), // Token must not be expired
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({ 
+        error: 'Invalid or expired verification token',
+        message: 'The verification token is invalid or has expired. Please request a new verification email.'
+      });
+    }
+
+    // Hash the new password
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Update user with password and clear verification fields
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        isEmailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      },
+    });
+
+    // Update team member status to ACCEPTED
+    await prisma.teamMember.updateMany({
+      where: {
+        email: user.email,
+        status: 'PENDING'
+      },
+      data: {
+        status: 'ACCEPTED',
+        joinedAt: new Date()
+      }
+    });
+
+    // Generate JWT token
+    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
+    const authToken = jwt.sign(
+      { userId: user.id },
+      jwtSecret,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
+    );
+
+    return res.json({
+      message: 'Password set successfully',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        isEmailVerified: true,
+      },
+      token: authToken,
+    });
+  } catch (error) {
+    console.error('Password setup error:', error);
+    return res.status(500).json({ error: 'Failed to set password' });
   }
 });
 

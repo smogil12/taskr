@@ -68,6 +68,8 @@ model User {
   organizations OrganizationMember[]
   subscriptions Subscription[]
   clients    Client[]     // User can own multiple clients
+  teamMembers TeamMember[] @relation("TeamOwner") // Team members invited by this user
+  teamMemberOf TeamMember[] @relation("TeamMember") // Teams this user is a member of
 
   @@map("users")
 }
@@ -119,6 +121,25 @@ model OrganizationMember {
 
   @@unique([userId, organizationId])
   @@map("organization_members")
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  email     String
+  name      String?
+  role      String   @default("MEMBER") // OWNER, ADMIN, MEMBER
+  status    String   @default("PENDING") // PENDING, ACCEPTED, DECLINED
+  invitedAt DateTime @default(now())
+  joinedAt  DateTime?
+  
+  // Relations
+  ownerId String
+  owner   User   @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  userId  String?
+  user    User?  @relation("TeamMember", fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@unique([ownerId, email])
+  @@map("team_members")
 }
 
 model Project {

@@ -147,6 +147,27 @@ export default function ProperShell({ children }: ProperShellProps) {
                     </li>
                     <li>
                       <Link
+                        href="/team-members"
+                        style={{
+                          display: 'flex',
+                          gap: '0.75rem',
+                          borderRadius: '6px',
+                          padding: '0.5rem',
+                          fontSize: '0.875rem',
+                          fontWeight: '600',
+                          textDecoration: 'none',
+                          color: pathname === '/team-members' ? '#4f46e5' : '#374151',
+                          backgroundColor: pathname === '/team-members' ? '#f9fafb' : 'transparent'
+                        }}
+                      >
+                        <svg style={{ width: '24px', height: '24px', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                        </svg>
+                        Team
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
                         href="/calendar"
                         style={{
                           display: 'flex',
