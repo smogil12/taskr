@@ -89,7 +89,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Send invitation email
     try {
-      const invitationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/signup?invite=${teamMember.id}`;
+      const invitationUrl = `https://dev.tailapp.ai/auth/signup?invite=${teamMember.id}`;
       const inviterName = req.user?.name || 'Team Member';
       
       console.log(`📧 Sending team invitation to ${email} by ${inviterName}`);
@@ -196,6 +196,65 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     return res.status(204).send();
   } catch (error) {
     console.error('Error deleting team member:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Resend invitation email
+router.post('/:id/resend', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Find the team member
+    const teamMember = await prisma.teamMember.findUnique({
+      where: { id },
+      include: { user: true }
+    });
+
+    if (!teamMember) {
+      return res.status(404).json({ error: 'Team member not found' });
+    }
+
+    // Check if user has permission to resend invitation
+    if (teamMember.userId !== user.id) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // Only resend for pending invitations
+    if (teamMember.status !== 'PENDING') {
+      return res.status(400).json({ error: 'Can only resend pending invitations' });
+    }
+
+    // Generate new invitation URL
+    const invitationUrl = `https://dev.tailapp.ai/auth/signup?invite=${teamMember.id}`;
+
+    // Send invitation email
+    const emailResult = await EmailService.sendTeamInvitationEmail({
+      email: teamMember.email,
+      inviterName: user.name || 'Team Admin',
+      invitationUrl,
+      role: teamMember.role
+    });
+
+    if (!emailResult.success) {
+      console.error('Failed to send resend invitation email:', emailResult.error);
+      return res.status(500).json({ error: 'Failed to send invitation email' });
+    }
+
+    console.log(`📧 Resend invitation email sent to: ${teamMember.email}`);
+    console.log(`🔗 Invitation URL: ${invitationUrl}`);
+
+    return res.json({ 
+      message: 'Invitation resent successfully',
+      email: teamMember.email
+    });
+  } catch (error) {
+    console.error('Error resending invitation:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
