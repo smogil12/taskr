@@ -224,7 +224,7 @@ router.post('/:id/resend', async (req, res) => {
     }
 
     // Check if user has permission to resend invitation
-    if (teamMember.userId !== user.id) {
+    if (teamMember.invitedBy !== user.id) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
