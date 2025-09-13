@@ -162,7 +162,7 @@ export function TeamMembers() {
 
   const handleResendInvite = async (memberId: string, email: string) => {
     try {
-      const response = await fetch(`/api/team-members/${memberId}/resend`, {
+      const response = await fetch(`/api/team-members/resend`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('taskr_token')}`,
