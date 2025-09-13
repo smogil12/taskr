@@ -16,11 +16,14 @@ const validateTask = [
   body('status').optional().isIn(['TODO', 'IN_PROGRESS', 'COMPLETED']).withMessage('Invalid status'),
   body('dueDate').optional().isISO8601().withMessage('Due date must be a valid date'),
   body('estimatedHours').optional().isFloat({ min: 0 }).withMessage('Estimated hours must be a positive number'),
+  body('actualHours').optional().isFloat({ min: 0 }).withMessage('Actual hours must be a positive number'),
 ];
 
 // Helper function to update project hours
 async function updateProjectHours(projectId: string) {
   try {
+    console.log('Updating project hours for project:', projectId);
+    
     // Calculate consumed hours from completed tasks
     const completedTasks = await prisma.task.findMany({
       where: {
@@ -32,9 +35,13 @@ async function updateProjectHours(projectId: string) {
       }
     });
 
+    console.log('Found completed tasks:', completedTasks.length);
+
     const consumedHours = completedTasks.reduce((total, task) => {
       return total + (task.actualHours || 0);
     }, 0);
+
+    console.log('Calculated consumed hours:', consumedHours);
 
     // Update project with new consumed hours and calculate remaining hours
     const project = await prisma.project.findUnique({
@@ -45,16 +52,32 @@ async function updateProjectHours(projectId: string) {
     if (project) {
       const remainingHours = Math.max(0, (project.allocatedHours || 0) - consumedHours);
       
+      console.log('Updating project with consumedHours:', consumedHours, 'remainingHours:', remainingHours);
+      
+      // Ensure values are valid numbers
+      const safeConsumedHours = isNaN(consumedHours) ? 0 : consumedHours;
+      const safeRemainingHours = isNaN(remainingHours) ? 0 : remainingHours;
+      
       await prisma.project.update({
         where: { id: projectId },
         data: {
-          consumedHours,
-          remainingHours
+          consumedHours: safeConsumedHours,
+          remainingHours: safeRemainingHours
         }
       });
+      
+      console.log('Project hours updated successfully');
+    } else {
+      console.error('Project not found:', projectId);
+      throw new Error(`Project not found: ${projectId}`);
     }
   } catch (error) {
     console.error('Error updating project hours:', error);
+    console.error('Project hours error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      projectId
+    });
   }
 }
 
@@ -202,6 +225,8 @@ router.post('/', validateTask, async (req: any, res: any) => {
 
 // Update task
 router.put('/:id', validateTask, async (req: any, res: any) => {
+  const { id } = req.params;
+  
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -211,8 +236,15 @@ router.put('/:id', validateTask, async (req: any, res: any) => {
       });
     }
 
-    const { id } = req.params;
     const { title, description, priority, status, dueDate, estimatedHours, assignedTo, actualHours } = req.body;
+
+    console.log('Task update request body:', {
+      id,
+      status,
+      actualHours,
+      title,
+      priority
+    });
 
     // Check if task belongs to user's project
     const existingTask = await prisma.task.findFirst({
@@ -238,7 +270,7 @@ router.put('/:id', validateTask, async (req: any, res: any) => {
         ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
         ...(estimatedHours !== undefined && { estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null }),
         ...(assignedTo !== undefined && { assignedTo }),
-        ...(actualHours !== undefined && { actualHours: parseFloat(actualHours) }),
+        ...(actualHours !== undefined && { actualHours: actualHours ? parseFloat(actualHours) : null }),
       },
       include: {
         project: {
@@ -257,8 +289,16 @@ router.put('/:id', validateTask, async (req: any, res: any) => {
       },
     });
 
+    console.log('Task updated successfully:', {
+      id: updatedTask.id,
+      status: updatedTask.status,
+      actualHours: updatedTask.actualHours,
+      title: updatedTask.title
+    });
+
     // If task status changed to COMPLETED or actualHours were updated, update project hours
-    if (status === 'COMPLETED' || actualHours !== undefined) {
+    if ((status === 'COMPLETED' || actualHours !== undefined) && existingTask.projectId) {
+      console.log('Updating project hours for task completion/actual hours change');
       await updateProjectHours(existingTask.projectId);
     }
 
@@ -268,7 +308,16 @@ router.put('/:id', validateTask, async (req: any, res: any) => {
     });
   } catch (error) {
     console.error('Update task error:', error);
-    return res.status(500).json({ error: 'Failed to update task' });
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      taskId: id,
+      userId: req.user?.id
+    });
+    return res.status(500).json({ 
+      error: 'Failed to update task',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
