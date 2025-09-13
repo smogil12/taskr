@@ -201,21 +201,26 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // Resend invitation email
-router.post('/:id/resend', authenticateToken, async (req, res) => {
+router.post('/resend', authenticateToken, async (req, res) => {
   try {
-    const { id } = req.params;
+    const { email } = req.body;
     const user = req.user;
     
-    console.log(`🔄 RESEND REQUEST: Team member ID ${id} from IP ${req.ip}`);
+    console.log(`🔄 RESEND REQUEST: Email ${email} from IP ${req.ip}`);
     console.log(`🔄 User: ${user?.email || 'No user'}`);
 
     if (!user) {
+      console.log(`❌ RESEND FAILED: No user found in request`);
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Find the team member
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Find the team member by email
     const teamMember = await prisma.teamMember.findUnique({
-      where: { id },
+      where: { email },
       include: { user: true }
     });
 

@@ -25,7 +25,12 @@ export const authenticateToken = async (
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
+    console.log(`🔐 AUTH MIDDLEWARE: ${req.method} ${req.path}`);
+    console.log(`🔐 Auth header present: ${!!authHeader}`);
+    console.log(`🔐 Token present: ${!!token}`);
+
     if (!token) {
+      console.log(`❌ AUTH FAILED: No token provided`);
       res.status(401).json({ error: 'Access token required' });
       return;
     }
@@ -41,6 +46,8 @@ export const authenticateToken = async (
       audience: 'tail-ai-users'
     }) as any;
     
+    console.log(`🔐 Token decoded successfully, userId: ${decoded.userId}`);
+    
     // Get fresh user data from database
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
@@ -54,7 +61,10 @@ export const authenticateToken = async (
       },
     });
 
+    console.log(`🔐 User found: ${user ? user.email : 'No user found'}`);
+
     if (!user) {
+      console.log(`❌ AUTH FAILED: User not found in database`);
       res.status(401).json({ error: 'User not found' });
       return;
     }
@@ -80,8 +90,10 @@ export const authenticateToken = async (
     }
 
     req.user = user;
+    console.log(`✅ AUTH SUCCESS: User ${user.email} authenticated`);
     next();
   } catch (error) {
+    console.log(`❌ AUTH ERROR: ${error instanceof Error ? error.message : 'Unknown error'}`);
     if (error instanceof jwt.JsonWebTokenError) {
       res.status(403).json({ error: 'Invalid token' });
       return;

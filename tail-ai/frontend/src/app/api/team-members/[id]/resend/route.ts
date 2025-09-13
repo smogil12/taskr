@@ -13,9 +13,17 @@ export async function POST(
       return NextResponse.json({ error: 'Authorization header required' }, { status: 401 })
     }
 
-    const backendUrl = `${BACKEND_URL}/api/team-members/${params.id}/resend`
+    // Get the email from the request body
+    const { email } = await request.json()
+    
+    if (!email) {
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 })
+    }
+
+    const backendUrl = `${BACKEND_URL}/api/team-members/resend`
     console.log('🔗 Resend route attempting to connect to:', backendUrl)
     console.log('🔗 BACKEND_URL is:', BACKEND_URL)
+    console.log('🔗 Email:', email)
 
     const response = await fetch(backendUrl, {
       method: 'POST',
@@ -23,6 +31,7 @@ export async function POST(
         'Authorization': authHeader,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ email }),
     })
 
     if (!response.ok) {

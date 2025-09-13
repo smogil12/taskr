@@ -165,8 +165,10 @@ export function TeamMembers() {
       const response = await fetch(`/api/team-members/${memberId}/resend`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('taskr_token')}`
-        }
+          'Authorization': `Bearer ${localStorage.getItem('taskr_token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
       })
 
       if (response.ok) {
