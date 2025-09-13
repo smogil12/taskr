@@ -13,7 +13,11 @@ export async function POST(
       return NextResponse.json({ error: 'Authorization header required' }, { status: 401 })
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/team-members/${params.id}/resend`, {
+    const backendUrl = `${BACKEND_URL}/api/team-members/${params.id}/resend`
+    console.log('🔗 Resend route attempting to connect to:', backendUrl)
+    console.log('🔗 BACKEND_URL is:', BACKEND_URL)
+
+    const response = await fetch(backendUrl, {
       method: 'POST',
       headers: {
         'Authorization': authHeader,
@@ -29,7 +33,16 @@ export async function POST(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error resending invitation:', error)
-    return NextResponse.json({ error: 'Failed to resend invitation' }, { status: 500 })
+    console.error('❌ Error resending invitation:', error)
+    console.error('❌ Error details:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack
+    })
+    return NextResponse.json({ 
+      error: 'Failed to resend invitation',
+      details: error.message,
+      backendUrl: `${BACKEND_URL}/api/team-members/${params.id}/resend`
+    }, { status: 500 })
   }
 }
