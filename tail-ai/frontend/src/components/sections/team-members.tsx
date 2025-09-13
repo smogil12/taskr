@@ -160,6 +160,27 @@ export function TeamMembers() {
     }
   }
 
+  const handleResendInvite = async (memberId: string, email: string) => {
+    try {
+      const response = await fetch(`/api/team-members/${memberId}/resend`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('taskr_token')}`
+        }
+      })
+
+      if (response.ok) {
+        alert(`Invitation resent to ${email}`)
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to resend invitation')
+      }
+    } catch (error) {
+      console.error('Error resending invitation:', error)
+      alert('Failed to resend invitation')
+    }
+  }
+
   const openEditForm = (member: TeamMember) => {
     setEditMember({
       role: member.role
@@ -456,6 +477,16 @@ export function TeamMembers() {
                         </td>
                         <td className="py-8 pr-4 pl-3 text-right text-xs font-medium whitespace-nowrap sm:pr-0">
                           <div className="flex gap-2 justify-end">
+                            {member.status === 'PENDING' && (
+                              <button
+                                type="button"
+                                onClick={() => handleResendInvite(member.id, member.email)}
+                                className="rounded-full bg-yellow-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-yellow-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-600 dark:bg-yellow-500 dark:shadow-none dark:hover:bg-yellow-400 dark:focus-visible:outline-yellow-500 flex items-center gap-1"
+                              >
+                                <Mail className="h-3 w-3" />
+                                Resend
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() => openEditForm(member)}
