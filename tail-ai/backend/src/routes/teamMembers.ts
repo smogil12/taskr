@@ -89,7 +89,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Send invitation email
     try {
-      const invitationUrl = `https://dev.tailapp.ai/auth/signup?invite=${teamMember.id}`;
+      const invitationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/signup?invite=${teamMember.id}`;
       const inviterName = req.user?.name || 'Team Member';
       
       console.log(`📧 Sending team invitation to ${email} by ${inviterName}`);
@@ -205,6 +205,9 @@ router.post('/:id/resend', async (req, res) => {
   try {
     const { id } = req.params;
     const user = req.user;
+    
+    console.log(`🔄 RESEND REQUEST: Team member ID ${id} from IP ${req.ip}`);
+    console.log(`🔄 User: ${user?.email || 'No user'}`);
 
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -231,7 +234,7 @@ router.post('/:id/resend', async (req, res) => {
     }
 
     // Generate new invitation URL
-    const invitationUrl = `https://dev.tailapp.ai/auth/signup?invite=${teamMember.id}`;
+    const invitationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/signup?invite=${teamMember.id}`;
 
     // Send invitation email
     const emailResult = await EmailService.sendTeamInvitationEmail({
