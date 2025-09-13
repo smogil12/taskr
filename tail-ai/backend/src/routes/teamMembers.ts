@@ -201,7 +201,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // Resend invitation email
-router.post('/:id/resend', async (req, res) => {
+router.post('/:id/resend', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const user = req.user;
