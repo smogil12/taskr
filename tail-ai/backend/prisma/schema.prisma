@@ -16,6 +16,12 @@ enum SubscriptionTier {
   ENTERPRISE
 }
 
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
 enum ProjectStatus {
   PLANNING
   IN_PROGRESS
@@ -68,8 +74,27 @@ model User {
   organizations OrganizationMember[]
   subscriptions Subscription[]
   clients    Client[]     // User can own multiple clients
+  teamMembers TeamMember[] // Team members this user has invited
+  invitedTeamMembers TeamMember[] @relation("TeamInviter") // Team members invited by this user
 
   @@map("users")
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  role      UserRole @default(MEMBER)
+  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  invitedAt DateTime @default(now())
+  acceptedAt DateTime?
+  
+  // Relations
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy String   // User who sent the invitation
+  inviter   User     @relation("TeamInviter", fields: [invitedBy], references: [id], onDelete: Cascade)
+
+  @@map("team_members")
 }
 
 model Client {
