@@ -22,8 +22,8 @@ const nextConfig: NextConfig = {
       // Local development - proxy to local backend
       backendUrl = 'http://localhost:3002';
     } else if (isStaging) {
-      // Staging environment - proxy to staging backend
-      backendUrl = 'https://staging-api.tailapp.ai';
+      // Staging environment - proxy to DigitalOcean backend
+      backendUrl = 'http://167.99.115.97:3001';
     } else {
       // Production environment - proxy to production backend
       backendUrl = 'https://api.tailapp.ai';
