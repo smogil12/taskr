@@ -8,6 +8,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Plus, Building2, Mail, Phone, DollarSign, Edit, Trash2, Eye, FolderOpen, Clock } from "lucide-react"
 
+// Helper function to calculate hours-based progress
+function calculateHoursProgress(allocatedHours: number, consumedHours: number): number {
+  if (!allocatedHours || allocatedHours <= 0) return 0;
+  const progress = (consumedHours / allocatedHours) * 100;
+  return Math.min(Math.max(progress, 0), 100); // Clamp between 0 and 100
+}
+
 interface Client {
   id: string
   name: string
@@ -620,30 +627,56 @@ export function Clients() {
                   <h3 className="text-lg font-semibold mb-4">Projects</h3>
                   <div className="space-y-3">
                     {selectedClient.projects.map((project) => (
-                      <div key={project.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <FolderOpen className="h-5 w-5 text-blue-600" />
-                          <div>
-                            <div className="font-medium">{project.name}</div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                              Status: {project.status}
+                      <div key={project.id} className="p-3 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <FolderOpen className="h-5 w-5 text-blue-600" />
+                            <div>
+                              <div className="font-medium">{project.name}</div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                Status: {project.status}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm">
+                            <div className="text-center">
+                              <div className="font-medium">{project.allocatedHours}h</div>
+                              <div className="text-gray-500">Allocated</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-medium">{project.consumedHours}h</div>
+                              <div className="text-gray-500">Used</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-medium">{project.remainingHours}h</div>
+                              <div className="text-gray-500">Remaining</div>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4 text-sm">
-                          <div className="text-center">
-                            <div className="font-medium">{project.allocatedHours}h</div>
-                            <div className="text-gray-500">Allocated</div>
+                        {project.allocatedHours > 0 && (
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              {(() => {
+                                const hoursProgress = calculateHoursProgress(project.allocatedHours, project.consumedHours || 0);
+                                return (
+                                  <div
+                                    className={`h-2 rounded-full transition-all duration-300 ${
+                                      hoursProgress >= 100 
+                                        ? 'bg-green-600' 
+                                        : hoursProgress >= 75 
+                                        ? 'bg-yellow-500' 
+                                        : 'bg-blue-600'
+                                    }`}
+                                    style={{ width: `${hoursProgress}%` }}
+                                  ></div>
+                                );
+                              })()}
+                            </div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {Math.round(calculateHoursProgress(project.allocatedHours, project.consumedHours || 0))}%
+                            </span>
                           </div>
-                          <div className="text-center">
-                            <div className="font-medium">{project.consumedHours}h</div>
-                            <div className="text-gray-500">Used</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-medium">{project.remainingHours}h</div>
-                            <div className="text-gray-500">Remaining</div>
-                          </div>
-                        </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -681,9 +714,9 @@ export function Clients() {
             </button>
           </div>
         </div>
-        <div className="mt-16 flow-root clients-table-container">
+        <div className="mt-12 flow-root clients-table-container">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-1.5 align-middle sm:px-6 lg:px-8">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               {isLoading ? (
                 <div className="text-center py-8">
                   <p className="text-gray-600 dark:text-gray-400">Loading clients...</p>
@@ -698,20 +731,20 @@ export function Clients() {
                     <tr className="bg-gray-50 dark:bg-white/5">
                       <th
                         scope="col"
-                        className="py-3.5 pr-3 pl-4 text-left text-xs font-semibold text-gray-900 sm:pl-0 dark:text-white"
+                        className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0 dark:text-white"
                       >
                         Client
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Contact
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Projects
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Hours
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Rate
                       </th>
                       <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
@@ -722,7 +755,7 @@ export function Clients() {
                   <tbody>
                     {clients.map((client, index) => (
                       <tr key={client.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
-                        <td className="py-8 pr-3 pl-4 text-xs font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
+                        <td className="py-8 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
                           {client.name}
                         </td>
                         <td className="px-3 py-8 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
@@ -765,7 +798,7 @@ export function Clients() {
                             <span className="text-gray-400">No rate set</span>
                           )}
                         </td>
-                        <td className="py-8 pr-4 pl-3 text-right text-xs font-medium whitespace-nowrap sm:pr-0">
+                        <td className="py-8 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
                           <div className="flex gap-2 justify-end">
                             <button
                               type="button"

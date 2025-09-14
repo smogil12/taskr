@@ -11,6 +11,13 @@ import {
 import { ChevronRightIcon, ChevronUpDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import { useAuth } from '@/components/providers/auth-provider'
 
+// Helper function to calculate hours-based progress
+function calculateHoursProgress(allocatedHours: number, consumedHours: number): number {
+  if (!allocatedHours || allocatedHours <= 0) return 0;
+  const progress = (consumedHours / allocatedHours) * 100;
+  return Math.min(Math.max(progress, 0), 100); // Clamp between 0 and 100
+}
+
 // Types for real data
 interface Project {
   id: string
@@ -20,6 +27,9 @@ interface Project {
   startDate: string
   endDate?: string
   progress: number
+  allocatedHours: number
+  consumedHours: number
+  remainingHours: number
   client?: {
     name: string
   }
@@ -277,6 +287,30 @@ export default function DashboardPage() {
                         <p className="truncate">{project.description || 'No description'}</p>
                         <p className="whitespace-nowrap">Updated {formatTimeAgo(project.updatedAt)}</p>
                       </div>
+                      {project.allocatedHours > 0 && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="flex-1 bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                            {(() => {
+                              const hoursProgress = calculateHoursProgress(project.allocatedHours, project.consumedHours || 0);
+                              return (
+                                <div
+                                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                                    hoursProgress >= 100 
+                                      ? 'bg-green-600' 
+                                      : hoursProgress >= 75 
+                                      ? 'bg-yellow-500' 
+                                      : 'bg-blue-600'
+                                  }`}
+                                  style={{ width: `${hoursProgress}%` }}
+                                ></div>
+                              );
+                            })()}
+                          </div>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {Math.round(calculateHoursProgress(project.allocatedHours, project.consumedHours || 0))}%
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div
                       className={classNames(

@@ -35,6 +35,13 @@ interface Client {
   company?: string
 }
 
+// Helper function to calculate hours-based progress
+function calculateHoursProgress(allocatedHours: number, consumedHours: number): number {
+  if (!allocatedHours || allocatedHours <= 0) return 0;
+  const progress = (consumedHours / allocatedHours) * 100;
+  return Math.min(Math.max(progress, 0), 100); // Clamp between 0 and 100
+}
+
 export function Projects() {
   const { user } = useAuth()
   const [showNewProjectForm, setShowNewProjectForm] = useState(false)
@@ -934,13 +941,27 @@ export function Projects() {
                         </td>
                         <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           <div className="flex items-center gap-2">
-                            <span>{project.progress || 0}%</span>
-                            <div className="w-16 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                              <div
-                                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${project.progress || 0}%` }}
-                              ></div>
-                            </div>
+                            {(() => {
+                              const hoursProgress = calculateHoursProgress(project.allocatedHours || 0, project.consumedHours || 0);
+                              const displayProgress = project.allocatedHours > 0 ? hoursProgress : (project.progress || 0);
+                              return (
+                                <>
+                                  <span>{Math.round(displayProgress)}%</span>
+                                  <div className="w-16 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                                    <div
+                                      className={`h-2 rounded-full transition-all duration-300 ${
+                                        displayProgress >= 100 
+                                          ? 'bg-green-600' 
+                                          : displayProgress >= 75 
+                                          ? 'bg-yellow-500' 
+                                          : 'bg-blue-600'
+                                      }`}
+                                      style={{ width: `${displayProgress}%` }}
+                                    ></div>
+                                  </div>
+                                </>
+                              );
+                            })()}
                           </div>
                         </td>
                         <td className=" text-right text-sm font-medium whitespace-nowrap sm:pr-0">

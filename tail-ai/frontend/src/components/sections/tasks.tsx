@@ -350,7 +350,7 @@ export function Tasks() {
         </div>
 
         {/* Project Filter */}
-        <div className="mt-8 flex items-center gap-4 tasks-table-container">
+        <div className="mt-4 flex items-center gap-4">
           <Label htmlFor="project-filter" className="text-sm text-gray-700 dark:text-gray-300">Filter by Project:</Label>
           <select
             id="project-filter"
@@ -367,7 +367,7 @@ export function Tasks() {
           </select>
         </div>
 
-        <div className="mt-12 flow-root">
+        <div className="mt-8 flow-root tasks-table-container">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               {isLoading ? (
