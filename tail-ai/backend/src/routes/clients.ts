@@ -144,7 +144,9 @@ router.put('/:id', authenticateToken, async (req: any, res: any) => {
         company,
         address,
         notes,
-        hourlyRate: hourlyRate ? parseFloat(hourlyRate) : null
+        hourlyRate: hourlyRate ? parseFloat(hourlyRate) : null,
+        lastEditedBy: req.user.id,
+        lastEditedAt: new Date(),
       }
     })
 

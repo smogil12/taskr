@@ -14,6 +14,13 @@ interface TaskFormProps {
   initialData?: Partial<TaskData>
   isEditing?: boolean
   projects?: Project[]
+  teamMembers?: TeamMember[]
+}
+
+interface TeamMember {
+  id: string
+  name: string
+  email: string
 }
 
 interface Project {
@@ -31,9 +38,10 @@ interface TaskData {
   estimatedHours: string
   actualHours?: string
   projectId: string
+  assignedTo?: string
 }
 
-export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing = false, projects = [] }: TaskFormProps) {
+export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing = false, projects = [], teamMembers = [] }: TaskFormProps) {
   const [task, setTask] = useState<TaskData>({
     title: initialData?.title || "",
     description: initialData?.description || "",
@@ -42,7 +50,8 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
     dueDate: initialData?.dueDate || "",
     estimatedHours: initialData?.estimatedHours || "",
     actualHours: initialData?.actualHours || "",
-    projectId: initialData?.projectId || projectId || ""
+    projectId: initialData?.projectId || projectId || "",
+    assignedTo: initialData?.assignedTo || ""
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -230,7 +239,7 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
               Set the priority, status, and timeline for this task.
             </p>
 
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <label htmlFor="priority" className="block text-sm font-medium text-gray-900 dark:text-white">
                   Priority
@@ -280,6 +289,42 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
                     <option value="TODO">Not Started</option>
                     <option value="IN_PROGRESS">In Progress</option>
                     <option value="COMPLETED">Complete</option>
+                  </select>
+                  <svg
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+                    fill="none"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M6 8l4 4 4-4"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-900 dark:text-white">
+                  Assignee
+                </label>
+                <div className="mt-1 relative">
+                  <select
+                    id="assignedTo"
+                    name="assignedTo"
+                    value={task.assignedTo}
+                    onChange={handleInputChange}
+                    className="block w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:*:bg-gray-800 dark:focus:outline-indigo-500"
+                  >
+                    <option value="">Unassigned</option>
+                    {teamMembers.map((member) => (
+                      <option key={member.id} value={member.id}>
+                        {member.name} ({member.email})
+                      </option>
+                    ))}
                   </select>
                   <svg
                     aria-hidden="true"

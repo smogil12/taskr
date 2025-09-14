@@ -258,6 +258,8 @@ router.put('/:id', validateProject, async (req: any, res: any) => {
         ...(progress !== undefined && { progress: Math.max(0, Math.min(100, progress)) }),
         ...(allocatedHours !== undefined && { allocatedHours }),
         ...(clientId !== undefined && { clientId }),
+        lastEditedBy: req.user!.id,
+        lastEditedAt: new Date(),
       },
       include: {
         _count: {

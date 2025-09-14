@@ -70,6 +70,10 @@ model User {
   // Relations
   projects   Project[]
   tasks      Task[]
+  createdTasks Task[] @relation("TaskCreator") // Tasks created by this user
+  editedTasks Task[] @relation("TaskEditor") // Tasks edited by this user
+  editedProjects Project[] @relation("ProjectEditor") // Projects edited by this user
+  editedClients Client[] @relation("ClientEditor") // Clients edited by this user
   timeEntries TimeEntry[]
   organizations OrganizationMember[]
   subscriptions Subscription[]
@@ -109,11 +113,16 @@ model Client {
   hourlyRate  Float?   // Default billing rate for this client
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Edit tracking
+  lastEditedBy String?
+  lastEditedAt DateTime?
   
   // Relations
   projects    Project[]
   userId      String   // Client owner
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastEditedByUser User? @relation("ClientEditor", fields: [lastEditedBy], references: [id], onDelete: SetNull)
 
   @@map("clients")
 }
@@ -164,6 +173,10 @@ model Project {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  // Edit tracking
+  lastEditedBy String?
+  lastEditedAt DateTime?
+
   // Relations
   userId         String
   clientId       String?     // Project can be assigned to a client
@@ -171,6 +184,7 @@ model Project {
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   client         Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  lastEditedByUser User? @relation("ProjectEditor", fields: [lastEditedBy], references: [id], onDelete: SetNull)
   tasks          Task[]
   timeEntries    TimeEntry[]
 
@@ -193,11 +207,18 @@ model Task {
   calendarEventId    String? // Google Calendar event ID
   calendarEventUrl   String? // Link to the calendar event
 
+  // Edit tracking
+  lastEditedBy String?
+  lastEditedAt DateTime?
+
   // Relations
   projectId   String
   assignedTo  String?
+  createdBy   String?
   project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   assignedUser User?  @relation(fields: [assignedTo], references: [id], onDelete: SetNull)
+  createdByUser User? @relation("TaskCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  lastEditedByUser User? @relation("TaskEditor", fields: [lastEditedBy], references: [id], onDelete: SetNull)
   timeEntries TimeEntry[]
 
   @@map("tasks")

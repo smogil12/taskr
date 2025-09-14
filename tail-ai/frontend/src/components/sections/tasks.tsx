@@ -19,9 +19,15 @@ interface Task {
   estimatedHours?: number
   actualHours?: number
   projectId: string
+  assignedTo?: string
   project: {
     id: string
     name: string
+  }
+  assignedUser?: {
+    id: string
+    name: string
+    email: string
   }
   createdAt: string
   updatedAt: string
@@ -42,12 +48,19 @@ interface Project {
   }
 }
 
+interface TeamMember {
+  id: string
+  name: string
+  email: string
+}
+
 export function Tasks() {
   const { user, token } = useAuth()
   const [showNewTaskForm, setShowNewTaskForm] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [selectedProject, setSelectedProject] = useState<string>("all")
 
@@ -56,6 +69,7 @@ export function Tasks() {
     if (token) {
       fetchTasks()
       fetchProjects()
+      fetchTeamMembers()
     }
   }, [token])
 
@@ -120,6 +134,35 @@ export function Tasks() {
       }
     } catch (error) {
       console.error('Error fetching projects:', error)
+    }
+  }
+
+  const fetchTeamMembers = async () => {
+    if (!token) return
+    
+    try {
+      const response = await fetch('/api/team-members', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        // Filter to only include accepted team members and add the current user
+        const acceptedMembers = data.filter((member: any) => member.status === 'ACCEPTED')
+        // Add current user as the first option
+        const allMembers = [
+          { id: user?.id, name: user?.name || 'You', email: user?.email || '' },
+          ...acceptedMembers.map((member: any) => ({
+            id: member.userId,
+            name: member.user?.name || member.email,
+            email: member.email
+          }))
+        ]
+        setTeamMembers(allMembers)
+      }
+    } catch (error) {
+      console.error('Error fetching team members:', error)
     }
   }
 
@@ -305,6 +348,7 @@ export function Tasks() {
           onSubmit={handleCreateTask}
           onCancel={() => setShowNewTaskForm(false)}
           projects={projects}
+          teamMembers={teamMembers}
         />
       )}
 
@@ -321,10 +365,12 @@ export function Tasks() {
             status: editingTask.status,
             dueDate: editingTask.dueDate || "",
             estimatedHours: editingTask.estimatedHours?.toString() || "",
-            actualHours: editingTask.actualHours?.toString() || ""
+            actualHours: editingTask.actualHours?.toString() || "",
+            assignedTo: editingTask.assignedTo || ""
           }}
           isEditing={true}
           projects={projects}
+          teamMembers={teamMembers}
         />
       )}
 
@@ -402,6 +448,9 @@ export function Tasks() {
                         Project
                       </th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        Assignee
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                         Due Date
                       </th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
@@ -443,6 +492,20 @@ export function Tasks() {
                         </td>
                         <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {task.project.name}
+                        </td>
+                        <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          {task.assignedUser ? (
+                            <div>
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {task.assignedUser.name}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                {task.assignedUser.email}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">Unassigned</span>
+                          )}
                         </td>
                         <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {task.dueDate ? (

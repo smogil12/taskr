@@ -15,6 +15,7 @@ import timeEntryRoutes from './routes/timeEntries';
 import subscriptionRoutes from './routes/subscriptions';
 import calendarRoutes from './routes/calendar';
 import teamMemberRoutes from './routes/teamMembers';
+import activityRoutes from './routes/activity';
 
 // Load environment variables
 dotenv.config();
@@ -129,6 +130,7 @@ app.use('/api/time-entries', timeEntryRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/team-members', teamMemberRoutes);
+app.use('/api/activity', activityRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

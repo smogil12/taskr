@@ -274,8 +274,8 @@ export default function ProperShell({ children }: ProperShellProps) {
         </div>
 
         {/* Main content */}
-        <main style={{ paddingTop: '2.5rem', paddingLeft: '288px', backgroundColor: 'transparent', minHeight: '100vh' }}>
-          <div style={{ padding: '0 1rem', backgroundColor: 'transparent' }}>
+        <main style={{ paddingTop: '2.5rem', paddingLeft: '288px', backgroundColor: 'transparent', height: '100vh', overflow: 'hidden' }}>
+          <div style={{ padding: '0 1rem', backgroundColor: 'transparent', height: '100%' }}>
             {children}
           </div>
         </main>

@@ -117,6 +117,13 @@ router.get('/', async (req: any, res: any) => {
             email: true,
           },
         },
+        createdByUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -183,7 +190,7 @@ router.post('/', validateTask, async (req: any, res: any) => {
       });
     }
 
-    const { title, description, priority, status, dueDate, estimatedHours, projectId } = req.body;
+    const { title, description, priority, status, dueDate, estimatedHours, projectId, assignedTo } = req.body;
 
     // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
     const teamOwnerId = await getTeamOwnerId(req.user!.id);
@@ -209,12 +216,21 @@ router.post('/', validateTask, async (req: any, res: any) => {
         dueDate: dueDate ? new Date(dueDate) : null,
         estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null,
         projectId,
+        assignedTo: assignedTo || null,
+        createdBy: req.user!.id,
       },
       include: {
         project: {
           select: {
             id: true,
             name: true,
+          },
+        },
+        assignedUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
           },
         },
       },
@@ -281,6 +297,8 @@ router.put('/:id', validateTask, async (req: any, res: any) => {
         ...(estimatedHours !== undefined && { estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null }),
         ...(assignedTo !== undefined && { assignedTo }),
         ...(actualHours !== undefined && { actualHours: actualHours ? parseFloat(actualHours) : null }),
+        lastEditedBy: req.user!.id,
+        lastEditedAt: new Date(),
       },
       include: {
         project: {
@@ -290,6 +308,20 @@ router.put('/:id', validateTask, async (req: any, res: any) => {
           },
         },
         assignedUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        createdByUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        lastEditedByUser: {
           select: {
             id: true,
             name: true,

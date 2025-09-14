@@ -51,6 +51,11 @@ interface Task {
   assignedUser?: {
     name: string
   }
+  createdByUser?: {
+    id: string
+    name: string
+    email: string
+  }
   createdAt: string
   updatedAt: string
 }
@@ -148,10 +153,37 @@ export default function DashboardPage() {
     }
   }
 
-  // Get recent completed tasks for activity feed
+  // Get recent activity from the activity API
+  const [activities, setActivities] = useState<any[]>([])
+
+  useEffect(() => {
+    if (token) {
+      fetchActivities()
+    }
+  }, [token])
+
+  const fetchActivities = async () => {
+    if (!token) return
+    
+    try {
+      const response = await fetch('/api/activity', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setActivities(data.activities || [])
+      }
+    } catch (error) {
+      console.error('Error fetching activities:', error)
+    }
+  }
+
+  // Get recent tasks for activity feed (all statuses) - fallback
   const recentTasks = tasks
-    .filter(task => task.status === 'COMPLETED')
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 8)
 
   // Debug logging
@@ -198,7 +230,7 @@ export default function DashboardPage() {
 
   return (
     <MainLayout>
-      <div className="max-w-full overflow-x-hidden">
+      <div className="h-full flex flex-col">
         {/* Sticky search header */}
         <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-6 border-b border-gray-200 bg-white px-4 shadow-xs sm:px-6 lg:px-8 dark:border-white/5 dark:bg-gray-900 dark:shadow-none">
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
@@ -218,8 +250,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex">
-          <main className="flex-1 max-w-4xl min-h-0">
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          <main className="flex-1 max-w-4xl min-h-0 overflow-y-auto">
             <header className="flex items-center justify-between border-b border-gray-200 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-white/5">
               <h1 className="text-base/7 font-semibold text-gray-900 dark:text-white">Projects</h1>
 
@@ -332,42 +364,92 @@ export default function DashboardPage() {
           </main>
 
           {/* Activity feed */}
-          <aside className="w-96 bg-gray-50 border-l border-gray-200 dark:bg-gray-900 dark:border-white/5 overflow-y-auto">
+          <aside className="w-96 bg-gray-50 border-l border-gray-200 dark:bg-gray-900 dark:border-white/5 overflow-y-auto flex-shrink-0">
               <header className="flex items-center justify-between border-b border-gray-200 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-white/5">
                 <h2 className="text-base/7 font-semibold text-gray-900 dark:text-white">Activity feed</h2>
                 <a href="/tasks" className="text-sm/6 font-semibold text-indigo-600 dark:text-indigo-400">
                   View all
                 </a>
               </header>
-              {recentTasks.length === 0 ? (
+              {activities.length === 0 && recentTasks.length === 0 ? (
                 <div className="px-4 py-8 sm:px-6 lg:px-8">
                   <div className="text-center">
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">No completed tasks yet</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">No recent activity</p>
                   </div>
                 </div>
               ) : (
                 <ul role="list" className="divide-y divide-gray-100 dark:divide-white/5">
-                  {recentTasks.map((task) => (
-                    <li key={task.id} className="px-4 py-4 sm:px-6 lg:px-8">
-                      <div className="flex items-center gap-x-3">
-                        <div className="size-6 flex-none rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                            {(task.assignedUser?.name || user?.name || 'U').charAt(0).toUpperCase()}
-                          </span>
+                  {activities.length > 0 ? activities.slice(0, 8).map((activity) => {
+                    const activityUser = activity.user || user;
+                    const isEdit = activity.type.includes('_edited');
+                    const actionText = activity.type === 'task_created' ? 'Created' :
+                                     activity.type === 'task_edited' ? 'Updated' :
+                                     activity.type === 'project_created' ? 'Created project' :
+                                     activity.type === 'project_edited' ? 'Updated project' :
+                                     activity.type === 'client_created' ? 'Created client' :
+                                     activity.type === 'client_edited' ? 'Updated client' : 'Updated';
+                    
+                    const statusColor = activity.status === 'COMPLETED' ? 'text-green-600 dark:text-green-400' :
+                                      activity.status === 'IN_PROGRESS' ? 'text-blue-600 dark:text-blue-400' :
+                                      'text-gray-600 dark:text-gray-400';
+                    
+                    return (
+                      <li key={activity.id} className="px-4 py-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center gap-x-3">
+                          <div className="size-6 flex-none rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                              {(activityUser?.name || 'U').charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <h3 className="flex-auto truncate text-sm/6 font-semibold text-gray-900 dark:text-white">
+                            {activityUser?.name || 'Unknown User'}
+                          </h3>
+                          <time dateTime={activity.timestamp} className="flex-none text-xs text-gray-500 dark:text-gray-600">
+                            {formatTimeAgo(activity.timestamp)}
+                          </time>
                         </div>
-                        <h3 className="flex-auto truncate text-sm/6 font-semibold text-gray-900 dark:text-white">
-                          {task.assignedUser?.name || user?.name || 'Unknown User'}
-                        </h3>
-                        <time dateTime={task.updatedAt} className="flex-none text-xs text-gray-500 dark:text-gray-600">
-                          {formatTimeAgo(task.updatedAt)}
-                        </time>
-                      </div>
-                      <p className="mt-3 truncate text-sm text-gray-500">
-                        Completed <span className="text-gray-700 dark:text-gray-400">{task.title}</span> in{' '}
-                        <span className="text-gray-700 dark:text-gray-400">{task.project?.name || 'Unknown Project'}</span>
-                      </p>
-                    </li>
-                  ))}
+                        <p className="mt-3 truncate text-sm text-gray-500">
+                          <span className={isEdit ? 'text-blue-600 dark:text-blue-400' : statusColor}>
+                            {actionText}
+                          </span>{' '}
+                          <span className="text-gray-700 dark:text-gray-400">{activity.itemTitle}</span>
+                          {activity.projectName && (
+                            <> in <span className="text-gray-700 dark:text-gray-400">{activity.projectName}</span></>
+                          )}
+                        </p>
+                      </li>
+                    );
+                  }) : recentTasks.map((task) => {
+                    const creator = task.createdByUser || user;
+                    const statusText = task.status === 'COMPLETED' ? 'Completed' : 
+                                     task.status === 'IN_PROGRESS' ? 'Working on' : 'Created';
+                    const statusColor = task.status === 'COMPLETED' ? 'text-green-600 dark:text-green-400' :
+                                      task.status === 'IN_PROGRESS' ? 'text-blue-600 dark:text-blue-400' :
+                                      'text-gray-600 dark:text-gray-400';
+                    
+                    return (
+                      <li key={task.id} className="px-4 py-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center gap-x-3">
+                          <div className="size-6 flex-none rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                              {(creator?.name || 'U').charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <h3 className="flex-auto truncate text-sm/6 font-semibold text-gray-900 dark:text-white">
+                            {creator?.name || 'Unknown User'}
+                          </h3>
+                          <time dateTime={task.createdAt} className="flex-none text-xs text-gray-500 dark:text-gray-600">
+                            {formatTimeAgo(task.createdAt)}
+                          </time>
+                        </div>
+                        <p className="mt-3 truncate text-sm text-gray-500">
+                          <span className={statusColor}>{statusText}</span>{' '}
+                          <span className="text-gray-700 dark:text-gray-400">{task.title}</span> in{' '}
+                          <span className="text-gray-700 dark:text-gray-400">{task.project?.name || 'Unknown Project'}</span>
+                        </p>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
           </aside>
