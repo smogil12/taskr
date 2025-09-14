@@ -117,7 +117,7 @@ export class EmailService {
       const { data: emailData, error } = await resend.emails.send({
         from: this.FROM_EMAIL,
         to: [data.email],
-        subject: `You're invited to join a team on Taskr`,
+        subject: `Join ${inviterName}'s team on Taskr - Complete your account setup`,
         html: this.getTeamInvitationEmailTemplate(data.inviterName, data.invitationUrl, data.role),
       });
 
@@ -392,10 +392,10 @@ export class EmailService {
           </div>
           
           <div class="content">
-            <h1>You're invited to join a team!</h1>
-            <p><strong>${inviterName}</strong> has invited you to join their team on Taskr as a <span class="role-badge">${role.toLowerCase()}</span>.</p>
+            <h1>You're invited to join ${inviterName}'s team!</h1>
+            <p><strong>${inviterName}</strong> has invited you to join their existing team on Taskr as a <span class="role-badge">${role.toLowerCase()}</span>.</p>
             
-            <p>Taskr is a powerful project management and time tracking tool that helps teams stay organized and productive.</p>
+            <p><strong>This is NOT a request to create a new account.</strong> You're being added to an existing team where you'll collaborate on projects and tasks together.</p>
             
             <div style="text-align: center;">
               <a href="${invitationUrl}" class="button">Accept Invitation</a>
@@ -406,9 +406,9 @@ export class EmailService {
             
             <div class="info-box">
               <strong>What happens next?</strong><br>
-              • Click the invitation link to join the team<br>
-              • Set up your password to complete your account<br>
-              • You'll have access to the team's projects and tasks<br>
+              • Click the invitation link to join ${inviterName}'s team<br>
+              • Create your password to complete your account setup<br>
+              • You'll immediately have access to the team's projects and tasks<br>
               • Start collaborating with your team right away
             </div>
             
