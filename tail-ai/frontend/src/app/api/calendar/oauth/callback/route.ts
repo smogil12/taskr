@@ -35,3 +35,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/calendar?error=callback_failed`);
   }
 }
+
+
+

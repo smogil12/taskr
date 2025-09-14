@@ -406,7 +406,8 @@ export class EmailService {
             
             <div class="info-box">
               <strong>What happens next?</strong><br>
-              • Click the invitation link to create your account<br>
+              • Click the invitation link to join the team<br>
+              • Set up your password to complete your account<br>
               • You'll have access to the team's projects and tasks<br>
               • Start collaborating with your team right away
             </div>

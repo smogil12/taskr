@@ -12,8 +12,9 @@ interface TeamMember {
   id: string
   email: string
   role: 'ADMIN' | 'MEMBER'
-  status: 'PENDING' | 'ACCEPTED' | 'DECLINED'
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED'
   invitedAt: string
+  expiresAt?: string
   user?: {
     id: string
     name: string
@@ -198,6 +199,8 @@ export function TeamMembers() {
         return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/20'
       case 'DECLINED':
         return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/20'
+      case 'EXPIRED':
+        return 'text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-900/20'
       default:
         return 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-900/20'
     }
@@ -489,14 +492,26 @@ export function TeamMembers() {
                                 Resend
                               </button>
                             )}
-                            <button
-                              type="button"
-                              onClick={() => openEditForm(member)}
-                              className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
-                            >
-                              <Edit className="h-3 w-3" />
-                              Edit
-                            </button>
+                            {member.status === 'EXPIRED' && (
+                              <button
+                                type="button"
+                                onClick={() => handleResendInvite(member.id, member.email)}
+                                className="rounded-full bg-orange-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-orange-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 dark:bg-orange-500 dark:shadow-none dark:hover:bg-orange-400 dark:focus-visible:outline-orange-500 flex items-center gap-1"
+                              >
+                                <Mail className="h-3 w-3" />
+                                Re-invite
+                              </button>
+                            )}
+                            {member.status !== 'EXPIRED' && (
+                              <button
+                                type="button"
+                                onClick={() => openEditForm(member)}
+                                className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
+                              >
+                                <Edit className="h-3 w-3" />
+                                Edit
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() => handleDelete(member.id)}

@@ -84,9 +84,10 @@ model TeamMember {
   id        String   @id @default(cuid())
   email     String   @unique
   role      UserRole @default(MEMBER)
-  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, EXPIRED
   invitedAt DateTime @default(now())
   acceptedAt DateTime?
+  expiresAt DateTime @default(dbgenerated("(invited_at + interval '7 days')")) // Default 7 days expiry
   
   // Relations
   userId    String?

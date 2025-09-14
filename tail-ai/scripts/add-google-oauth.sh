@@ -66,3 +66,6 @@ print_status "Your calendar integration should now work on https://dev.tailapp.a
 print_status "Google OAuth credentials:"
 print_status "  Client ID: $GOOGLE_CLIENT_ID"
 print_status "  Redirect URI: $GOOGLE_REDIRECT_URI"
+
+
+

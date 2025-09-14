@@ -47,7 +47,7 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const { email, role = 'MEMBER' } = req.body;
+    const { email, role = 'MEMBER', expiresInDays = 7 } = req.body;
 
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
@@ -67,13 +67,18 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'User has already been invited' });
     }
 
+    // Calculate expiry date
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
     // Create team member invitation
     const teamMember = await prisma.teamMember.create({
       data: {
         email,
         role,
         status: 'PENDING',
-        invitedBy: userId
+        invitedBy: userId,
+        expiresAt
       },
       include: {
         user: {
@@ -222,6 +227,18 @@ router.get('/invite/:id', async (req, res) => {
       return res.status(404).json({ error: 'Invitation not found' });
     }
 
+    // Check if invitation has expired
+    if (teamMember.expiresAt && new Date() > teamMember.expiresAt) {
+      // Mark as expired if not already
+      if (teamMember.status === 'PENDING') {
+        await prisma.teamMember.update({
+          where: { id },
+          data: { status: 'EXPIRED' }
+        });
+      }
+      return res.status(400).json({ error: 'Invitation has expired' });
+    }
+
     // Only return invitation details for pending invitations
     if (teamMember.status !== 'PENDING') {
       return res.status(400).json({ error: 'Invitation has already been accepted or expired' });
@@ -265,6 +282,18 @@ router.post('/accept-invite', async (req, res) => {
 
     if (!teamMember) {
       return res.status(404).json({ error: 'Invitation not found' });
+    }
+
+    // Check if invitation has expired
+    if (teamMember.expiresAt && new Date() > teamMember.expiresAt) {
+      // Mark as expired if not already
+      if (teamMember.status === 'PENDING') {
+        await prisma.teamMember.update({
+          where: { id: inviteId },
+          data: { status: 'EXPIRED' }
+        });
+      }
+      return res.status(400).json({ error: 'Invitation has expired' });
     }
 
     if (teamMember.status !== 'PENDING') {
@@ -329,6 +358,45 @@ router.post('/accept-invite', async (req, res) => {
     });
   } catch (error) {
     console.error('Error accepting invitation:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /api/team-members/:id - Remove team member
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Find the team member
+    const teamMember = await prisma.teamMember.findUnique({
+      where: { id },
+      include: { user: true }
+    });
+
+    if (!teamMember) {
+      return res.status(404).json({ error: 'Team member not found' });
+    }
+
+    // Check if user has permission to remove this team member
+    if (teamMember.invitedBy !== userId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // Delete the team member
+    await prisma.teamMember.delete({
+      where: { id }
+    });
+
+    console.log(`🗑️ Team member removed: ${teamMember.email}`);
+
+    return res.json({ message: 'Team member removed successfully' });
+  } catch (error) {
+    console.error('Error removing team member:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

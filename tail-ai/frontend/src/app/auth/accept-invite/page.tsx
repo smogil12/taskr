@@ -50,7 +50,18 @@ function AcceptInviteContent() {
         if (!response.ok) {
           if (response.status === 404) {
             setStatus('error')
-            setErrorMessage('Invitation not found or has expired')
+            setErrorMessage('Invitation not found')
+            return
+          }
+          if (response.status === 400) {
+            const errorData = await response.json()
+            if (errorData.error === 'Invitation has expired') {
+              setStatus('expired')
+              setErrorMessage('This invitation has expired. Please request a new invitation.')
+              return
+            }
+            setStatus('error')
+            setErrorMessage(errorData.error || 'Invitation is no longer valid')
             return
           }
           throw new Error('Failed to fetch invitation')
@@ -186,8 +197,13 @@ function AcceptInviteContent() {
                 Join {inviteData?.inviterName}'s Team
               </h2>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                You've been invited to join as a {inviteData?.role?.toLowerCase() || 'member'}
+                You've been invited to join as a <span className="font-medium text-blue-600 dark:text-blue-400">{inviteData?.role?.toLowerCase() || 'member'}</span>
               </p>
+              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Welcome!</strong> Complete your account setup below to join the team and start collaborating.
+                </p>
+              </div>
             </div>
 
             <div>
@@ -280,7 +296,7 @@ function AcceptInviteContent() {
               className="w-full"
               disabled={isProcessing || !passwordValidation?.isValid}
             >
-              {isProcessing ? 'Accepting Invitation...' : 'Accept Invitation & Create Account'}
+              {isProcessing ? 'Joining Team...' : 'Join Team & Complete Setup'}
             </Button>
           </form>
         )
@@ -297,6 +313,26 @@ function AcceptInviteContent() {
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               You've successfully joined the team. Redirecting...
             </p>
+          </div>
+        )
+
+      case 'expired':
+        return (
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900">
+              <svg className="h-6 w-6 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Invitation Expired</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {errorMessage || 'This invitation has expired. Please request a new invitation from your team admin.'}
+            </p>
+            <div className="mt-4 space-y-2">
+              <Button onClick={() => router.push('/auth/signin')} className="w-full">
+                Back to Sign In
+              </Button>
+            </div>
           </div>
         )
 
@@ -334,6 +370,7 @@ function AcceptInviteContent() {
             {status === 'loading' && 'Loading your invitation...'}
             {status === 'form' && 'Complete your account setup'}
             {status === 'success' && 'Welcome to the team!'}
+            {status === 'expired' && 'Invitation expired'}
             {status === 'error' && 'Invitation failed'}
           </CardDescription>
         </CardHeader>
