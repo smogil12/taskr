@@ -117,7 +117,7 @@ export class EmailService {
       const { data: emailData, error } = await resend.emails.send({
         from: this.FROM_EMAIL,
         to: [data.email],
-        subject: `Join ${inviterName}'s team on Taskr - Complete your account setup`,
+        subject: `Join ${data.inviterName}'s team on Taskr - Complete your account setup`,
         html: this.getTeamInvitationEmailTemplate(data.inviterName, data.invitationUrl, data.role),
       });
 

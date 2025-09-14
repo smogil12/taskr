@@ -2,6 +2,7 @@ import { Router } from 'express';
 const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
 import { authenticateToken } from '../middleware/auth';
+import { getTeamOwnerId } from '../utils/teamUtils';
 
 const router = Router();
 
@@ -86,9 +87,12 @@ router.get('/', async (req: any, res: any) => {
   try {
     const { projectId, status, priority, assignedTo } = req.query;
 
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+
     const where: any = {
       project: {
-        userId: req.user!.id,
+        userId: teamOwnerId,
       },
     };
 
@@ -181,11 +185,14 @@ router.post('/', validateTask, async (req: any, res: any) => {
 
     const { title, description, priority, status, dueDate, estimatedHours, projectId } = req.body;
 
-    // Verify project belongs to user
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+
+    // Verify project belongs to team owner
     const project = await prisma.project.findFirst({
       where: {
         id: projectId,
-        userId: req.user!.id,
+        userId: teamOwnerId,
       },
     });
 
@@ -246,12 +253,15 @@ router.put('/:id', validateTask, async (req: any, res: any) => {
       priority
     });
 
-    // Check if task belongs to user's project
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+
+    // Check if task belongs to team owner's project
     const existingTask = await prisma.task.findFirst({
       where: {
         id,
         project: {
-          userId: req.user!.id,
+          userId: teamOwnerId,
         },
       },
     });
@@ -326,12 +336,15 @@ router.delete('/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
-    // Check if task belongs to user's project
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+
+    // Check if task belongs to team owner's project
     const existingTask = await prisma.task.findFirst({
       where: {
         id,
         project: {
-          userId: req.user!.id,
+          userId: teamOwnerId,
         },
       },
     });

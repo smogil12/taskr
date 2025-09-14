@@ -1,16 +1,20 @@
 import express from 'express'
 import { PrismaClient } from '@prisma/client'
 import { authenticateToken } from '../middleware/auth'
+import { getTeamOwnerId } from '../utils/teamUtils'
 
 const router = express.Router()
 const prisma = new PrismaClient()
 
-// Get all clients for the authenticated user
+// Get all clients for the authenticated user (including team member data sharing)
 router.get('/', authenticateToken, async (req: any, res: any) => {
   try {
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user.id);
+
     const clients = await prisma.client.findMany({
       where: {
-        userId: req.user.id
+        userId: teamOwnerId
       },
       include: {
         projects: {
@@ -83,6 +87,9 @@ router.post('/', authenticateToken, async (req: any, res: any) => {
       return res.status(400).json({ error: 'Client name is required' })
     }
 
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user.id);
+
     const client = await prisma.client.create({
       data: {
         name,
@@ -92,7 +99,7 @@ router.post('/', authenticateToken, async (req: any, res: any) => {
         address,
         notes,
         hourlyRate: hourlyRate ? parseFloat(hourlyRate) : null,
-        userId: req.user.id
+        userId: teamOwnerId
       }
     })
 
@@ -113,11 +120,14 @@ router.put('/:id', authenticateToken, async (req: any, res: any) => {
       return res.status(400).json({ error: 'Client name is required' })
     }
 
-    // Verify the client belongs to the user
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user.id);
+
+    // Verify the client belongs to the team owner
     const existingClient = await prisma.client.findFirst({
       where: {
         id,
-        userId: req.user.id
+        userId: teamOwnerId
       }
     })
 
@@ -150,11 +160,14 @@ router.delete('/:id', authenticateToken, async (req: any, res: any) => {
   try {
     const { id } = req.params
 
-    // Verify the client belongs to the user
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user.id);
+
+    // Verify the client belongs to the team owner
     const existingClient = await prisma.client.findFirst({
       where: {
         id,
-        userId: req.user.id
+        userId: teamOwnerId
       }
     })
 

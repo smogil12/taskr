@@ -2,6 +2,7 @@ import { Router } from 'express';
 const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
 import { authenticateToken } from '../middleware/auth';
+import { getTeamOwnerId } from '../utils/teamUtils';
 
 const router = Router();
 
@@ -17,13 +18,16 @@ const validateTimeEntry = [
   body('taskId').optional().isString().withMessage('Task ID must be a string'),
 ];
 
-// Get all time entries for authenticated user
+// Get all time entries for authenticated user (including team member data sharing)
 router.get('/', async (req: any, res: any) => {
   try {
     const { projectId, taskId, startDate, endDate } = req.query;
 
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+
     const where: any = {
-      userId: req.user!.id,
+      userId: teamOwnerId,
     };
 
     if (projectId) where.projectId = projectId as string;
@@ -110,11 +114,14 @@ router.post('/', validateTimeEntry, async (req: any, res: any) => {
 
     const { startTime, endTime, description, projectId, taskId } = req.body;
 
-    // Verify project belongs to user
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+
+    // Verify project belongs to team owner
     const project = await prisma.project.findFirst({
       where: {
         id: projectId,
-        userId: req.user!.id,
+        userId: teamOwnerId,
       },
     });
 
@@ -194,11 +201,14 @@ router.put('/:id', validateTimeEntry, async (req: any, res: any) => {
     const { id } = req.params;
     const { startTime, endTime, description, projectId, taskId } = req.body;
 
-    // Check if time entry belongs to user
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+
+    // Check if time entry belongs to team owner
     const existingTimeEntry = await prisma.timeEntry.findFirst({
       where: {
         id,
-        userId: req.user!.id,
+        userId: teamOwnerId,
       },
     });
 
@@ -257,11 +267,14 @@ router.delete('/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
-    // Check if time entry belongs to user
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+
+    // Check if time entry belongs to team owner
     const existingTimeEntry = await prisma.timeEntry.findFirst({
       where: {
         id,
-        userId: req.user!.id,
+        userId: teamOwnerId,
       },
     });
 

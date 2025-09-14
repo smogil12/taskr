@@ -2,6 +2,7 @@ import { Router } from 'express';
 const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
 import { authenticateToken, checkProjectLimit } from '../middleware/auth';
+import { getTeamOwnerId } from '../utils/teamUtils';
 
 const router = Router();
 
@@ -19,11 +20,14 @@ const validateProject = [
   body('clientId').optional().isString().withMessage('Client ID must be a string'),
 ];
 
-// Get all projects for authenticated user
+// Get all projects for authenticated user (including team member data sharing)
 router.get('/', async (req: any, res: any) => {
   try {
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+    
     const projects = await prisma.project.findMany({
-      where: { userId: req.user!.id },
+      where: { userId: teamOwnerId },
       include: {
         client: {
           select: {
@@ -185,6 +189,9 @@ router.post('/', validateProject, checkProjectLimit, async (req: any, res: any) 
 
     const { name, description, startDate, endDate, status, allocatedHours, clientId } = req.body;
 
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+
     const project = await prisma.project.create({
       data: {
         name,
@@ -195,7 +202,7 @@ router.post('/', validateProject, checkProjectLimit, async (req: any, res: any) 
         allocatedHours: allocatedHours || 0,
         ...(clientId && { client: { connect: { id: clientId } } }),
         user: {
-          connect: { id: req.user!.id }
+          connect: { id: teamOwnerId }
         },
       },
     });
@@ -225,11 +232,14 @@ router.put('/:id', validateProject, async (req: any, res: any) => {
     const { id } = req.params;
     const { name, description, startDate, endDate, status, progress, allocatedHours, clientId } = req.body;
 
-    // Check if project belongs to user
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+
+    // Check if project belongs to team owner
     const existingProject = await prisma.project.findFirst({
       where: {
         id,
-        userId: req.user!.id,
+        userId: teamOwnerId,
       },
     });
 
@@ -274,11 +284,14 @@ router.delete('/:id', async (req: any, res: any) => {
   try {
     const { id } = req.params;
 
-    // Check if project belongs to user
+    // Get the team owner ID (if user is a team member, get the inviter's ID; otherwise, use their own ID)
+    const teamOwnerId = await getTeamOwnerId(req.user!.id);
+
+    // Check if project belongs to team owner
     const existingProject = await prisma.project.findFirst({
       where: {
         id,
-        userId: req.user!.id,
+        userId: teamOwnerId,
       },
     });
 
