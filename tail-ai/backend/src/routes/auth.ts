@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator');
 import { prisma } from '../index';
 import { EmailService } from '../services/emailService';
 import { securityLogger } from '../utils/securityLogger';
+import { getJwtSecret, signJwt, verifyJwt } from '../utils/jwtSecurity';
 
 const router = Router();
 
@@ -144,23 +145,14 @@ router.post('/signin', validateLogin, async (req: Request, res: Response) => {
     }
 
     // Generate JWT token
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      console.error('JWT_SECRET environment variable is not set');
-      return res.status(500).json({ error: 'Server configuration error' });
-    }
-    
-    const token = jwt.sign(
+    const token = signJwt(
       { 
         userId: user.id,
         email: user.email,
         iat: Math.floor(Date.now() / 1000)
       },
-      jwtSecret,
       { 
-        expiresIn: process.env.JWT_EXPIRES_IN || '15m',
-        issuer: 'tail-ai',
-        audience: 'tail-ai-users'
+        expiresIn: process.env.JWT_EXPIRES_IN || '15m'
       } as jwt.SignOptions
     );
 
@@ -194,8 +186,7 @@ router.get('/profile', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Access token required' });
     }
 
-    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
-    const decoded = jwt.verify(token, jwtSecret) as any;
+    const decoded = verifyJwt(token) as any;
     
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
@@ -282,10 +273,8 @@ router.post('/verify-email', async (req: Request, res: Response) => {
         console.log('User already verified:', alreadyVerifiedUser.email);
         
         // Generate JWT token for the already verified user
-        const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
-        const authToken = jwt.sign(
+        const authToken = signJwt(
           { userId: alreadyVerifiedUser.id },
-          jwtSecret,
           { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
         );
         
@@ -320,10 +309,8 @@ router.post('/verify-email', async (req: Request, res: Response) => {
     console.log('Email verified successfully for user:', user.email);
 
     // Generate JWT token for the newly verified user
-    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
-    const authToken = jwt.sign(
+    const authToken = signJwt(
       { userId: user.id },
-      jwtSecret,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
     );
 

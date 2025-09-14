@@ -56,8 +56,9 @@ A robust backend API for the Taskr project management and time tracking applicat
 # Database
 DATABASE_URL="postgresql://username:password@localhost:5432/taskr_db"
 
-# JWT
-JWT_SECRET="your-super-secret-jwt-key-here"
+# JWT - Generate a strong secret using: openssl rand -hex 32
+# Example: JWT_SECRET="dev_a9e8a5ff0e7c15a9626a1dcd4198923127d42c61c0eee1bb27e6c2915bc52cea"
+JWT_SECRET="your_strong_jwt_secret_here_minimum_32_characters"
 JWT_EXPIRES_IN="7d"
 
 # Server
@@ -199,8 +200,46 @@ src/
 - **CORS** - Cross-origin resource sharing
 - **Rate Limiting** - API abuse prevention
 - **Input Validation** - Request sanitization
-- **JWT Authentication** - Secure token-based auth
+- **JWT Authentication** - Secure token-based auth with strong secret validation
 - **Password Hashing** - bcrypt with salt rounds
+
+## 🔐 JWT Security
+
+This application implements strong JWT security measures:
+
+### Secret Requirements
+- **Minimum 32 characters** (256 bits of entropy)
+- **Cryptographically random** generation
+- **Environment-specific** secrets
+- **No fallback secrets** allowed
+
+### Generating JWT Secrets
+```bash
+# Generate a strong secret
+openssl rand -hex 32
+
+# Or use the provided script
+node scripts/generate-jwt-secrets.js
+```
+
+### Environment Setup
+```bash
+# Development
+JWT_SECRET="dev_a9e8a5ff0e7c15a9626a1dcd4198923127d42c61c0eee1bb27e6c2915bc52cea"
+
+# Staging
+JWT_SECRET="staging_e5520806aecc5c24eca04c1405cba447268970c7a31d513d554c5d710976e830"
+
+# Production
+JWT_SECRET="prod_dc1938d45e66da7c0cfc6c63beeb604b64f246dff617d38b52755f04d90a0390"
+```
+
+### Security Features
+- ✅ Secret validation on startup
+- ✅ No dangerous fallback secrets
+- ✅ Issuer and audience validation
+- ✅ Token expiration enforcement
+- ✅ Strong algorithm (HS256)
 
 ## 🚀 Deployment
 

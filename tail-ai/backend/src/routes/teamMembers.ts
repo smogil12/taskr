@@ -89,7 +89,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Send invitation email
     try {
-      const invitationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/signup?invite=${teamMember.id}`;
+      const invitationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/accept-invite?invite=${teamMember.id}`;
       const inviterName = req.user?.name || 'Team Member';
       
       console.log(`📧 Sending team invitation to ${email} by ${inviterName}`);
@@ -200,6 +200,139 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Get invitation details by ID (for frontend to fetch invitation info)
+router.get('/invite/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const teamMember = await prisma.teamMember.findUnique({
+      where: { id },
+      include: {
+        inviter: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    if (!teamMember) {
+      return res.status(404).json({ error: 'Invitation not found' });
+    }
+
+    // Only return invitation details for pending invitations
+    if (teamMember.status !== 'PENDING') {
+      return res.status(400).json({ error: 'Invitation has already been accepted or expired' });
+    }
+
+    return res.json({
+      id: teamMember.id,
+      email: teamMember.email,
+      role: teamMember.role,
+      inviterName: teamMember.inviter?.name || 'Team Admin',
+      invitedAt: teamMember.invitedAt
+    });
+  } catch (error) {
+    console.error('Error fetching invitation:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Accept team invitation
+router.post('/accept-invite', async (req, res) => {
+  try {
+    const { inviteId, name, password } = req.body;
+
+    if (!inviteId || !name || !password) {
+      return res.status(400).json({ error: 'Invite ID, name, and password are required' });
+    }
+
+    // Find the invitation
+    const teamMember = await prisma.teamMember.findUnique({
+      where: { id: inviteId },
+      include: {
+        inviter: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    if (!teamMember) {
+      return res.status(404).json({ error: 'Invitation not found' });
+    }
+
+    if (teamMember.status !== 'PENDING') {
+      return res.status(400).json({ error: 'Invitation has already been accepted or expired' });
+    }
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: teamMember.email }
+    });
+
+    let user;
+    let userCreated = false;
+
+    if (existingUser) {
+      // User already exists, just add them to the team
+      user = existingUser;
+    } else {
+      // Create new user
+      const bcrypt = require('bcryptjs');
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      user = await prisma.user.create({
+        data: {
+          name,
+          email: teamMember.email,
+          password: hashedPassword,
+          subscriptionTier: 'FREE',
+          isEmailVerified: true, // Skip email verification for invited users
+        }
+      });
+      userCreated = true;
+    }
+
+    // Update team member to accepted status and link to user
+    await prisma.teamMember.update({
+      where: { id: inviteId },
+      data: {
+        status: 'ACCEPTED',
+        userId: user.id,
+        acceptedAt: new Date()
+      }
+    });
+
+    console.log(`✅ Team invitation accepted: ${teamMember.email} joined team`);
+
+    return res.json({
+      message: 'Invitation accepted successfully',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        isEmailVerified: user.isEmailVerified
+      },
+      userCreated,
+      teamMember: {
+        id: teamMember.id,
+        role: teamMember.role,
+        status: 'ACCEPTED'
+      }
+    });
+  } catch (error) {
+    console.error('Error accepting invitation:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Resend invitation email
 router.post('/resend', authenticateToken, async (req, res) => {
   try {
@@ -238,8 +371,8 @@ router.post('/resend', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Can only resend pending invitations' });
     }
 
-    // Generate new invitation URL
-    const invitationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/signup?invite=${teamMember.id}`;
+    // Generate new invitation URL - use accept-invite instead of signup
+    const invitationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/accept-invite?invite=${teamMember.id}`;
 
     // Send invitation email
     const emailResult = await EmailService.sendTeamInvitationEmail({

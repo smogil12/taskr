@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../index';
+import { getJwtSecret, verifyJwt } from '../utils/jwtSecurity';
 
 // Extend Express Request interface to include user
 declare global {
@@ -35,16 +36,22 @@ export const authenticateToken = async (
       return;
     }
 
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      res.status(500).json({ error: 'Server configuration error' });
+    let decoded: any;
+    try {
+      decoded = verifyJwt(token);
+    } catch (jwtError) {
+      console.log(`❌ JWT VERIFICATION ERROR: ${jwtError instanceof Error ? jwtError.message : 'Unknown error'}`);
+      if (jwtError instanceof jwt.JsonWebTokenError) {
+        res.status(403).json({ error: 'Invalid token' });
+        return;
+      }
+      if (jwtError instanceof jwt.TokenExpiredError) {
+        res.status(401).json({ error: 'Token expired' });
+        return;
+      }
+      res.status(500).json({ error: 'Token verification failed' });
       return;
     }
-
-    const decoded = jwt.verify(token, jwtSecret, {
-      issuer: 'tail-ai',
-      audience: 'tail-ai-users'
-    }) as any;
     
     console.log(`🔐 Token decoded successfully, userId: ${decoded.userId}`);
     
@@ -94,15 +101,7 @@ export const authenticateToken = async (
     next();
   } catch (error) {
     console.log(`❌ AUTH ERROR: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    if (error instanceof jwt.JsonWebTokenError) {
-      res.status(403).json({ error: 'Invalid token' });
-      return;
-    }
-    if (error instanceof jwt.TokenExpiredError) {
-      res.status(401).json({ error: 'Token expired' });
-      return;
-    }
-    res.status(500).json({ error: 'Token verification failed' });
+    res.status(500).json({ error: 'Authentication failed' });
     return;
   }
 };
