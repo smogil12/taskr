@@ -108,12 +108,13 @@ temp/
 ehthumbs.db
 Thumbs.db
 
-# Sensitive documentation files
+# Sensitive documentation files (with actual credentials)
 PRODUCTION_DEPLOYMENT_GUIDE.md
 BACKEND_DEPLOYMENT.md
-*_DEPLOYMENT*.md
-*_SETUP*.md
-*_GUIDE*.md
+
+# Allow template files
+!*_TEMPLATE.md
+!*_EXAMPLE.md
 
 # Database files
 *.db
