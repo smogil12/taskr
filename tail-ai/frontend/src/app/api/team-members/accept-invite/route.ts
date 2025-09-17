@@ -7,6 +7,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { inviteId, name, password } = body
 
+    console.log('🔍 FRONTEND DEBUG: Accept invitation request received')
+    console.log('🔍 Invite ID:', inviteId)
+    console.log('🔍 NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL)
+    console.log('🔍 BACKEND_URL constant:', BACKEND_URL)
+
     if (!inviteId || !name || !password) {
       return NextResponse.json({ error: 'Invite ID, name, and password are required' }, { status: 400 })
     }

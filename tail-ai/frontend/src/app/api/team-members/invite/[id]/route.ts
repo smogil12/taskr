@@ -9,6 +9,11 @@ export async function GET(
   try {
     const { id } = params
 
+    console.log('🔍 FRONTEND DEBUG: Team invitation request received')
+    console.log('🔍 Invite ID:', id)
+    console.log('🔍 NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL)
+    console.log('🔍 BACKEND_URL constant:', BACKEND_URL)
+
     const backendUrl = `${BACKEND_URL}/api/team-members/invite/${id}`
     console.log('🔗 Frontend API fetching invitation from backend:', backendUrl)
 
