@@ -11,7 +11,7 @@ import { Plus, Users, Mail, Shield, Edit, Trash2, UserPlus, Clock } from "lucide
 interface TeamMember {
   id: string
   email: string
-  role: 'ADMIN' | 'MEMBER'
+  role: 'OWNER' | 'ADMIN' | 'MEMBER'
   status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED'
   invitedAt: string
   expiresAt?: string
@@ -26,6 +26,9 @@ interface TeamMember {
 export function TeamMembers() {
   const { user } = useAuth()
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [canManageMembers, setCanManageMembers] = useState(false)
+  const [isTeamOwner, setIsTeamOwner] = useState(false)
+  const [canAccessTeamMembers, setCanAccessTeamMembers] = useState(false)
   const [showInviteForm, setShowInviteForm] = useState(false)
   const [showEditForm, setShowEditForm] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -54,7 +57,13 @@ export function TeamMembers() {
       })
       if (response.ok) {
         const data = await response.json()
-        setTeamMembers(data)
+        console.log('API Response:', data)
+        console.log('teamMembers type:', typeof data.teamMembers)
+        console.log('teamMembers value:', data.teamMembers)
+        setTeamMembers(data.teamMembers || [])
+        setCanManageMembers(data.canManageMembers || false)
+        setIsTeamOwner(data.isTeamOwner || false)
+        setCanAccessTeamMembers(data.canAccessTeamMembers || false)
       }
     } catch (error) {
       console.error('Error fetching team members:', error)
@@ -208,6 +217,8 @@ export function TeamMembers() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
+      case 'OWNER':
+        return 'text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/20'
       case 'ADMIN':
         return 'text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/20'
       case 'MEMBER':
@@ -223,6 +234,25 @@ export function TeamMembers() {
       month: 'short',
       day: 'numeric'
     })
+  }
+
+  // Check if user has access to team members page
+  if (!canAccessTeamMembers && !isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <div className="mx-auto h-12 w-12 text-gray-400 mb-4">
+              <Users className="h-12 w-12" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Access Denied</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              You don't have permission to access the team members page. Only team owners and admins can manage team members.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -385,16 +415,18 @@ export function TeamMembers() {
               Manage your team members and their access levels.
             </p>
           </div>
-          <div className="mt-6 sm:mt-0 sm:ml-16 sm:flex-none">
-            <button
-              type="button"
-              onClick={() => setShowInviteForm(true)}
-              className="rounded-full bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-2"
-            >
-              <UserPlus className="h-4 w-4" />
-              Invite Member
-            </button>
-          </div>
+          {canManageMembers && (
+            <div className="mt-6 sm:mt-0 sm:ml-16 sm:flex-none">
+              <button
+                type="button"
+                onClick={() => setShowInviteForm(true)}
+                className="rounded-full bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                Invite Member
+              </button>
+            </div>
+          )}
         </div>
         <div className="mt-16 flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -410,16 +442,18 @@ export function TeamMembers() {
                   <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Get started by inviting your first team member.
                   </p>
-                  <div className="mt-6">
-                    <button
-                      type="button"
-                      onClick={() => setShowInviteForm(true)}
-                      className="rounded-full bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-2 mx-auto"
-                    >
-                      <UserPlus className="h-4 w-4" />
-                      Invite Member
-                    </button>
-                  </div>
+                  {canManageMembers && (
+                    <div className="mt-6">
+                      <button
+                        type="button"
+                        onClick={() => setShowInviteForm(true)}
+                        className="rounded-full bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-2 mx-auto"
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        Invite Member
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <table className="relative min-w-full border-collapse">
@@ -481,46 +515,48 @@ export function TeamMembers() {
                           </div>
                         </td>
                         <td className="py-8 pr-4 pl-3 text-right text-xs font-medium whitespace-nowrap sm:pr-0">
-                          <div className="flex gap-2 justify-end">
-                            {member.status === 'PENDING' && (
+                          {canManageMembers && !member.id.startsWith('owner-') && (
+                            <div className="flex gap-2 justify-end">
+                              {member.status === 'PENDING' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleResendInvite(member.id, member.email)}
+                                  className="rounded-full bg-yellow-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-yellow-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-600 dark:bg-yellow-500 dark:shadow-none dark:hover:bg-yellow-400 dark:focus-visible:outline-yellow-500 flex items-center gap-1"
+                                >
+                                  <Mail className="h-3 w-3" />
+                                  Resend
+                                </button>
+                              )}
+                              {member.status === 'EXPIRED' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleResendInvite(member.id, member.email)}
+                                  className="rounded-full bg-orange-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-orange-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 dark:bg-orange-500 dark:shadow-none dark:hover:bg-orange-400 dark:focus-visible:outline-orange-500 flex items-center gap-1"
+                                >
+                                  <Mail className="h-3 w-3" />
+                                  Re-invite
+                                </button>
+                              )}
+                              {member.status !== 'EXPIRED' && (
+                                <button
+                                  type="button"
+                                  onClick={() => openEditForm(member)}
+                                  className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
+                                >
+                                  <Edit className="h-3 w-3" />
+                                  Edit
+                                </button>
+                              )}
                               <button
                                 type="button"
-                                onClick={() => handleResendInvite(member.id, member.email)}
-                                className="rounded-full bg-yellow-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-yellow-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-600 dark:bg-yellow-500 dark:shadow-none dark:hover:bg-yellow-400 dark:focus-visible:outline-yellow-500 flex items-center gap-1"
+                                onClick={() => handleDelete(member.id)}
+                                className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-500 dark:shadow-none dark:hover:bg-red-400 dark:focus-visible:outline-red-500 flex items-center gap-1"
                               >
-                                <Mail className="h-3 w-3" />
-                                Resend
+                                <Trash2 className="h-3 w-3" />
+                                Remove
                               </button>
-                            )}
-                            {member.status === 'EXPIRED' && (
-                              <button
-                                type="button"
-                                onClick={() => handleResendInvite(member.id, member.email)}
-                                className="rounded-full bg-orange-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-orange-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 dark:bg-orange-500 dark:shadow-none dark:hover:bg-orange-400 dark:focus-visible:outline-orange-500 flex items-center gap-1"
-                              >
-                                <Mail className="h-3 w-3" />
-                                Re-invite
-                              </button>
-                            )}
-                            {member.status !== 'EXPIRED' && (
-                              <button
-                                type="button"
-                                onClick={() => openEditForm(member)}
-                                className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
-                              >
-                                <Edit className="h-3 w-3" />
-                                Edit
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(member.id)}
-                              className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-500 dark:shadow-none dark:hover:bg-red-400 dark:focus-visible:outline-red-500 flex items-center gap-1"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                              Remove
-                            </button>
-                          </div>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}
