@@ -57,6 +57,9 @@ export function TeamMembers() {
       })
       if (response.ok) {
         const data = await response.json()
+        console.log('API Response:', data)
+        console.log('teamMembers type:', typeof data.teamMembers)
+        console.log('teamMembers value:', data.teamMembers)
         setTeamMembers(data.teamMembers || [])
         setCanManageMembers(data.canManageMembers || false)
         setIsTeamOwner(data.isTeamOwner || false)

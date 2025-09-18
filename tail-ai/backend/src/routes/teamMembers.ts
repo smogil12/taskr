@@ -5,41 +5,6 @@ import { EmailService } from '../services/emailService';
 
 const router = Router();
 
-// GET /api/team-members/permissions - Check if user can access team members page
-router.get('/permissions', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    // Check if current user is a team member
-    const currentUserTeamMember = await prisma.teamMember.findFirst({
-      where: {
-        userId: userId,
-        status: 'ACCEPTED'
-      }
-    });
-
-    let teamOwnerId = userId;
-    let canManageMembers = true; // Default for account owner
-
-    if (currentUserTeamMember) {
-      teamOwnerId = currentUserTeamMember.invitedBy;
-      canManageMembers = currentUserTeamMember.role === 'ADMIN';
-    }
-
-    return res.json({
-      canAccessTeamMembers: canManageMembers || userId === teamOwnerId,
-      canManageMembers,
-      isTeamOwner: userId === teamOwnerId
-    });
-  } catch (error) {
-    console.error('Error checking team member permissions:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 // GET /api/team-members - Get all team members for the current user
 router.get('/', authenticateToken, async (req, res) => {
   try {
@@ -603,6 +568,41 @@ router.post('/resend', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Error resending invitation:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/team-members/permissions - Check if user can access team members page
+router.get('/permissions', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Check if current user is a team member
+    const currentUserTeamMember = await prisma.teamMember.findFirst({
+      where: {
+        userId: userId,
+        status: 'ACCEPTED'
+      }
+    });
+
+    let teamOwnerId = userId;
+    let canManageMembers = true; // Default for account owner
+
+    if (currentUserTeamMember) {
+      teamOwnerId = currentUserTeamMember.invitedBy;
+      canManageMembers = currentUserTeamMember.role === 'ADMIN';
+    }
+
+    return res.json({
+      canAccessTeamMembers: canManageMembers || userId === teamOwnerId,
+      canManageMembers,
+      isTeamOwner: userId === teamOwnerId
+    });
+  } catch (error) {
+    console.error('Error checking team member permissions:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
