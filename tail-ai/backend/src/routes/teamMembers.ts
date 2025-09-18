@@ -5,6 +5,41 @@ import { EmailService } from '../services/emailService';
 
 const router = Router();
 
+// GET /api/team-members/permissions - Check if user can access team members page
+router.get('/permissions', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Check if current user is a team member
+    const currentUserTeamMember = await prisma.teamMember.findFirst({
+      where: {
+        userId: userId,
+        status: 'ACCEPTED'
+      }
+    });
+
+    let teamOwnerId = userId;
+    let canManageMembers = true; // Default for account owner
+
+    if (currentUserTeamMember) {
+      teamOwnerId = currentUserTeamMember.invitedBy;
+      canManageMembers = currentUserTeamMember.role === 'ADMIN';
+    }
+
+    return res.json({
+      canAccessTeamMembers: canManageMembers || userId === teamOwnerId,
+      canManageMembers,
+      isTeamOwner: userId === teamOwnerId
+    });
+  } catch (error) {
+    console.error('Error checking team member permissions:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/team-members - Get all team members for the current user
 router.get('/', authenticateToken, async (req, res) => {
   try {
@@ -13,9 +48,29 @@ router.get('/', authenticateToken, async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // Check if current user is a team member
+    const currentUserTeamMember = await prisma.teamMember.findFirst({
+      where: {
+        userId: userId,
+        status: 'ACCEPTED'
+      }
+    });
+
+    let teamOwnerId = userId;
+    let canManageMembers = true; // Default for account owner
+
+    if (currentUserTeamMember) {
+      // User is a team member, get the team owner ID
+      teamOwnerId = currentUserTeamMember.invitedBy;
+      
+      // Check if current user is admin
+      canManageMembers = currentUserTeamMember.role === 'ADMIN';
+    }
+
+    // Get all team members for this team (invited by the team owner)
     const teamMembers = await prisma.teamMember.findMany({
       where: {
-        invitedBy: userId
+        invitedBy: teamOwnerId
       },
       include: {
         user: {
@@ -32,7 +87,36 @@ router.get('/', authenticateToken, async (req, res) => {
       }
     });
 
-    return res.json(teamMembers);
+    // Get team owner information
+    const teamOwner = await prisma.user.findUnique({
+      where: { id: teamOwnerId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isEmailVerified: true
+      }
+    });
+
+    // Create a virtual team member entry for the team owner
+    const ownerTeamMember = {
+      id: `owner-${teamOwnerId}`,
+      email: teamOwner?.email || '',
+      role: 'OWNER' as const,
+      status: 'ACCEPTED' as const,
+      invitedAt: new Date().toISOString(),
+      user: teamOwner
+    };
+
+    // Combine team owner and team members, but only include owner if current user is not the owner
+    const allTeamMembers = userId === teamOwnerId ? teamMembers : [ownerTeamMember, ...teamMembers];
+
+    return res.json({
+      teamMembers: allTeamMembers,
+      canManageMembers,
+      isTeamOwner: userId === teamOwnerId,
+      canAccessTeamMembers: canManageMembers || userId === teamOwnerId
+    });
   } catch (error) {
     console.error('Error fetching team members:', error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -45,6 +129,26 @@ router.post('/', authenticateToken, async (req, res) => {
     const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Check if current user can manage team members
+    const currentUserTeamMember = await prisma.teamMember.findFirst({
+      where: {
+        userId: userId,
+        status: 'ACCEPTED'
+      }
+    });
+
+    let teamOwnerId = userId;
+    let canManageMembers = true; // Default for account owner
+
+    if (currentUserTeamMember) {
+      teamOwnerId = currentUserTeamMember.invitedBy;
+      canManageMembers = currentUserTeamMember.role === 'ADMIN';
+    }
+
+    if (!canManageMembers) {
+      return res.status(403).json({ error: 'Insufficient permissions to invite team members' });
     }
 
     const { email, role = 'MEMBER', expiresInDays = 7 } = req.body;
@@ -77,7 +181,7 @@ router.post('/', authenticateToken, async (req, res) => {
         email,
         role,
         status: 'PENDING',
-        invitedBy: userId,
+        invitedBy: teamOwnerId,
         expiresAt
       },
       include: {
@@ -133,6 +237,26 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // Check if current user can manage team members
+    const currentUserTeamMember = await prisma.teamMember.findFirst({
+      where: {
+        userId: userId,
+        status: 'ACCEPTED'
+      }
+    });
+
+    let teamOwnerId = userId;
+    let canManageMembers = true; // Default for account owner
+
+    if (currentUserTeamMember) {
+      teamOwnerId = currentUserTeamMember.invitedBy;
+      canManageMembers = currentUserTeamMember.role === 'ADMIN';
+    }
+
+    if (!canManageMembers) {
+      return res.status(403).json({ error: 'Insufficient permissions to update team members' });
+    }
+
     const { id } = req.params;
     const { role } = req.body;
 
@@ -140,10 +264,15 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Role is required' });
     }
 
+    // Check if it's the owner (virtual team member)
+    if (id.startsWith('owner-')) {
+      return res.status(400).json({ error: 'Cannot update team owner role' });
+    }
+
     const teamMember = await prisma.teamMember.findFirst({
       where: {
         id,
-        invitedBy: userId
+        invitedBy: teamOwnerId
       }
     });
 
@@ -173,37 +302,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// DELETE /api/team-members/:id - Remove team member
-router.delete('/:id', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const { id } = req.params;
-
-    const teamMember = await prisma.teamMember.findFirst({
-      where: {
-        id,
-        invitedBy: userId
-      }
-    });
-
-    if (!teamMember) {
-      return res.status(404).json({ error: 'Team member not found' });
-    }
-
-    await prisma.teamMember.delete({
-      where: { id }
-    });
-
-    return res.status(204).send();
-  } catch (error) {
-    console.error('Error deleting team member:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
 
 // Get invitation details by ID (for frontend to fetch invitation info)
 router.get('/invite/:id', async (req, res) => {
@@ -372,6 +470,31 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // Check if current user can manage team members
+    const currentUserTeamMember = await prisma.teamMember.findFirst({
+      where: {
+        userId: userId,
+        status: 'ACCEPTED'
+      }
+    });
+
+    let teamOwnerId = userId;
+    let canManageMembers = true; // Default for account owner
+
+    if (currentUserTeamMember) {
+      teamOwnerId = currentUserTeamMember.invitedBy;
+      canManageMembers = currentUserTeamMember.role === 'ADMIN';
+    }
+
+    if (!canManageMembers) {
+      return res.status(403).json({ error: 'Insufficient permissions to remove team members' });
+    }
+
+    // Check if it's the owner (virtual team member)
+    if (id.startsWith('owner-')) {
+      return res.status(400).json({ error: 'Cannot remove team owner' });
+    }
+
     // Find the team member
     const teamMember = await prisma.teamMember.findUnique({
       where: { id },
@@ -383,7 +506,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 
     // Check if user has permission to remove this team member
-    if (teamMember.invitedBy !== userId) {
+    if (teamMember.invitedBy !== teamOwnerId) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -429,9 +552,25 @@ router.post('/resend', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Team member not found' });
     }
 
+    // Check if current user can manage team members
+    const currentUserTeamMember = await prisma.teamMember.findFirst({
+      where: {
+        userId: user.id,
+        status: 'ACCEPTED'
+      }
+    });
+
+    let teamOwnerId = user.id;
+    let canManageMembers = true; // Default for account owner
+
+    if (currentUserTeamMember) {
+      teamOwnerId = currentUserTeamMember.invitedBy;
+      canManageMembers = currentUserTeamMember.role === 'ADMIN';
+    }
+
     // Check if user has permission to resend invitation
-    if (teamMember.invitedBy !== user.id) {
-      return res.status(403).json({ error: 'Forbidden' });
+    if (teamMember.invitedBy !== teamOwnerId || !canManageMembers) {
+      return res.status(403).json({ error: 'Insufficient permissions to resend invitations' });
     }
 
     // Only resend for pending invitations
