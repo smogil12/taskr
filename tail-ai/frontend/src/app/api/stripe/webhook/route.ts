@@ -204,9 +204,13 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     
     // Determine subscription tier based on status
     let subscriptionTier = 'FREE';
-    if (subscription.status === 'active') {
+    console.log(`🔍 Subscription status: ${subscription.status}`);
+    console.log(`🔍 Subscription cancel_at_period_end: ${subscription.cancel_at_period_end}`);
+    console.log(`🔍 Subscription canceled_at: ${subscription.canceled_at}`);
+    
+    if (subscription.status === 'active' && !subscription.cancel_at_period_end) {
       subscriptionTier = 'PRO';
-    } else if (subscription.status === 'canceled' || subscription.status === 'incomplete_expired') {
+    } else if (subscription.status === 'canceled' || subscription.status === 'incomplete_expired' || subscription.cancel_at_period_end) {
       subscriptionTier = 'FREE';
     }
     
