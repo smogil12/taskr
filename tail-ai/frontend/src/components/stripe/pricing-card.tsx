@@ -16,7 +16,7 @@ export function PricingCard({ tier, currentTier, onUpgrade, isLoading }: Pricing
   const tierConfig = userTiers[tier];
   const isCurrentTier = currentTier === tier;
   const isFreeTier = tier === 'FREE';
-  const isPaidTier = tier === 'PAID';
+  const isPaidTier = tier === 'PRO';
 
   return (
     <div className={`relative rounded-2xl border p-8 ${

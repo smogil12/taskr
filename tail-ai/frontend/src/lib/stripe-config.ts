@@ -21,7 +21,7 @@ export const userTiers = {
     maxProjects: 4,
     features: ['Basic project management', '4 projects max', 'Community support']
   },
-  PAID: {
+  PRO: {
     name: 'Pro',
     maxProjects: -1, // Unlimited
     features: ['Unlimited projects', 'Advanced analytics', 'Priority support', 'Custom integrations']

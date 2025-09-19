@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
       : stripeConfig.development.webhookSecret;
 
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    console.log('🔔 Webhook event received:', event.type);
   } catch (error) {
     console.error('Webhook signature verification failed:', error);
     return NextResponse.json(
@@ -31,24 +32,30 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    console.log(`🔔 Received webhook event: ${event.type}`);
+    
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
+        console.log(`📝 Processing checkout.session.completed for session ${session.id}`);
         await handleCheckoutSessionCompleted(session);
         break;
 
       case 'customer.subscription.created':
         const subscription = event.data.object as Stripe.Subscription;
+        console.log(`📝 Processing customer.subscription.created for subscription ${subscription.id}`);
         await handleSubscriptionCreated(subscription);
         break;
 
       case 'customer.subscription.updated':
         const updatedSubscription = event.data.object as Stripe.Subscription;
+        console.log(`📝 Processing customer.subscription.updated for subscription ${updatedSubscription.id}`);
         await handleSubscriptionUpdated(updatedSubscription);
         break;
 
       case 'customer.subscription.deleted':
         const deletedSubscription = event.data.object as Stripe.Subscription;
+        console.log(`📝 Processing customer.subscription.deleted for subscription ${deletedSubscription.id}`);
         await handleSubscriptionDeleted(deletedSubscription);
         break;
 
@@ -85,7 +92,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 
   console.log(`User ${userId} completed checkout session ${session.id}`);
-  console.log(`✅ Payment completed! User should now see PAID tier on dashboard`);
+  console.log(`✅ Payment completed! User should now see PRO tier on dashboard`);
   console.log(`🔍 Customer ID: ${session.customer}`);
   
   // Store customer ID in localStorage for testing
@@ -94,26 +101,44 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     localStorage.setItem('stripe_customer_id', session.customer as string);
   }
   
-  // For testing: we'll use localStorage to track payment completion
-  // In production, this would update the database
+  // Update user subscription tier in database
   try {
-    // Update user subscription tier
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/update-subscription`, {
-      method: 'POST',
+    // For testing, use the user ID to get the user's email
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+    
+    // Get user details from backend using the userId from metadata
+    const userResponse = await fetch(`${backendUrl}/api/auth/profile`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.TEST_JWT_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWZobjRieW4wMDAwMGV4MmZvYjd6cnVpIiwiZW1haWwiOiJzbW9naWwxMkBnbWFpbC5jb20iLCJpYXQiOjE3NTgyMzU2MjAsImV4cCI6MTc1ODg0MDQyMCwiYXVkIjoidGFpbC1haS11c2VycyIsImlzcyI6InRhaWwtYWkifQ.YM5Vk304TXCGV2sa8ZZsI0UAGVb-O100R9Gaa6QAsqM'}`,
+      },
+    });
+    
+    if (!userResponse.ok) {
+      console.error('Failed to get user details from backend');
+      return;
+    }
+    
+    const userData = await userResponse.json();
+    const userEmail = userData.user.email;
+    
+    console.log(`Updating user ${userEmail} to PRO tier`);
+    
+    const response = await fetch(`${backendUrl}/api/auth/by-email/${userEmail}/subscription`, {
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        userId: userId,
-        tier: 'PAID',
-        customerId: session.customer
+        subscriptionTier: 'PRO',
+        stripeCustomerId: session.customer,
+        subscriptionId: session.subscription,
       }),
     });
 
     if (response.ok) {
-      console.log(`✅ Updated user ${userId} to PAID tier`);
+      console.log(`✅ Updated user ${userEmail} to PRO tier`);
     } else {
-      console.error(`❌ Failed to update user ${userId}:`, await response.text());
+      console.error(`❌ Failed to update user ${userEmail}:`, await response.text());
     }
   } catch (error) {
     console.error('Error updating user subscription:', error);
@@ -137,20 +162,20 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     // Find user by email and update subscription
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
     
-    const response = await fetch(`${backendUrl}/api/users/by-email/${customer.email}/subscription`, {
+    const response = await fetch(`${backendUrl}/api/auth/by-email/${customer.email}/subscription`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        subscriptionTier: 'PAID',
+        subscriptionTier: 'PRO',
         stripeCustomerId: customerId,
-        stripeSubscriptionId: subscription.id,
+        subscriptionId: subscription.id,
       }),
     });
 
     if (response.ok) {
-      console.log(`✅ Updated user ${customer.email} to PAID tier`);
+      console.log(`✅ Updated user ${customer.email} to PRO tier`);
     } else {
       console.error(`❌ Failed to update user ${customer.email}:`, await response.text());
     }
@@ -169,8 +194,46 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
   
-  console.log(`Subscription deleted for customer ${customerId}`);
-  // TODO: Downgrade user to free tier in database
+  console.log(`🗑️ Subscription deleted for customer ${customerId}`);
+  console.log(`🔍 Subscription ID: ${subscription.id}`);
+  
+  try {
+    // Get customer details from Stripe
+    const customer = await stripe.customers.retrieve(customerId);
+    
+    if (customer.deleted) {
+      console.error('❌ Customer was deleted');
+      return;
+    }
+
+    console.log(`👤 Downgrading user ${customer.email} to FREE tier`);
+    
+    // Find user by email and update subscription to FREE
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+    
+    console.log(`🔗 Calling backend: ${backendUrl}/api/auth/by-email/${customer.email}/subscription`);
+    
+    const response = await fetch(`${backendUrl}/api/auth/by-email/${customer.email}/subscription`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        subscriptionTier: 'FREE',
+        stripeCustomerId: null,
+        subscriptionId: null,
+      }),
+    });
+
+    if (response.ok) {
+      console.log(`✅ Successfully downgraded user ${customer.email} to FREE tier`);
+    } else {
+      const errorText = await response.text();
+      console.error(`❌ Failed to downgrade user ${customer.email}:`, errorText);
+    }
+  } catch (error) {
+    console.error('💥 Error downgrading user subscription:', error);
+  }
 }
 
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {

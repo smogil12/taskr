@@ -29,6 +29,7 @@ interface AuthContextType {
   error: string | null
   verifyEmail: (token: string) => Promise<boolean>
   resendVerification: (email: string) => Promise<boolean>
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -208,6 +209,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const refreshUser = async (): Promise<void> => {
+    if (token) {
+      try {
+        await fetchUserProfile(token)
+      } catch (error) {
+        console.error('Error refreshing user data:', error)
+        // Don't clear the user data on refresh errors, just log them
+      }
+    }
+  }
+
   const value: AuthContextType = {
     user,
     token,
@@ -219,6 +231,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     error,
     verifyEmail,
     resendVerification,
+    refreshUser,
   }
 
   return (

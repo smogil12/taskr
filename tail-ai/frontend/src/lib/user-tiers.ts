@@ -13,7 +13,7 @@ export interface User {
 
 export class UserTierManager {
   static canCreateProject(user: User): boolean {
-    if (user.tier === 'PAID') {
+    if (user.tier === 'PRO') {
       return true; // Unlimited projects
     }
     
@@ -29,7 +29,7 @@ export class UserTierManager {
   }
 
   static getRemainingProjects(user: User): number {
-    if (user.tier === 'PAID') {
+    if (user.tier === 'PRO') {
       return -1; // Unlimited
     }
     
