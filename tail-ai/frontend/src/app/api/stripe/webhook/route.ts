@@ -187,8 +187,57 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
   
-  console.log(`Subscription updated for customer ${customerId}`);
-  // TODO: Update user subscription status in database
+  console.log(`🔄 Subscription updated for customer ${customerId}`);
+  console.log(`🔍 Subscription ID: ${subscription.id}`);
+  console.log(`🔍 Subscription status: ${subscription.status}`);
+  
+  try {
+    // Get customer details from Stripe
+    const customer = await stripe.customers.retrieve(customerId);
+    
+    if (customer.deleted) {
+      console.error('❌ Customer was deleted');
+      return;
+    }
+
+    console.log(`👤 Updating user ${customer.email} subscription status`);
+    
+    // Determine subscription tier based on status
+    let subscriptionTier = 'FREE';
+    if (subscription.status === 'active') {
+      subscriptionTier = 'PRO';
+    } else if (subscription.status === 'canceled' || subscription.status === 'incomplete_expired') {
+      subscriptionTier = 'FREE';
+    }
+    
+    console.log(`📊 Setting subscription tier to: ${subscriptionTier}`);
+    
+    // Find user by email and update subscription
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+    
+    console.log(`🔗 Calling backend: ${backendUrl}/api/auth/by-email/${customer.email}/subscription`);
+    
+    const response = await fetch(`${backendUrl}/api/auth/by-email/${customer.email}/subscription`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        subscriptionTier: subscriptionTier,
+        stripeCustomerId: subscriptionTier === 'FREE' ? null : customerId,
+        subscriptionId: subscriptionTier === 'FREE' ? null : subscription.id,
+      }),
+    });
+
+    if (response.ok) {
+      console.log(`✅ Successfully updated user ${customer.email} to ${subscriptionTier} tier`);
+    } else {
+      const errorText = await response.text();
+      console.error(`❌ Failed to update user ${customer.email}:`, errorText);
+    }
+  } catch (error) {
+    console.error('💥 Error updating user subscription:', error);
+  }
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
