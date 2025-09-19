@@ -388,5 +388,53 @@ router.post('/resend-verification', async (req: Request, res: Response) => {
   }
 });
 
+// Update user subscription by email (for Stripe webhooks)
+router.patch('/by-email/:email/subscription', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+    const { subscriptionTier, stripeCustomerId, subscriptionId } = req.body;
+
+    if (!subscriptionTier) {
+      return res.status(400).json({ error: 'subscriptionTier is required' });
+    }
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Update user subscription
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        subscriptionTier: subscriptionTier === 'PAID' ? 'PRO' : subscriptionTier as any,
+        stripeCustomerId: stripeCustomerId || null,
+        subscriptionId: subscriptionId || null,
+        subscriptionEnds: subscriptionTier === 'FREE' ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      },
+    });
+
+    console.log(`✅ Updated user ${email} subscription to ${subscriptionTier}`);
+
+    return res.json({
+      message: 'Subscription updated successfully',
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        subscriptionTier: updatedUser.subscriptionTier,
+        stripeCustomerId: updatedUser.stripeCustomerId,
+        subscriptionId: updatedUser.subscriptionId,
+      },
+    });
+  } catch (error) {
+    console.error('Update subscription error:', error);
+    return res.status(500).json({ error: 'Failed to update subscription' });
+  }
+});
+
 export default router;
 
