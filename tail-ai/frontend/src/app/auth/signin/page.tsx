@@ -4,8 +4,9 @@ import { SignInForm } from "@/components/forms/signin-form";
 import { useSearchParams } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from "lucide-react";
+import { Suspense } from "react";
 
-export default function SignInPage() {
+function SignInContent() {
   const searchParams = useSearchParams();
   const message = searchParams.get('message');
 
@@ -23,6 +24,14 @@ export default function SignInPage() {
       )}
       <SignInForm />
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignInContent />
+    </Suspense>
   );
 }
 
