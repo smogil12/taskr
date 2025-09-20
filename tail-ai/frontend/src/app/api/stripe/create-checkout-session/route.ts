@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { getStripeProductId } from '@/lib/stripe';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,19 +18,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create a price dynamically for test mode
-    console.log('🔍 Creating price for test mode...');
-    const price = await stripe.prices.create({
-      unit_amount: 1000, // $10.00 in cents
-      currency: 'usd',
-      recurring: {
-        interval: 'month',
-      },
-      product_data: {
-        name: 'Pro Plan',
-      },
-    });
-    console.log('🔍 Created price:', price.id);
+    // Use existing price ID from environment variables
+    const priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID;
+    if (!priceId) {
+      console.error('❌ Stripe price ID not configured');
+      return NextResponse.json(
+        { error: 'Stripe price ID not configured' },
+        { status: 500 }
+      );
+    }
+    console.log('🔍 Using existing price ID:', priceId);
 
     // Create a checkout session
     console.log('🔍 Creating Stripe session...');
@@ -40,7 +36,7 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: price.id,
+          price: priceId,
           quantity: 1,
         },
       ],
