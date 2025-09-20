@@ -6,6 +6,7 @@ import { prisma } from '../index';
 import { EmailService } from '../services/emailService';
 import { securityLogger } from '../utils/securityLogger';
 import { getJwtSecret, signJwt, verifyJwt } from '../utils/jwtSecurity';
+import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
@@ -433,6 +434,60 @@ router.patch('/by-email/:email/subscription', async (req: Request, res: Response
   } catch (error) {
     console.error('Update subscription error:', error);
     return res.status(500).json({ error: 'Failed to update subscription' });
+  }
+});
+
+// Change password - requires authentication
+router.post('/change-password', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    // Manual validation
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword) {
+      return res.status(400).json({ error: 'Current password is required' });
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    const userId = (req as any).user.id;
+
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update password
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedNewPassword,
+      },
+    });
+
+    console.log(`✅ Password changed for user ${user.email}`);
+
+    return res.json({ 
+      message: 'Password changed successfully' 
+    });
+
+  } catch (error) {
+    console.error('Change password error:', error);
+    return res.status(500).json({ error: 'Failed to change password' });
   }
 });
 

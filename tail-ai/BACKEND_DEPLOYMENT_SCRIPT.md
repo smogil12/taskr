@@ -8,33 +8,134 @@ This script helps deploy backend changes from local → staging → production o
 - Local backend code in `/Users/spencermogil/taskr/tail-ai/backend/`
 - Staging backend at `/root/taskr-backend/`
 - Production backend at `/root/taskr-backend-prod/`
+- TypeScript compiled locally before deployment
+
+## 0. TypeScript Compilation (CRITICAL STEP)
+
+**⚠️ ALWAYS compile TypeScript files locally before deploying to DigitalOcean!**
+
+### When Compilation is Required
+
+You MUST compile TypeScript files locally in these scenarios:
+
+1. **New TypeScript files added** (e.g., `jwtSecurity.ts`, new utilities)
+2. **Existing TypeScript files modified** (e.g., `auth.ts`, `middleware/auth.ts`)
+3. **Type definitions changed** (e.g., new interfaces, enums)
+4. **Import/export statements added** (e.g., new dependencies)
+5. **Any changes to `.ts` files in `src/` directory**
+
+### Compilation Commands
+
+```bash
+# Navigate to backend directory
+cd /Users/spencermogil/taskr/tail-ai/backend
+
+# Compile TypeScript to JavaScript
+npm run build
+
+# Verify compilation succeeded
+ls -la dist/
+```
+
+### What Gets Compiled
+
+- `src/*.ts` → `dist/*.js`
+- `src/utils/*.ts` → `dist/utils/*.js`
+- `src/routes/*.ts` → `dist/routes/*.js`
+- `src/middleware/*.ts` → `dist/middleware/*.js`
+
+### Common Compilation Errors
+
+**Error: "Cannot find module"**
+```bash
+# Install missing dependencies
+npm install
+
+# Regenerate Prisma client
+npx prisma generate
+```
+
+**Error: "Type errors"**
+```bash
+# Check TypeScript configuration
+npx tsc --noEmit
+
+# Fix type errors before building
+npm run build
+```
+
+### Verification Steps
+
+After compilation, verify these files exist:
+```bash
+# Check critical compiled files
+ls -la dist/utils/jwtSecurity.js
+ls -la dist/routes/auth.js
+ls -la dist/middleware/auth.js
+```
+
+### Why This is Critical
+
+The DigitalOcean server runs the **compiled JavaScript files** from the `dist/` directory, not the TypeScript source files. If you don't compile locally:
+
+- ❌ **New files won't exist** on the server
+- ❌ **Server will crash** with "Cannot find module" errors
+- ❌ **PM2 will fail to start** the application
+- ❌ **Database operations will fail** due to missing compiled code
+
+### Real Example from Recent Issue
+
+**Problem**: Added `jwtSecurity.ts` but didn't compile locally
+**Result**: Server crashed with "Cannot find module '../utils/jwtSecurity'"
+**Solution**: Compiled locally with `npm run build`, then deployed
+
+```bash
+# What happened:
+1. Added src/utils/jwtSecurity.ts ✅
+2. Updated src/routes/auth.ts to import it ✅
+3. Deployed to server ❌ (forgot to compile)
+4. Server crashed ❌ (jwtSecurity.js didn't exist)
+5. Fixed: npm run build, then deployed ✅
+```
 
 ## 1. Deploy Local Changes to Staging
 
-### Step 1: Copy Backend Code (Excluding .env files)
+### Step 1: Compile TypeScript (REQUIRED)
 ```bash
-# From local machine
-rsync -avz --exclude='.env*' --exclude='node_modules' --exclude='dist' \
+# Navigate to backend directory
+cd /Users/spencermogil/taskr/tail-ai/backend
+
+# Compile TypeScript to JavaScript
+npm run build
+
+# Verify compilation succeeded
+ls -la dist/
+```
+
+### Step 2: Copy Backend Code (Including compiled dist/ directory)
+```bash
+# From local machine - now includes compiled dist/ directory
+rsync -avz --exclude='.env*' --exclude='node_modules' \
   /Users/spencermogil/taskr/tail-ai/backend/ \
   root@167.99.115.97:/root/taskr-backend/
 ```
 
-### Step 2: Install Dependencies and Regenerate Prisma Client
+### Step 3: Install Dependencies and Regenerate Prisma Client
 ```bash
 ssh root@167.99.115.97 "cd /root/taskr-backend && npm install && npx prisma generate"
 ```
 
-### Step 3: Apply Database Migrations (if any)
+### Step 4: Apply Database Migrations (if any)
 ```bash
 ssh root@167.99.115.97 "cd /root/taskr-backend && npx prisma migrate deploy"
 ```
 
-### Step 4: Restart Staging Backend
+### Step 5: Restart Staging Backend
 ```bash
 ssh root@167.99.115.97 "pm2 restart taskr-backend"
 ```
 
-### Step 5: Verify Staging is Working
+### Step 6: Verify Staging is Working
 ```bash
 # Check logs
 ssh root@167.99.115.97 "pm2 logs taskr-backend --lines 10"

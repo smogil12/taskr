@@ -77,6 +77,17 @@ export function SignInForm() {
           )}
 
           <div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <Link
+                  href="/forgot-password"
+                  className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+            </div>
+            
             <div className="mt-2">
               <button
                 type="submit"
