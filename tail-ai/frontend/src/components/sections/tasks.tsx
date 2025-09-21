@@ -230,7 +230,14 @@ export function Tasks() {
         await fetchProjects() // Refresh projects to update hours
         setEditingTask(null)
       } else {
-        const error = await response.json()
+        const errorText = await response.text()
+        console.error('Error response text:', errorText)
+        let error
+        try {
+          error = JSON.parse(errorText)
+        } catch (e) {
+          error = { message: errorText }
+        }
         console.error('Error updating task:', error)
       }
     } catch (error) {

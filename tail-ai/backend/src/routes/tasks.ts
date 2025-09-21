@@ -19,10 +19,24 @@ const validateTask = [
     if (value === '' || value === null || value === undefined) {
       return true; // Allow empty values
     }
-    return /^\d{4}-\d{2}-\d{2}$/.test(value) && !isNaN(Date.parse(value));
+    // Handle both YYYY-MM-DD format and ISO date strings
+    const date = new Date(value);
+    return !isNaN(date.getTime());
   }).withMessage('Due date must be a valid date'),
-  body('estimatedHours').optional().isFloat({ min: 0 }).withMessage('Estimated hours must be a positive number'),
-  body('actualHours').optional().isFloat({ min: 0 }).withMessage('Actual hours must be a positive number'),
+  body('estimatedHours').optional().custom((value: any) => {
+    if (value === '' || value === null || value === undefined) {
+      return true; // Allow empty values
+    }
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 0;
+  }).withMessage('Estimated hours must be a positive number'),
+  body('actualHours').optional().custom((value: any) => {
+    if (value === '' || value === null || value === undefined) {
+      return true; // Allow empty values
+    }
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 0;
+  }).withMessage('Actual hours must be a positive number'),
 ];
 
 // Helper function to update project hours
@@ -300,7 +314,7 @@ router.put('/:id', validateTask, async (req: any, res: any) => {
         ...(status && { status }),
         ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
         ...(estimatedHours !== undefined && { estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null }),
-        ...(assignedTo !== undefined && { assignedTo }),
+        ...(assignedTo !== undefined && { assignedTo: assignedTo || null }),
         ...(actualHours !== undefined && { actualHours: actualHours ? parseFloat(actualHours) : null }),
         lastEditedBy: req.user!.id,
         lastEditedAt: new Date(),
