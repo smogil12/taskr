@@ -15,7 +15,12 @@ const validateTask = [
   body('description').optional().isLength({ max: 1000 }).withMessage('Description must be less than 1000 characters'),
   body('priority').optional().isIn(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).withMessage('Invalid priority'),
   body('status').optional().isIn(['TODO', 'IN_PROGRESS', 'COMPLETED']).withMessage('Invalid status'),
-  body('dueDate').optional().isISO8601().withMessage('Due date must be a valid date'),
+  body('dueDate').optional().custom((value: any) => {
+    if (value === '' || value === null || value === undefined) {
+      return true; // Allow empty values
+    }
+    return /^\d{4}-\d{2}-\d{2}$/.test(value) && !isNaN(Date.parse(value));
+  }).withMessage('Due date must be a valid date'),
   body('estimatedHours').optional().isFloat({ min: 0 }).withMessage('Estimated hours must be a positive number'),
   body('actualHours').optional().isFloat({ min: 0 }).withMessage('Actual hours must be a positive number'),
 ];
