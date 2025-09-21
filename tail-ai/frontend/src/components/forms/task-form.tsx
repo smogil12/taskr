@@ -34,7 +34,7 @@ interface TaskData {
   description: string
   priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT"
   status: "TODO" | "IN_PROGRESS" | "COMPLETED"
-  dueDate: string
+  dueDate?: string
   estimatedHours: string
   actualHours?: string
   projectId: string

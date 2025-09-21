@@ -149,7 +149,7 @@ export function Tasks() {
       if (response.ok) {
         const data = await response.json()
         // Filter to only include accepted team members and add the current user
-        const acceptedMembers = data.filter((member: any) => member.status === 'ACCEPTED')
+        const acceptedMembers = data.teamMembers.filter((member: any) => member.status === 'ACCEPTED')
         // Add current user as the first option
         const allMembers = [
           { id: user?.id, name: user?.name || 'You', email: user?.email || '' },
