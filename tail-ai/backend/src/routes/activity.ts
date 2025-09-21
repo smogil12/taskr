@@ -49,6 +49,13 @@ router.get('/', authenticateToken, async (req: any, res: any) => {
         userId: teamOwnerId,
       },
       include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         lastEditedByUser: {
           select: {
             id: true,
@@ -67,6 +74,13 @@ router.get('/', authenticateToken, async (req: any, res: any) => {
         userId: teamOwnerId,
       },
       include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         lastEditedByUser: {
           select: {
             id: true,
@@ -122,7 +136,7 @@ router.get('/', authenticateToken, async (req: any, res: any) => {
         itemId: project.id,
         itemTitle: project.name,
         itemType: 'project',
-        user: { id: teamOwnerId, name: 'Team Owner', email: '' }, // Project creator is always team owner
+        user: project.user, // Use actual project creator
         timestamp: project.createdAt,
         status: project.status,
       });
@@ -151,7 +165,7 @@ router.get('/', authenticateToken, async (req: any, res: any) => {
         itemId: client.id,
         itemTitle: client.name,
         itemType: 'client',
-        user: { id: teamOwnerId, name: 'Team Owner', email: '' }, // Client creator is always team owner
+        user: client.user, // Use actual client creator
         timestamp: client.createdAt,
       });
 

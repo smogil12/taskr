@@ -16,6 +16,7 @@ import subscriptionRoutes from './routes/subscriptions';
 import calendarRoutes from './routes/calendar';
 import teamMemberRoutes from './routes/teamMembers';
 import activityRoutes from './routes/activity';
+import passwordResetRoutes from './routes/password-reset';
 
 // Load environment variables
 dotenv.config();
@@ -123,6 +124,7 @@ app.get('/health', async (req, res) => {
 
 // API routes
 app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);

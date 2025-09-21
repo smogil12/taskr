@@ -7,7 +7,7 @@ import { useAuth } from '@/components/providers/auth-provider';
 import { useSearchParams } from 'next/navigation';
 
 function PlansPageContent() {
-  const { user: authUser, isLoading: authLoading } = useAuth();
+  const { user: authUser, isLoading: authLoading, refreshUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -36,7 +36,7 @@ function PlansPageContent() {
       const convertedUser: User = {
         id: authUser.id,
         email: authUser.email,
-        tier: authUser.subscriptionTier || 'FREE',
+        tier: (authUser.subscriptionTier as 'FREE' | 'PRO') || 'FREE',
         projectCount: authUser._count?.projects || 0,
         stripeCustomerId: undefined, // Will be updated by webhook
         stripeSubscriptionId: undefined, // Will be updated by webhook
@@ -50,6 +50,9 @@ function PlansPageContent() {
       setIsLoading(false);
     }
   }, [authUser, authLoading]);
+
+  // Note: Removed automatic refresh to avoid 500 errors
+  // The user data should be fresh from the auth provider
 
   const handleUpgrade = async () => {
     try {
@@ -211,11 +214,11 @@ function PlansPageContent() {
               {/* Current Tier */}
               <div className="text-center">
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  user.tier === 'PAID' 
+                  user.tier === 'PRO' 
                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                     : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                 }`}>
-                  {user.tier === 'PAID' ? 'Pro' : 'Free'}
+                  {user.tier === 'PRO' ? 'Pro' : 'Free'}
                 </div>
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                   Current Plan
@@ -225,7 +228,7 @@ function PlansPageContent() {
               {/* Project Usage */}
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {user.tier === 'PAID' ? `${user.projectCount}/∞` : `${user.projectCount}/4`}
+                  {user.tier === 'PRO' ? `${user.projectCount}/∞` : `${user.projectCount}/4`}
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Projects
@@ -235,7 +238,7 @@ function PlansPageContent() {
               {/* Remaining Projects */}
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {user.tier === 'PAID' ? '∞' : Math.max(0, 4 - user.projectCount)}
+                  {user.tier === 'PRO' ? '∞' : Math.max(0, 4 - user.projectCount)}
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Remaining
@@ -286,7 +289,7 @@ function PlansPageContent() {
                 </div>
               )}
               
-              {user.tier === 'PAID' && (
+              {user.tier === 'PRO' && (
                 <div>
                   <button 
                     onClick={handleManageSubscription}

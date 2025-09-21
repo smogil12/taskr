@@ -55,7 +55,7 @@ function PricingPageContent() {
       } finally {
         setIsLoading(false);
       }
-    } else if (tier === 'PAID') {
+    } else if (tier === 'PRO') {
       // Handle upgrade to paid - redirect to Stripe checkout
       setIsLoading(true);
       try {
@@ -231,7 +231,7 @@ function PricingPageContent() {
             
             <div className="mt-8">
               <Button
-                onClick={() => handleUpgrade('PAID')}
+                onClick={() => handleUpgrade('PRO')}
                 disabled={isLoading}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >

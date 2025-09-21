@@ -86,7 +86,7 @@ export function UserDashboard({ user, onProjectCreate, onProjectDelete }: UserDa
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Your Plan
           </h2>
-          {user.tier === 'PAID' && user.stripeCustomerId && (
+          {user.tier === 'PRO' && user.stripeCustomerId && (
             <Button
               variant="outline"
               onClick={handleCustomerPortal}
@@ -102,7 +102,7 @@ export function UserDashboard({ user, onProjectCreate, onProjectDelete }: UserDa
           {/* Current Tier */}
           <div className="text-center">
             <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-              user.tier === 'PAID' 
+              user.tier === 'PRO' 
                 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                 : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
             }`}>
@@ -117,7 +117,7 @@ export function UserDashboard({ user, onProjectCreate, onProjectDelete }: UserDa
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {user.projectCount}
-              {user.tier === 'PAID' ? '+' : `/${UserTierManager.getMaxProjects(user)}`}
+              {user.tier === 'PRO' ? '+' : `/${UserTierManager.getMaxProjects(user)}`}
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Projects
