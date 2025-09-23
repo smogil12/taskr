@@ -149,7 +149,7 @@ export function Tasks() {
       if (response.ok) {
         const data = await response.json()
         // Filter to only include accepted team members and add the current user
-        const acceptedMembers = data.filter((member: any) => member.status === 'ACCEPTED')
+        const acceptedMembers = data.teamMembers.filter((member: any) => member.status === 'ACCEPTED')
         // Add current user as the first option
         const allMembers = [
           { id: user?.id, name: user?.name || 'You', email: user?.email || '' },
@@ -230,7 +230,14 @@ export function Tasks() {
         await fetchProjects() // Refresh projects to update hours
         setEditingTask(null)
       } else {
-        const error = await response.json()
+        const errorText = await response.text()
+        console.error('Error response text:', errorText)
+        let error
+        try {
+          error = JSON.parse(errorText)
+        } catch (e) {
+          error = { message: errorText }
+        }
         console.error('Error updating task:', error)
       }
     } catch (error) {
@@ -429,123 +436,143 @@ export function Tasks() {
                   </p>
                 </div>
               ) : (
-                                  <table className="relative min-w-full border-collapse tasks-table">
-                  <thead>
-                    <tr className="bg-gray-50 dark:bg-white/5">
-                      <th
-                        scope="col"
-                        className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0 dark:text-white"
-                      >
-                        Title
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Status
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Priority
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Project
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Assignee
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Due Date
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Hours
-                      </th>
-                      <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
-                        <span className="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTasks.map((task, index) => (
-                      <tr key={task.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
-                        <td className=" text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
-                          {task.title}
-                          {task.description && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
-                              {task.description}
-                            </p>
-                          )}
-                        </td>
-                        <td className=" text-sm whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                              task.status
-                            )}`}
-                          >
-                            {formatStatus(task.status)}
-                          </span>
-                        </td>
-                        <td className=" text-sm whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
-                              task.priority
-                            )}`}
-                          >
-                            {task.priority}
-                          </span>
-                        </td>
-                        <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          {task.project.name}
-                        </td>
-                        <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          {task.assignedUser ? (
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">
-                                {task.assignedUser.name}
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                {task.assignedUser.email}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">Unassigned</span>
-                          )}
-                        </td>
-                        <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          {task.dueDate ? (
-                            new Date(task.dueDate).toLocaleDateString()
-                          ) : (
-                            <span className="text-gray-400">No due date</span>
-                          )}
-                        </td>
-                        <td className=" text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          {task.estimatedHours || 0}h est
-                          {task.actualHours !== undefined && (
-                            <div className="text-xs text-gray-400 mt-1">
-                              {task.actualHours}h actual
-                            </div>
-                          )}
-                        </td>
-                        <td className=" text-right text-sm font-medium whitespace-nowrap sm:pr-0">
-                          <div className="flex gap-2 justify-end">
-                            <button
-                              type="button"
-                              onClick={() => setEditingTask(task)}
-                              className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
-                            >
-                              <Edit className="h-3 w-3" />
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteTask(task.id)}
-                              className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-500 dark:shadow-none dark:hover:bg-red-400 dark:focus-visible:outline-red-500 flex items-center gap-1"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                              Delete
-                            </button>
-                          </div>
-                        </td>
+                <div className="overflow-hidden shadow-sm outline-1 outline-black/5 sm:rounded-lg dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
+                  <table className="relative min-w-full divide-y divide-gray-300 dark:divide-white/15">
+                    <thead className="bg-gray-50 dark:bg-gray-800/75">
+                      <tr>
+                        <th
+                          scope="col"
+                          className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200"
+                        >
+                          Title
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Status
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Priority
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Project
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Assignee
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Due Date
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Hours
+                        </th>
+                        <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-6">
+                          <span className="sr-only">Actions</span>
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-white/10 dark:bg-gray-800/50">
+                      {filteredTasks.map((task, index) => (
+                        <tr key={task.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
+                          <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white">
+                            {task.title}
+                            {task.description && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
+                                {task.description}
+                              </p>
+                            )}
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                task.status
+                              )}`}
+                            >
+                              {formatStatus(task.status)}
+                            </span>
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
+                                task.priority
+                              )}`}
+                            >
+                              {task.priority}
+                            </span>
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            {task.project.name}
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            {task.assignedUser ? (
+                              <div>
+                                <div className="font-medium text-gray-900 dark:text-white">
+                                  {task.assignedUser.name}
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                  {task.assignedUser.email}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">Unassigned</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            {task.dueDate ? (
+                              new Date(task.dueDate).toLocaleDateString()
+                            ) : (
+                              <span className="text-gray-400">No due date</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            {task.estimatedHours || 0}h est
+                            {task.actualHours !== undefined && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                {task.actualHours}h actual
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6">
+                            <div className="flex gap-2 justify-end">
+                              <button
+                                type="button"
+                                onClick={() => setEditingTask(task)}
+                                className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
+                              >
+                                <Edit className="h-3 w-3" />
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteTask(task.id)}
+                                className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-500 dark:shadow-none dark:hover:bg-red-400 dark:focus-visible:outline-red-500 flex items-center gap-1"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>

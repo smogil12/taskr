@@ -15,9 +15,28 @@ const validateTask = [
   body('description').optional().isLength({ max: 1000 }).withMessage('Description must be less than 1000 characters'),
   body('priority').optional().isIn(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).withMessage('Invalid priority'),
   body('status').optional().isIn(['TODO', 'IN_PROGRESS', 'COMPLETED']).withMessage('Invalid status'),
-  body('dueDate').optional().isISO8601().withMessage('Due date must be a valid date'),
-  body('estimatedHours').optional().isFloat({ min: 0 }).withMessage('Estimated hours must be a positive number'),
-  body('actualHours').optional().isFloat({ min: 0 }).withMessage('Actual hours must be a positive number'),
+  body('dueDate').optional().custom((value: any) => {
+    if (value === '' || value === null || value === undefined) {
+      return true; // Allow empty values
+    }
+    // Handle both YYYY-MM-DD format and ISO date strings
+    const date = new Date(value);
+    return !isNaN(date.getTime());
+  }).withMessage('Due date must be a valid date'),
+  body('estimatedHours').optional().custom((value: any) => {
+    if (value === '' || value === null || value === undefined) {
+      return true; // Allow empty values
+    }
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 0;
+  }).withMessage('Estimated hours must be a positive number'),
+  body('actualHours').optional().custom((value: any) => {
+    if (value === '' || value === null || value === undefined) {
+      return true; // Allow empty values
+    }
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 0;
+  }).withMessage('Actual hours must be a positive number'),
 ];
 
 // Helper function to update project hours
@@ -295,7 +314,7 @@ router.put('/:id', validateTask, async (req: any, res: any) => {
         ...(status && { status }),
         ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
         ...(estimatedHours !== undefined && { estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null }),
-        ...(assignedTo !== undefined && { assignedTo }),
+        ...(assignedTo !== undefined && { assignedTo: assignedTo || null }),
         ...(actualHours !== undefined && { actualHours: actualHours ? parseFloat(actualHours) : null }),
         lastEditedBy: req.user!.id,
         lastEditedAt: new Date(),

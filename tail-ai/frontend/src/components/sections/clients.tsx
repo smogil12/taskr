@@ -726,110 +726,124 @@ export function Clients() {
                   <p className="text-gray-600 dark:text-gray-400">No clients found. Create your first client to get started.</p>
                 </div>
               ) : (
-                                  <table className="relative min-w-full border-collapse clients-table">
-                  <thead>
-                    <tr className="bg-gray-50 dark:bg-white/5">
-                      <th
-                        scope="col"
-                        className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0 dark:text-white"
-                      >
-                        Client
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Contact
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Projects
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Hours
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Rate
-                      </th>
-                      <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
-                        <span className="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {clients.map((client, index) => (
-                      <tr key={client.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
-                        <td className="py-8 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
-                          {client.name}
-                        </td>
-                        <td className="px-3 py-8 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          <div className="space-y-1">
-                            {client.email && (
-                              <div className="flex items-center gap-1">
-                                <Mail className="h-3 w-3" />
-                                <span className="text-xs">{client.email}</span>
-                              </div>
-                            )}
-                            {client.phone && (
-                              <div className="flex items-center gap-1">
-                                <Phone className="h-3 w-3" />
-                                <span className="text-xs">{client.phone}</span>
-                              </div>
-                            )}
-                            {!client.email && !client.phone && (
-                              <span className="text-gray-400 text-xs">No contact info</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-3 py-8 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          {client.projects.length} project{client.projects.length !== 1 ? 's' : ''}
-                        </td>
-                        <td className="px-3 py-8 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          {getTotalAllocatedHours(client.projects)}h allocated
-                          {getTotalConsumedHours(client.projects) > 0 && (
-                            <div className="text-xs text-gray-400 mt-1">
-                              {getTotalConsumedHours(client.projects)}h used
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-3 py-8 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          {client.hourlyRate ? (
-                            <div className="flex items-center gap-1">
-                              <DollarSign className="h-3 w-3" />
-                              ${client.hourlyRate}/h
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">No rate set</span>
-                          )}
-                        </td>
-                        <td className="py-8 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-0">
-                          <div className="flex gap-2 justify-end">
-                            <button
-                              type="button"
-                              onClick={() => openClientDetail(client)}
-                              className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
-                            >
-                              <Eye className="h-3 w-3" />
-                              View
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => openEditForm(client)}
-                              className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
-                            >
-                              <Edit className="h-3 w-3" />
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(client.id)}
-                              className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-500 dark:shadow-none dark:hover:bg-red-400 dark:focus-visible:outline-red-500 flex items-center gap-1"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                              Delete
-                            </button>
-                          </div>
-                        </td>
+                <div className="overflow-hidden shadow-sm outline-1 outline-black/5 sm:rounded-lg dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
+                  <table className="relative min-w-full divide-y divide-gray-300 dark:divide-white/15">
+                    <thead className="bg-gray-50 dark:bg-gray-800/75">
+                      <tr>
+                        <th
+                          scope="col"
+                          className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200"
+                        >
+                          Client
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Contact
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Projects
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Hours
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Rate
+                        </th>
+                        <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-6">
+                          <span className="sr-only">Actions</span>
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-white/10 dark:bg-gray-800/50">
+                      {clients.map((client, index) => (
+                        <tr key={client.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
+                          <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white">
+                            {client.name}
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            <div className="space-y-1">
+                              {client.email && (
+                                <div className="flex items-center gap-1">
+                                  <Mail className="h-3 w-3" />
+                                  <span className="text-xs">{client.email}</span>
+                                </div>
+                              )}
+                              {client.phone && (
+                                <div className="flex items-center gap-1">
+                                  <Phone className="h-3 w-3" />
+                                  <span className="text-xs">{client.phone}</span>
+                                </div>
+                              )}
+                              {!client.email && !client.phone && (
+                                <span className="text-gray-400 text-xs">No contact info</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            {client.projects.length} project{client.projects.length !== 1 ? 's' : ''}
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            {getTotalAllocatedHours(client.projects)}h allocated
+                            {getTotalConsumedHours(client.projects) > 0 && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                {getTotalConsumedHours(client.projects)}h used
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            {client.hourlyRate ? (
+                              <div className="flex items-center gap-1">
+                                <DollarSign className="h-3 w-3" />
+                                ${client.hourlyRate}/h
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">No rate set</span>
+                            )}
+                          </td>
+                          <td className="py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6">
+                            <div className="flex gap-2 justify-end">
+                              <button
+                                type="button"
+                                onClick={() => openClientDetail(client)}
+                                className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
+                              >
+                                <Eye className="h-3 w-3" />
+                                View
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openEditForm(client)}
+                                className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
+                              >
+                                <Edit className="h-3 w-3" />
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDelete(client.id)}
+                                className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-500 dark:shadow-none dark:hover:bg-red-400 dark:focus-visible:outline-red-500 flex items-center gap-1"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>

@@ -34,7 +34,7 @@ interface TaskData {
   description: string
   priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT"
   status: "TODO" | "IN_PROGRESS" | "COMPLETED"
-  dueDate: string
+  dueDate?: string
   estimatedHours: string
   actualHours?: string
   projectId: string
@@ -87,8 +87,8 @@ export function TaskForm({ projectId, onSubmit, onCancel, initialData, isEditing
       newErrors.estimatedHours = "Estimated hours must be greater than 0"
     }
 
-    if (task.status === "COMPLETED" && (!task.actualHours || parseFloat(task.actualHours) <= 0)) {
-      newErrors.actualHours = "Actual hours are required when completing a task"
+    if (task.status === "COMPLETED" && task.assignedTo && (!task.actualHours || parseFloat(task.actualHours) <= 0)) {
+      newErrors.actualHours = "Actual hours are required when completing an assigned task"
     }
 
     if (task.actualHours && parseFloat(task.actualHours) < 0) {
