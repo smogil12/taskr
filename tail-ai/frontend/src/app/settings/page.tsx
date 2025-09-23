@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, Eye, EyeOff } from "lucide-react";
+import { validatePassword, getPasswordStrengthColor, getPasswordStrengthText, isCommonPassword } from "@/utils/passwordValidation";
 
 const secondaryNavigation = [
   { name: 'Account', href: '#', current: true },
@@ -16,7 +17,7 @@ const secondaryNavigation = [
 ]
 
 function SettingsPageContent() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,15 +26,39 @@ function SettingsPageContent() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [passwordValidation, setPasswordValidation] = useState<any>(null);
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewPassword(value);
+    
+    // Validate password in real-time
+    if (value) {
+      const validation = validatePassword(value);
+      if (isCommonPassword(value)) {
+        validation.errors.push('This password is too common. Please choose a more unique password.');
+        validation.isValid = false;
+      }
+      setPasswordValidation(validation);
+    } else {
+      setPasswordValidation(null);
+    }
+  };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsChangingPassword(true);
     setPasswordMessage(null);
 
-    // Client-side validation
-    if (newPassword.length < 6) {
-      setPasswordMessage({ type: 'error', text: 'New password must be at least 6 characters long.' });
+    // Client-side validation using the proper validation utility
+    const validation = validatePassword(newPassword);
+    if (isCommonPassword(newPassword)) {
+      validation.errors.push('This password is too common. Please choose a more unique password.');
+      validation.isValid = false;
+    }
+
+    if (!validation.isValid) {
+      setPasswordMessage({ type: 'error', text: validation.errors[0] });
       setIsChangingPassword(false);
       return;
     }
@@ -45,11 +70,14 @@ function SettingsPageContent() {
     }
 
     try {
+      console.log('🔐 Change password request - Token present:', !!token);
+      console.log('🔐 Token value:', token ? token.substring(0, 20) + '...' : 'null');
+      
       const response = await fetch('/api/auth/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           currentPassword,
@@ -230,7 +258,7 @@ function SettingsPageContent() {
                       id="new-password"
                       type={showNewPassword ? 'text' : 'password'}
                       value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
+                      onChange={handlePasswordChange}
                       required
                       disabled={isChangingPassword}
                       className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 pr-10"
@@ -243,7 +271,36 @@ function SettingsPageContent() {
                       {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Must be at least 6 characters long</p>
+                  {passwordValidation && newPassword && (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Password strength:</span>
+                        <span className={`text-sm font-medium ${getPasswordStrengthColor(passwordValidation.strength)}`}>
+                          {getPasswordStrengthText(passwordValidation.strength)}
+                        </span>
+                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              passwordValidation.strength === 'weak' ? 'bg-red-500 w-1/4' :
+                              passwordValidation.strength === 'medium' ? 'bg-yellow-500 w-1/2' :
+                              passwordValidation.strength === 'strong' ? 'bg-blue-500 w-3/4' :
+                              'bg-green-500 w-full'
+                            }`}
+                          />
+                        </div>
+                      </div>
+                      {passwordValidation.errors.length > 0 && (
+                        <ul className="text-sm text-red-600 dark:text-red-400 space-y-1">
+                          {passwordValidation.errors.map((error: string, index: number) => (
+                            <li key={index} className="flex items-center space-x-1">
+                              <span>•</span>
+                              <span>{error}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="col-span-full">

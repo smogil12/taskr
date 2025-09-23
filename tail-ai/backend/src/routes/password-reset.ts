@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { EmailService } from '../services/emailService';
 import { signJwt } from '../utils/jwtSecurity';
+import { securityLogger } from '../utils/securityLogger';
 
 const router = Router();
 
@@ -74,7 +75,10 @@ router.post('/forgot-password', [
 // Reset password - validate token and update password
 router.post('/reset-password', [
   body('token').notEmpty().withMessage('Reset token is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('password')
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number')
+    .matches(/^(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/).withMessage('Password must contain at least one special character'),
 ], async (req: any, res: any) => {
   try {
     const errors = validationResult(req);
@@ -117,6 +121,9 @@ router.post('/reset-password', [
     });
 
     console.log(`✅ Password reset successful for user ${user.email}`);
+
+    // Log password reset success
+    securityLogger.logPasswordChange(req, user.id, user.email);
 
     res.json({ 
       message: 'Password has been reset successfully' 
