@@ -456,112 +456,123 @@ export function TeamMembers() {
                   )}
                 </div>
               ) : (
-                <table className="relative min-w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50 dark:bg-white/5">
-                      <th
-                        scope="col"
-                        className="py-3.5 pr-3 pl-4 text-left text-xs font-semibold text-gray-900 sm:pl-0 dark:text-white"
-                      >
-                        Member
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
-                        Role
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
-                        Status
-                      </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-white">
-                        Invited
-                      </th>
-                      <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-0">
-                        <span className="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {teamMembers.map((member) => (
-                      <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
-                        <td className="py-8 pr-3 pl-4 text-xs font-medium whitespace-nowrap text-gray-900 sm:pl-0 dark:text-white">
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                              <Users className="h-4 w-4 text-gray-500" />
-                            </div>
-                            <div>
-                              <div className="font-medium">
-                                {member.user?.name || member.email}
-                              </div>
-                              <div className="text-gray-500 text-xs">
-                                {member.email}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-3 py-8 text-sm whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(member.role)}`}>
-                            <Shield className="h-3 w-3 mr-1" />
-                            {member.role}
-                          </span>
-                        </td>
-                        <td className="px-3 py-8 text-sm whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(member.status)}`}>
-                            {member.status}
-                          </span>
-                        </td>
-                        <td className="px-3 py-8 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatDate(member.invitedAt)}
-                          </div>
-                        </td>
-                        <td className="py-8 pr-4 pl-3 text-right text-xs font-medium whitespace-nowrap sm:pr-0">
-                          {canManageMembers && !member.id.startsWith('owner-') && (
-                            <div className="flex gap-2 justify-end">
-                              {member.status === 'PENDING' && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleResendInvite(member.id, member.email)}
-                                  className="rounded-full bg-yellow-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-yellow-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-600 dark:bg-yellow-500 dark:shadow-none dark:hover:bg-yellow-400 dark:focus-visible:outline-yellow-500 flex items-center gap-1"
-                                >
-                                  <Mail className="h-3 w-3" />
-                                  Resend
-                                </button>
-                              )}
-                              {member.status === 'EXPIRED' && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleResendInvite(member.id, member.email)}
-                                  className="rounded-full bg-orange-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-orange-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 dark:bg-orange-500 dark:shadow-none dark:hover:bg-orange-400 dark:focus-visible:outline-orange-500 flex items-center gap-1"
-                                >
-                                  <Mail className="h-3 w-3" />
-                                  Re-invite
-                                </button>
-                              )}
-                              {member.status !== 'EXPIRED' && (
-                                <button
-                                  type="button"
-                                  onClick={() => openEditForm(member)}
-                                  className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
-                                >
-                                  <Edit className="h-3 w-3" />
-                                  Edit
-                                </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => handleDelete(member.id)}
-                                className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-500 dark:shadow-none dark:hover:bg-red-400 dark:focus-visible:outline-red-500 flex items-center gap-1"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                                Remove
-                              </button>
-                            </div>
-                          )}
-                        </td>
+                <div className="overflow-hidden shadow-sm outline-1 outline-black/5 sm:rounded-lg dark:shadow-none dark:-outline-offset-1 dark:outline-white/10">
+                  <table className="relative min-w-full divide-y divide-gray-300 dark:divide-white/15">
+                    <thead className="bg-gray-50 dark:bg-gray-800/75">
+                      <tr>
+                        <th
+                          scope="col"
+                          className="py-3.5 pr-3 pl-4 text-left text-xs font-semibold text-gray-900 sm:pl-6 dark:text-gray-200"
+                        >
+                          Member
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Role
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Status
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900 dark:text-gray-200"
+                        >
+                          Invited
+                        </th>
+                        <th scope="col" className="py-3.5 pr-4 pl-3 sm:pr-6">
+                          <span className="sr-only">Actions</span>
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-white/10 dark:bg-gray-800/50">
+                      {teamMembers.map((member) => (
+                        <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
+                          <td className="py-4 pr-3 pl-4 text-xs font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white">
+                            <div className="flex items-center gap-3">
+                              <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                <Users className="h-4 w-4 text-gray-500" />
+                              </div>
+                              <div>
+                                <div className="font-medium">
+                                  {member.user?.name || member.email}
+                                </div>
+                                <div className="text-gray-500 text-xs">
+                                  {member.email}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(member.role)}`}>
+                              <Shield className="h-3 w-3 mr-1" />
+                              {member.role}
+                            </span>
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(member.status)}`}>
+                              {member.status}
+                            </span>
+                          </td>
+                          <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatDate(member.invitedAt)}
+                            </div>
+                          </td>
+                          <td className="py-4 pr-4 pl-3 text-right text-xs font-medium whitespace-nowrap sm:pr-6">
+                            {canManageMembers && !member.id.startsWith('owner-') && (
+                              <div className="flex gap-2 justify-end">
+                                {member.status === 'PENDING' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleResendInvite(member.id, member.email)}
+                                    className="rounded-full bg-yellow-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-yellow-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-600 dark:bg-yellow-500 dark:shadow-none dark:hover:bg-yellow-400 dark:focus-visible:outline-yellow-500 flex items-center gap-1"
+                                  >
+                                    <Mail className="h-3 w-3" />
+                                    Resend
+                                  </button>
+                                )}
+                                {member.status === 'EXPIRED' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleResendInvite(member.id, member.email)}
+                                    className="rounded-full bg-orange-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-orange-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 dark:bg-orange-500 dark:shadow-none dark:hover:bg-orange-400 dark:focus-visible:outline-orange-500 flex items-center gap-1"
+                                  >
+                                    <Mail className="h-3 w-3" />
+                                    Re-invite
+                                  </button>
+                                )}
+                                {member.status !== 'EXPIRED' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditForm(member)}
+                                    className="rounded-full bg-indigo-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500 flex items-center gap-1"
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                    Edit
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(member.id)}
+                                  className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:bg-red-500 dark:shadow-none dark:hover:bg-red-400 dark:focus-visible:outline-red-500 flex items-center gap-1"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                  Remove
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>
