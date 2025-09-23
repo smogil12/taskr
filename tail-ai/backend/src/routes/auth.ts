@@ -7,6 +7,7 @@ import { EmailService } from '../services/emailService';
 import { securityLogger } from '../utils/securityLogger';
 import { getJwtSecret, signJwt, verifyJwt } from '../utils/jwtSecurity';
 import { authenticateToken } from '../middleware/auth';
+import { AccountLockoutManager } from '../utils/accountLockout';
 
 const router = Router();
 
@@ -119,6 +120,22 @@ router.post('/signin', validateLogin, async (req: Request, res: Response) => {
 
     const { email, password } = req.body;
 
+    // Check if account is locked before attempting login
+    const lockoutCheck = await AccountLockoutManager.checkLockoutByEmail(email);
+    if (lockoutCheck.isLocked) {
+      securityLogger.logSuspiciousActivity(req, {
+        action: 'LOGIN_ATTEMPT_LOCKED_ACCOUNT',
+        email,
+        lockoutExpires: lockoutCheck.lockoutExpires,
+      }, 'HIGH');
+      
+      return res.status(423).json({ 
+        error: 'Account temporarily locked',
+        message: lockoutCheck.message,
+        lockoutExpires: lockoutCheck.lockoutExpires,
+      });
+    }
+
     // Find user
     const user = await prisma.user.findUnique({
       where: { email },
@@ -132,8 +149,24 @@ router.post('/signin', validateLogin, async (req: Request, res: Response) => {
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
+      // Record failed attempt and check for lockout
+      const lockoutResult = await AccountLockoutManager.recordFailedAttemptByEmail(email, req);
+      
       securityLogger.logLoginAttempt(req, email, false, user.id);
-      return res.status(401).json({ error: 'Invalid email or password' });
+      
+      if (lockoutResult.isLocked) {
+        return res.status(423).json({ 
+          error: 'Account temporarily locked',
+          message: lockoutResult.message,
+          lockoutExpires: lockoutResult.lockoutExpires,
+        });
+      }
+      
+      return res.status(401).json({ 
+        error: 'Invalid email or password',
+        remainingAttempts: lockoutResult.remainingAttempts,
+        message: lockoutResult.message,
+      });
     }
 
     // Check if email is verified
@@ -156,6 +189,9 @@ router.post('/signin', validateLogin, async (req: Request, res: Response) => {
         expiresIn: process.env.JWT_EXPIRES_IN || '15m'
       } as jwt.SignOptions
     );
+
+    // Reset account lockout on successful login
+    await AccountLockoutManager.resetAccountLockout(user.id);
 
     // Log successful login
     securityLogger.logLoginAttempt(req, email, true, user.id);
@@ -440,15 +476,27 @@ router.patch('/by-email/:email/subscription', async (req: Request, res: Response
 // Change password - requires authentication
 router.post('/change-password', authenticateToken, async (req: Request, res: Response) => {
   try {
-    // Manual validation
     const { currentPassword, newPassword } = req.body;
 
+    // Manual validation
     if (!currentPassword) {
       return res.status(400).json({ error: 'Current password is required' });
     }
 
-    if (!newPassword || newPassword.length < 6) {
-      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    if (!newPassword) {
+      return res.status(400).json({ error: 'New password is required' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters long' });
+    }
+
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+      return res.status(400).json({ error: 'New password must contain at least one lowercase letter, one uppercase letter, and one number' });
+    }
+
+    if (!/^(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(newPassword)) {
+      return res.status(400).json({ error: 'New password must contain at least one special character' });
     }
 
     const userId = (req as any).user.id;
@@ -480,6 +528,9 @@ router.post('/change-password', authenticateToken, async (req: Request, res: Res
     });
 
     console.log(`✅ Password changed for user ${user.email}`);
+
+    // Log password change
+    securityLogger.logPasswordChange(req, user.id, user.email);
 
     return res.json({ 
       message: 'Password changed successfully' 

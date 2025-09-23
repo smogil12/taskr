@@ -28,11 +28,22 @@ export const authenticateToken = async (
 
     console.log(`🔐 AUTH MIDDLEWARE: ${req.method} ${req.path}`);
     console.log(`🔐 Auth header present: ${!!authHeader}`);
+    console.log(`🔐 Auth header value: ${authHeader}`);
     console.log(`🔐 Token present: ${!!token}`);
+    console.log(`🔐 Token value: ${token ? token.substring(0, 20) + '...' : 'null'}`);
 
     if (!token) {
       console.log(`❌ AUTH FAILED: No token provided`);
       res.status(401).json({ error: 'Access token required' });
+      return;
+    }
+
+    // Check if token looks like a JWT (has 3 parts separated by dots)
+    const tokenParts = token.split('.');
+    if (tokenParts.length !== 3) {
+      console.log(`❌ JWT MALFORMED: Token does not have 3 parts, got ${tokenParts.length}`);
+      console.log(`❌ Token parts: ${tokenParts.map((part, i) => `Part ${i}: ${part.substring(0, 10)}...`).join(', ')}`);
+      res.status(403).json({ error: 'Invalid token format' });
       return;
     }
 
@@ -41,6 +52,7 @@ export const authenticateToken = async (
       decoded = verifyJwt(token);
     } catch (jwtError) {
       console.log(`❌ JWT VERIFICATION ERROR: ${jwtError instanceof Error ? jwtError.message : 'Unknown error'}`);
+      console.log(`❌ JWT Error type: ${jwtError instanceof Error ? jwtError.constructor.name : 'Unknown'}`);
       if (jwtError instanceof jwt.JsonWebTokenError) {
         res.status(403).json({ error: 'Invalid token' });
         return;

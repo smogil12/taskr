@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, CheckCircle, Eye, EyeOff, Lock } from 'lucide-react';
+import { validatePassword, getPasswordStrengthColor, getPasswordStrengthText, isCommonPassword } from '@/utils/passwordValidation';
 
 function ResetPasswordContent() {
   const [password, setPassword] = useState('');
@@ -20,6 +21,7 @@ function ResetPasswordContent() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
   const [userInfo, setUserInfo] = useState<{ email: string; name: string } | null>(null);
+  const [passwordValidation, setPasswordValidation] = useState<any>(null);
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -60,14 +62,37 @@ function ResetPasswordContent() {
     validateToken();
   }, [token]);
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPassword(value);
+    
+    // Validate password in real-time
+    if (value) {
+      const validation = validatePassword(value);
+      if (isCommonPassword(value)) {
+        validation.errors.push('This password is too common. Please choose a more unique password.');
+        validation.isValid = false;
+      }
+      setPasswordValidation(validation);
+    } else {
+      setPasswordValidation(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    // Client-side validation
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    // Client-side validation using the proper validation utility
+    const validation = validatePassword(password);
+    if (isCommonPassword(password)) {
+      validation.errors.push('This password is too common. Please choose a more unique password.');
+      validation.isValid = false;
+    }
+
+    if (!validation.isValid) {
+      setError(validation.errors[0]);
       setIsLoading(false);
       return;
     }
@@ -184,7 +209,7 @@ function ResetPasswordContent() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter new password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={handlePasswordChange}
                   required
                   disabled={isLoading}
                   className="w-full pr-10"
@@ -197,7 +222,36 @@ function ResetPasswordContent() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-xs text-gray-500">Must be at least 6 characters long</p>
+              {passwordValidation && password && (
+                <div className="mt-2 space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600">Password strength:</span>
+                    <span className={`text-sm font-medium ${getPasswordStrengthColor(passwordValidation.strength)}`}>
+                      {getPasswordStrengthText(passwordValidation.strength)}
+                    </span>
+                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          passwordValidation.strength === 'weak' ? 'bg-red-500 w-1/4' :
+                          passwordValidation.strength === 'medium' ? 'bg-yellow-500 w-1/2' :
+                          passwordValidation.strength === 'strong' ? 'bg-blue-500 w-3/4' :
+                          'bg-green-500 w-full'
+                        }`}
+                      />
+                    </div>
+                  </div>
+                  {passwordValidation.errors.length > 0 && (
+                    <ul className="text-sm text-red-600 space-y-1">
+                      {passwordValidation.errors.map((error: string, index: number) => (
+                        <li key={index} className="flex items-center space-x-1">
+                          <span>•</span>
+                          <span>{error}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
