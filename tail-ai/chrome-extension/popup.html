@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tail AI Task Manager</title>
+    <link rel="stylesheet" href="styles/popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <h1>🚀 Tail AI</h1>
+            </div>
+            <div class="user-info" id="userInfo" style="display: none;">
+                <span id="userName"></span>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="login-form">
+            <h2>Sign In</h2>
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Sign In</button>
+            </form>
+            <div id="loginError" class="error-message" style="display: none;"></div>
+        </div>
+
+        <!-- Main App -->
+        <div id="mainApp" class="main-app" style="display: none;">
+            <!-- Quick Task Creation -->
+            <div class="quick-task-section">
+                <h3>Quick Task</h3>
+                <form id="quickTaskForm">
+                    <div class="form-group">
+                        <label for="projectSelect">Project</label>
+                        <select id="projectSelect" required>
+                            <option value="">Select a project...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskTitle">Task Title</label>
+                        <input type="text" id="taskTitle" placeholder="Enter task title..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Description</label>
+                        <textarea id="taskDescription" placeholder="Enter task description..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskPriority">Priority</label>
+                            <select id="taskPriority">
+                                <option value="MEDIUM">Medium</option>
+                                <option value="LOW">Low</option>
+                                <option value="HIGH">High</option>
+                                <option value="URGENT">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dueDate">Due Date</label>
+                            <input type="date" id="dueDate">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="estimatedHours">Estimated Hours</label>
+                            <input type="number" id="estimatedHours" placeholder="e.g., 2.5" step="0.5" min="0">
+                        </div>
+                        <div class="form-group">
+                            <!-- Empty space for layout -->
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </form>
+                <div id="taskError" class="error-message" style="display: none;"></div>
+                <div id="taskSuccess" class="success-message" style="display: none;"></div>
+            </div>
+
+            <!-- Recent Tasks -->
+            <div class="recent-tasks-section">
+                <h3>Recent Tasks</h3>
+                <div class="task-filters">
+                    <select id="taskFilter">
+                        <option value="">All Tasks</option>
+                        <option value="TODO">To Do</option>
+                        <option value="IN_PROGRESS">In Progress</option>
+                        <option value="COMPLETED">Completed</option>
+                    </select>
+                    <button id="refreshTasks" class="btn btn-secondary">Refresh</button>
+                </div>
+                <div id="tasksList" class="tasks-list">
+                    <!-- Tasks will be populated here -->
+                </div>
+            </div>
+
+            <!-- Projects Overview -->
+            <div class="projects-section">
+                <h3>Projects</h3>
+                <div id="projectsList" class="projects-list">
+                    <!-- Projects will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/projects.js"></script>
+    <script src="js/popup.js"></script>
+</body>
+</html>
