@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { MainLayout } from "@/components/layout/main-layout";
 import { useAuth } from "@/components/providers/auth-provider";
+import { TeamMemberTaskPieChart } from "@/components/charts/TeamMemberTaskPieChart";
 
 interface ReportsData {
   timeTracking: {
@@ -17,6 +18,11 @@ interface ReportsData {
     completedToday: number;
     completedThisWeek: number;
   };
+  teamMemberTasks: {
+    name: string;
+    tasks: number;
+    color: string;
+  }[];
 }
 
 export default function ReportsPage() {
@@ -36,17 +42,43 @@ export default function ReportsPage() {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch('/api/reports/summary', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      // Fetch both reports summary and team member task data
+      const [reportsResponse, teamTasksResponse] = await Promise.all([
+        fetch('/api/reports/summary', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }),
+        fetch('/api/reports/team-member-tasks', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+      ]);
 
-      if (response.ok) {
-        const data = await response.json();
-        setReportsData(data);
+      if (reportsResponse.ok && teamTasksResponse.ok) {
+        const [reportsData, teamTasksData] = await Promise.all([
+          reportsResponse.json(),
+          teamTasksResponse.json()
+        ]);
+
+        // Debug logging
+        console.log('🔍 Team tasks data from API:', teamTasksData);
+        console.log('🔍 Team members with tasks:', teamTasksData.teamMemberTasks);
+        console.log('🔍 Total team members:', teamTasksData.totalTeamMembers);
+        console.log('🔍 Total tasks:', teamTasksData.totalTasks);
+
+        // Combine the data
+        const combinedData = {
+          ...reportsData,
+          teamMemberTasks: teamTasksData.teamMemberTasks || []
+        };
+        
+        setReportsData(combinedData);
       } else {
-        const errorData = await response.json();
+        const errorData = reportsResponse.ok 
+          ? await teamTasksResponse.json() 
+          : await reportsResponse.json();
         setError(errorData.error || 'Failed to fetch reports data');
       }
     } catch (err) {
@@ -183,6 +215,63 @@ export default function ReportsPage() {
                 </span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Team Member Task Distribution Chart */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Team Member Task Distribution</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Visual breakdown of tasks assigned to each team member
+            </p>
+          </div>
+          <div className="p-6">
+            {reportsData?.teamMemberTasks && reportsData.teamMemberTasks.length > 0 ? (
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  <TeamMemberTaskPieChart 
+                    data={reportsData.teamMemberTasks}
+                    title="Tasks by Team Member"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                  <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {reportsData.teamMemberTasks.reduce((sum, member) => sum + member.tasks, 0)}
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Total Tasks</div>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {reportsData.teamMemberTasks.length}
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Team Members with Tasks</div>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {reportsData.teamMemberTasks.length > 0 
+                        ? Math.round(reportsData.teamMemberTasks.reduce((sum, member) => sum + member.tasks, 0) / reportsData.teamMemberTasks.length)
+                        : 0
+                      }
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Avg Tasks per Member</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-gray-400 dark:text-gray-500 mb-4">
+                  <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Task Data Available</h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  No tasks have been assigned to team members yet. Start by creating tasks and assigning them to team members.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
