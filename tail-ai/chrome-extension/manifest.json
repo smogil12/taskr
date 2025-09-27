@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "Tail AI Task Manager",
+  "version": "1.0.0",
+  "description": "Quick task management and time tracking for Tail AI",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "notifications",
+    "tabs",
+    "windows"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Tail AI Task Manager",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html", "styles/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

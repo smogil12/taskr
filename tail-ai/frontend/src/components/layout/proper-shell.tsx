@@ -47,16 +47,16 @@ export default function ProperShell({ children }: ProperShellProps) {
           top: 0,
           left: 0,
           bottom: 0,
-          width: '288px',
-          backgroundColor: 'white',
-          borderRight: '1px solid #e5e7eb',
+          width: '240px',
+          backgroundColor: '#374151',
+          borderRight: '1px solid #4b5563',
           zIndex: 50,
           display: 'flex',
           flexDirection: 'column'
         }}>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.25rem', overflowY: 'auto', borderRight: '1px solid #e5e7eb', backgroundColor: 'white', padding: '1.5rem' }}>
-            <div style={{ display: 'flex', height: '64px', alignItems: 'center', flexShrink: 0 }}>
-              <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4f46e5' }}>Taskr</span>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', padding: '1rem' }}>
+            <div style={{ display: 'flex', height: '48px', alignItems: 'center', flexShrink: 0 }}>
+              <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#ffffff' }}>Taskr</span>
             </div>
             <nav style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
               <ul style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: '1.75rem' }}>
@@ -67,14 +67,14 @@ export default function ProperShell({ children }: ProperShellProps) {
                         href="/dashboard"
                         style={{
                           display: 'flex',
-                          gap: '0.75rem',
+                          gap: '0.5rem',
                           borderRadius: '6px',
                           padding: '0.5rem',
                           fontSize: '0.875rem',
                           fontWeight: '600',
                           textDecoration: 'none',
-                          color: pathname === '/dashboard' ? '#4f46e5' : '#374151',
-                          backgroundColor: pathname === '/dashboard' ? '#f9fafb' : 'transparent'
+                          color: pathname === '/dashboard' ? '#ffffff' : '#d1d5db',
+                          backgroundColor: pathname === '/dashboard' ? '#4b5563' : 'transparent'
                         }}
                       >
                         <svg style={{ width: '24px', height: '24px', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -94,8 +94,8 @@ export default function ProperShell({ children }: ProperShellProps) {
                           fontSize: '0.875rem',
                           fontWeight: '600',
                           textDecoration: 'none',
-                          color: pathname === '/projects' ? '#4f46e5' : '#374151',
-                          backgroundColor: pathname === '/projects' ? '#f9fafb' : 'transparent'
+                          color: pathname === '/projects' ? '#ffffff' : '#d1d5db',
+                          backgroundColor: pathname === '/projects' ? '#4b5563' : 'transparent'
                         }}
                       >
                         <svg style={{ width: '24px', height: '24px', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -115,8 +115,8 @@ export default function ProperShell({ children }: ProperShellProps) {
                           fontSize: '0.875rem',
                           fontWeight: '600',
                           textDecoration: 'none',
-                          color: pathname === '/tasks' ? '#4f46e5' : '#374151',
-                          backgroundColor: pathname === '/tasks' ? '#f9fafb' : 'transparent'
+                          color: pathname === '/tasks' ? '#ffffff' : '#d1d5db',
+                          backgroundColor: pathname === '/tasks' ? '#4b5563' : 'transparent'
                         }}
                       >
                         <svg style={{ width: '24px', height: '24px', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -137,8 +137,8 @@ export default function ProperShell({ children }: ProperShellProps) {
                           fontSize: '0.875rem',
                           fontWeight: '600',
                           textDecoration: 'none',
-                          color: pathname === '/clients' ? '#4f46e5' : '#374151',
-                          backgroundColor: pathname === '/clients' ? '#f9fafb' : 'transparent'
+                          color: pathname === '/clients' ? '#ffffff' : '#d1d5db',
+                          backgroundColor: pathname === '/clients' ? '#4b5563' : 'transparent'
                         }}
                       >
                         <svg style={{ width: '24px', height: '24px', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -159,8 +159,8 @@ export default function ProperShell({ children }: ProperShellProps) {
                             fontSize: '0.875rem',
                             fontWeight: '600',
                             textDecoration: 'none',
-                            color: pathname === '/team-members' ? '#4f46e5' : '#374151',
-                            backgroundColor: pathname === '/team-members' ? '#f9fafb' : 'transparent'
+                          color: pathname === '/team-members' ? '#ffffff' : '#d1d5db',
+                          backgroundColor: pathname === '/team-members' ? '#4b5563' : 'transparent'
                           }}
                         >
                           <svg style={{ width: '24px', height: '24px', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -181,8 +181,8 @@ export default function ProperShell({ children }: ProperShellProps) {
                           fontSize: '0.875rem',
                           fontWeight: '600',
                           textDecoration: 'none',
-                          color: pathname === '/calendar' ? '#4f46e5' : '#374151',
-                          backgroundColor: pathname === '/calendar' ? '#f9fafb' : 'transparent'
+                          color: pathname === '/calendar' ? '#ffffff' : '#d1d5db',
+                          backgroundColor: pathname === '/calendar' ? '#4b5563' : 'transparent'
                         }}
                       >
                         <svg style={{ width: '24px', height: '24px', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -202,8 +202,8 @@ export default function ProperShell({ children }: ProperShellProps) {
                           fontSize: '0.875rem',
                           fontWeight: '600',
                           textDecoration: 'none',
-                          color: pathname === '/reports' ? '#4f46e5' : '#374151',
-                          backgroundColor: pathname === '/reports' ? '#f9fafb' : 'transparent'
+                          color: pathname === '/reports' ? '#ffffff' : '#d1d5db',
+                          backgroundColor: pathname === '/reports' ? '#4b5563' : 'transparent'
                         }}
                       >
                         <svg style={{ width: '24px', height: '24px', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -223,8 +223,8 @@ export default function ProperShell({ children }: ProperShellProps) {
                           fontSize: '0.875rem',
                           fontWeight: '600',
                           textDecoration: 'none',
-                          color: pathname === '/plans' ? '#4f46e5' : '#374151',
-                          backgroundColor: pathname === '/plans' ? '#f9fafb' : 'transparent'
+                          color: pathname === '/plans' ? '#ffffff' : '#d1d5db',
+                          backgroundColor: pathname === '/plans' ? '#4b5563' : 'transparent'
                         }}
                       >
                         <svg style={{ width: '24px', height: '24px', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -244,8 +244,8 @@ export default function ProperShell({ children }: ProperShellProps) {
                           fontSize: '0.875rem',
                           fontWeight: '600',
                           textDecoration: 'none',
-                          color: pathname === '/settings' ? '#4f46e5' : '#374151',
-                          backgroundColor: pathname === '/settings' ? '#f9fafb' : 'transparent'
+                          color: pathname === '/settings' ? '#ffffff' : '#d1d5db',
+                          backgroundColor: pathname === '/settings' ? '#4b5563' : 'transparent'
                         }}
                       >
                         <svg style={{ width: '24px', height: '24px', flexShrink: 0 }} fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -259,8 +259,8 @@ export default function ProperShell({ children }: ProperShellProps) {
                 </li>
               </ul>
             </nav>
-            <div style={{ marginTop: 'auto', marginLeft: '-1.5rem', marginRight: '-1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem 1.5rem' }}>
+            <div style={{ marginTop: 'auto', marginLeft: '-1rem', marginRight: '-1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem' }}>
                 <div
                   style={{ 
                     width: '32px', 
@@ -278,16 +278,16 @@ export default function ProperShell({ children }: ProperShellProps) {
                   {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: '0.875rem', fontWeight: '600', color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <p style={{ fontSize: '0.875rem', fontWeight: '600', color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {user?.name || 'User'}
                   </p>
-                  <p style={{ fontSize: '0.75rem', color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <p style={{ fontSize: '0.75rem', color: '#d1d5db', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {user?.email}
                   </p>
                 </div>
                 <button
                   onClick={handleSignOut}
-                  style={{ color: '#9ca3af' }}
+                  style={{ color: '#d1d5db' }}
                 >
                   <span style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>Sign out</span>
                   <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -300,7 +300,7 @@ export default function ProperShell({ children }: ProperShellProps) {
         </div>
 
         {/* Main content */}
-        <main style={{ paddingTop: '2.5rem', paddingLeft: '288px', backgroundColor: 'transparent', height: '100vh', overflow: 'auto' }}>
+        <main style={{ paddingTop: '2.5rem', paddingLeft: '240px', backgroundColor: 'transparent', height: '100vh', overflow: 'auto' }}>
           <div style={{ padding: '0 1rem', backgroundColor: 'transparent', height: '100%' }}>
             {children}
           </div>
