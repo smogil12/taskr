@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
       backendUrl = 'http://167.99.115.97:3001';
     } else {
       // Production environment - proxy to production backend
-      backendUrl = 'https://api.tailapp.ai';
+      backendUrl = 'http://167.99.115.97:3002';
     }
 
     return [
