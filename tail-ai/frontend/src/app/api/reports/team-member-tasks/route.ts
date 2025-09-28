@@ -14,6 +14,22 @@ export async function GET(request: NextRequest) {
     
     console.log('✅ Token found, proceeding with API calls')
 
+    // Fetch current user profile to get their ID
+    const userResponse = await fetch(`${API_BASE_URL}/api/profile`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!userResponse.ok) {
+      throw new Error(`Failed to fetch user profile: ${userResponse.status}`)
+    }
+
+    const userData = await userResponse.json()
+    const currentUserId = userData.user?.id
+    console.log('🔍 Current user ID:', currentUserId)
+
     // Fetch team members
     const teamMembersResponse = await fetch(`${API_BASE_URL}/api/team-members`, {
       headers: {
@@ -114,7 +130,7 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.tasks - a.tasks) // Sort by task count descending
 
     // Debug: Check if account owner is missing and add them if needed
-    const accountOwnerId = 'cmfhn4byn00000ex2fob7zrui' // From the logs
+    const accountOwnerId = currentUserId // Use dynamic current user ID
     const accountOwnerTasks = taskCounts.get(accountOwnerId) || 0
     
     if (accountOwnerTasks > 0) {
@@ -123,11 +139,11 @@ export async function GET(request: NextRequest) {
         console.log(`🔍 Adding missing account owner with ${accountOwnerTasks} tasks`)
         // Add the account owner to the chart data
         chartData.unshift({
-          name: 'spencer m', // From the logs
+          name: userData.user?.name || 'Account Owner',
           tasks: accountOwnerTasks,
           color: colors[0], // Use first color
           userId: accountOwnerId,
-          email: 'smogil12@gmail.com', // From the logs
+          email: userData.user?.email || 'Unknown',
           role: 'OWNER'
         })
       }
