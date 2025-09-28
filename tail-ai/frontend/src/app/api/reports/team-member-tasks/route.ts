@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     console.log('✅ Token found, proceeding with API calls')
 
     // Fetch current user profile to get their ID
-    const userResponse = await fetch(`${API_BASE_URL}/api/profile`, {
+    const userResponse = await fetch(`${API_BASE_URL}/api/auth/profile`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
