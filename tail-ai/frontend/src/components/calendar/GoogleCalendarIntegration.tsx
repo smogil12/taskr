@@ -96,8 +96,8 @@ export default function GoogleCalendarIntegration() {
       const data = await response.json();
       setAuthUrl(data.authUrl);
       
-      // Open the authorization URL in a new window
-      window.open(data.authUrl, '_blank', 'width=600,height=600');
+      // Open the authorization URL in the same window for better UX
+      window.location.href = data.authUrl;
     } catch (error) {
       console.error('Error getting auth URL:', error);
     }
