@@ -20,17 +20,22 @@ router.get('/oauth/callback', async (req: any, res: any) => {
       return res.status(400).json({ error: 'Authorization code is required' });
     }
 
-    // For now, we'll use a simple approach - in production you'd want to store state in a secure way
-    // and validate it properly. For development, we'll just proceed with the token exchange.
+    // Get user ID from state parameter for proper user identification
+    const userId = state;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'State parameter is required for user identification' });
+    }
 
     const tokens = await googleCalendarService.getTokens(code);
 
-    // For development, we'll store tokens for the first user
-    // In production, you'd want to properly identify the user from the state parameter
-    const user = await prisma.user.findFirst();
+    // Find the user by ID from the state parameter
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
     
     if (!user) {
-      return res.status(404).json({ error: 'No user found' });
+      return res.status(404).json({ error: 'User not found' });
     }
 
     // Store tokens in database
@@ -44,10 +49,12 @@ router.get('/oauth/callback', async (req: any, res: any) => {
     });
 
     // Redirect back to the frontend calendar page
-    res.redirect('http://localhost:3000/calendar?connected=true');
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/calendar?connected=true`);
   } catch (error) {
     console.error('Error handling OAuth callback:', error);
-    res.status(500).json({ error: 'Failed to connect Google Calendar' });
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/calendar?error=oauth_failed`);
   }
 });
 

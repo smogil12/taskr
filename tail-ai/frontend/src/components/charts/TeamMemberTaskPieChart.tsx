@@ -59,22 +59,22 @@ export function TeamMemberTaskPieChart({
         dataLabels: {
           enabled: true,
           style: {
-            fontSize: '12px',
+            fontSize: '14px',
             fontWeight: 'bold',
             colors: ['#ffffff']
           },
-          formatter: function (val: string, opts: any) {
-            return opts.w.config.labels[opts.seriesIndex] + '\n' + val + '%'
+          formatter: function (val: number) {
+            return val.toFixed(1) + '%'
           }
         },
         legend: {
           position: 'bottom',
           horizontalAlign: 'center',
-          fontSize: '14px',
+          fontSize: '16px',
           fontFamily: 'Helvetica, Arial',
-          fontWeight: 400,
+          fontWeight: 500,
           labels: {
-            colors: '#374151',
+            colors: '#ffffff',
             useSeriesColors: false
           },
           markers: {
@@ -112,18 +112,7 @@ export function TeamMemberTaskPieChart({
             donut: {
               size: '65%',
               labels: {
-                show: true,
-                total: {
-                  show: true,
-                  label: 'Total Tasks',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  color: '#374151',
-                  formatter: function () {
-                    const total = series.reduce((a: number, b: number) => a + b, 0)
-                    return total.toString()
-                  }
-                }
+                show: false
               }
             },
             expandOnClick: true

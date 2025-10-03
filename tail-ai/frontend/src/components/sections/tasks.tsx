@@ -490,11 +490,14 @@ export function Tasks() {
                     <tbody className="divide-y divide-gray-200 bg-white dark:divide-white/10 dark:bg-gray-800/50">
                       {filteredTasks.map((task, index) => (
                         <tr key={task.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
-                          <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white">
-                            {task.title}
+                          <td className="py-4 pr-3 pl-4 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white" style={{ maxWidth: '300px' }}>
+                            <div className="truncate">{task.title}</div>
                             {task.description && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
-                                {task.description}
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 break-words">
+                                {task.description.length > 100 
+                                  ? `${task.description.substring(0, 100)}...` 
+                                  : task.description
+                                }
                               </p>
                             )}
                           </td>
