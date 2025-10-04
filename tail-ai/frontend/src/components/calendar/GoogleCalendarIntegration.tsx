@@ -34,6 +34,7 @@ export default function GoogleCalendarIntegration() {
   const [loading, setLoading] = useState(false);
   const [authUrl, setAuthUrl] = useState('');
   const [selectedProject, setSelectedProject] = useState('');
+  const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     checkCalendarStatus();
@@ -96,8 +97,8 @@ export default function GoogleCalendarIntegration() {
       const data = await response.json();
       setAuthUrl(data.authUrl);
       
-      // Open the authorization URL in a new window
-      window.open(data.authUrl, '_blank', 'width=600,height=600');
+      // Open the authorization URL in the same window for better UX
+      window.location.href = data.authUrl;
     } catch (error) {
       console.error('Error getting auth URL:', error);
     }
@@ -109,7 +110,14 @@ export default function GoogleCalendarIntegration() {
       const token = localStorage.getItem('taskr_token');
       if (!token) return;
 
-      const response = await fetch('/api/calendar/events', {
+      // Fetch events from 30 days ago to 90 days in the future
+      const now = new Date();
+      const pastDate = new Date(now);
+      pastDate.setDate(now.getDate() - 30);
+      const futureDate = new Date(now);
+      futureDate.setDate(now.getDate() + 90);
+
+      const response = await fetch(`/api/calendar/events?timeMin=${pastDate.toISOString()}&timeMax=${futureDate.toISOString()}&maxResults=100`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -129,33 +137,74 @@ export default function GoogleCalendarIntegration() {
       return;
     }
 
+    if (selectedEvents.size === 0) {
+      alert('Please select at least one event to create tasks');
+      return;
+    }
+
     setLoading(true);
     try {
       const token = localStorage.getItem('taskr_token');
       if (!token) return;
 
-      const response = await fetch('/api/calendar/sync', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          projectId: selectedProject,
-          autoCreateTasks: true,
-          maxResults: 50
-        })
-      });
-      const data = await response.json();
+      // Get selected events data
+      const eventsToSync = events.filter(e => selectedEvents.has(e.eventId));
       
-      if (data.tasks) {
-        alert(`Successfully created ${data.createdTasks} tasks from calendar events!`);
-        setEvents([]); // Clear the events list
+      // Create tasks individually for each selected event
+      let createdCount = 0;
+      for (const event of eventsToSync) {
+        const response = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            title: event.taskTitle,
+            description: event.taskDescription,
+            projectId: selectedProject,
+            priority: event.priority,
+            status: 'TODO',
+            dueDate: event.dueDate,
+            estimatedHours: event.estimatedHours,
+            calendarEventId: event.eventId,
+            calendarEventUrl: event.calendarEventUrl
+          })
+        });
+        
+        if (response.ok) {
+          createdCount++;
+        }
       }
+      
+      alert(`Successfully created ${createdCount} task(s) from calendar events!`);
+      
+      // Remove created events from the list and clear selection
+      setEvents(events.filter(e => !selectedEvents.has(e.eventId)));
+      setSelectedEvents(new Set());
     } catch (error) {
       console.error('Error syncing events:', error);
+      alert('Error creating tasks from calendar events');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleEventSelection = (eventId: string) => {
+    const newSelection = new Set(selectedEvents);
+    if (newSelection.has(eventId)) {
+      newSelection.delete(eventId);
+    } else {
+      newSelection.add(eventId);
+    }
+    setSelectedEvents(newSelection);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedEvents.size === events.length) {
+      setSelectedEvents(new Set());
+    } else {
+      setSelectedEvents(new Set(events.map(e => e.eventId)));
     }
   };
 
@@ -238,7 +287,17 @@ export default function GoogleCalendarIntegration() {
         {events.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium">Upcoming Events ({events.length})</h4>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectedEvents.size === events.length && events.length > 0}
+                  onChange={toggleSelectAll}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <h4 className="font-medium">
+                  Calendar Events ({selectedEvents.size} of {events.length} selected)
+                </h4>
+              </div>
               <div className="flex gap-2">
                 <select 
                   value={selectedProject} 
@@ -254,26 +313,35 @@ export default function GoogleCalendarIntegration() {
                 </select>
                 <Button 
                   onClick={syncEventsToTasks} 
-                  disabled={loading || !selectedProject}
+                  disabled={loading || !selectedProject || selectedEvents.size === 0}
                   size="sm"
                 >
-                  Create Tasks
+                  Create Tasks ({selectedEvents.size})
                 </Button>
               </div>
             </div>
             
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {events.map((event) => (
-                <div key={event.eventId} className="p-3 border rounded bg-gray-50">
-                  <div className="flex justify-between items-start">
+                <div key={event.eventId} className="p-3 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
+                  <div className="flex gap-3 items-start">
+                    <input
+                      type="checkbox"
+                      checked={selectedEvents.has(event.eventId)}
+                      onChange={() => toggleEventSelection(event.eventId)}
+                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded flex-shrink-0"
+                    />
                     <div className="flex-1">
-                      <h5 className="font-medium">{event.taskTitle}</h5>
+                      <h5 className="font-medium text-gray-900 dark:text-white">{event.taskTitle}</h5>
                       {event.taskDescription && (
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                          {event.taskDescription}
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                          {event.taskDescription.length > 100 
+                            ? `${event.taskDescription.substring(0, 100)}...` 
+                            : event.taskDescription
+                          }
                         </p>
                       )}
-                      <div className="flex gap-4 text-xs text-gray-500 mt-2">
+                      <div className="flex gap-4 text-xs text-gray-500 dark:text-gray-400 mt-2">
                         {event.dueDate && (
                           <span>📅 {new Date(event.dueDate).toLocaleDateString()}</span>
                         )}
@@ -281,25 +349,14 @@ export default function GoogleCalendarIntegration() {
                           <span>⏱️ {event.estimatedHours}h</span>
                         )}
                         <span className={`px-2 py-1 rounded text-xs ${
-                          event.priority === 'HIGH' ? 'bg-red-100 text-red-800' :
-                          event.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
+                          event.priority === 'HIGH' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                          event.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                         }`}>
                           {event.priority}
                         </span>
                       </div>
                     </div>
-                    {event.calendarEventUrl && (
-                      <a 
-                        href={event.calendarEventUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        View
-                      </a>
-                    )}
                   </div>
                 </div>
               ))}

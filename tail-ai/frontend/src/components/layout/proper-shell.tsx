@@ -55,9 +55,6 @@ export default function ProperShell({ children }: ProperShellProps) {
           flexDirection: 'column'
         }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', padding: '1rem' }}>
-            <div style={{ display: 'flex', height: '48px', alignItems: 'center', flexShrink: 0 }}>
-              <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#ffffff' }}>Taskr</span>
-            </div>
             <nav style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
               <ul style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: '1.75rem' }}>
                 <li>

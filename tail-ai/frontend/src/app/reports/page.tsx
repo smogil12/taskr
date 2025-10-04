@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { MainLayout } from "@/components/layout/main-layout";
 import { useAuth } from "@/components/providers/auth-provider";
 import { TeamMemberTaskPieChart } from "@/components/charts/TeamMemberTaskPieChart";
+import { TasksHistoryChart } from "@/components/charts/TasksHistoryChart";
 
 interface ReportsData {
   timeTracking: {
@@ -23,6 +24,10 @@ interface ReportsData {
     tasks: number;
     color: string;
   }[];
+  tasksHistory: {
+    month: string;
+    tasks: number;
+  }[];
 }
 
 export default function ReportsPage() {
@@ -30,20 +35,21 @@ export default function ReportsPage() {
   const [reportsData, setReportsData] = useState<ReportsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
 
   useEffect(() => {
     if (token) {
       fetchReportsData();
     }
-  }, [token]);
+  }, [token, timeRange]);
 
   const fetchReportsData = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Fetch both reports summary and team member task data
-      const [reportsResponse, teamTasksResponse] = await Promise.all([
+      // Fetch reports summary, team member task data, and tasks history
+      const [reportsResponse, teamTasksResponse, tasksHistoryResponse] = await Promise.all([
         fetch('/api/reports/summary', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -53,13 +59,19 @@ export default function ReportsPage() {
           headers: {
             'Authorization': `Bearer ${token}`
           }
+        }),
+        fetch(`/api/reports/tasks-history?range=${timeRange}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         })
       ]);
 
-      if (reportsResponse.ok && teamTasksResponse.ok) {
-        const [reportsData, teamTasksData] = await Promise.all([
+      if (reportsResponse.ok && teamTasksResponse.ok && tasksHistoryResponse.ok) {
+        const [reportsData, teamTasksData, tasksHistoryData] = await Promise.all([
           reportsResponse.json(),
-          teamTasksResponse.json()
+          teamTasksResponse.json(),
+          tasksHistoryResponse.json()
         ]);
 
         // Debug logging
@@ -67,11 +79,13 @@ export default function ReportsPage() {
         console.log('🔍 Team members with tasks:', teamTasksData.teamMemberTasks);
         console.log('🔍 Total team members:', teamTasksData.totalTeamMembers);
         console.log('🔍 Total tasks:', teamTasksData.totalTasks);
+        console.log('🔍 Tasks history data:', tasksHistoryData);
 
-        // Combine the data
+        // Combine the data with real task history
         const combinedData = {
           ...reportsData,
-          teamMemberTasks: teamTasksData.teamMemberTasks || []
+          teamMemberTasks: teamTasksData.teamMemberTasks || [],
+          tasksHistory: tasksHistoryData.tasksHistory || []
         };
         
         setReportsData(combinedData);
@@ -273,6 +287,16 @@ export default function ReportsPage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Tasks History Chart */}
+        <div>
+          <TasksHistoryChart
+            data={reportsData?.tasksHistory || []}
+            title="Tasks completed this period"
+            timeRange={timeRange}
+            onTimeRangeChange={setTimeRange}
+          />
         </div>
 
         {/* Detailed Reports Section */}

@@ -8,9 +8,9 @@ interface TeamPermissions {
 
 export function useTeamPermissions() {
   const [permissions, setPermissions] = useState<TeamPermissions>({
-    canAccessTeamMembers: false,
-    canManageMembers: false,
-    isTeamOwner: false
+    canAccessTeamMembers: true, // Default to true for optimistic rendering
+    canManageMembers: true,
+    isTeamOwner: true
   })
   const [isLoading, setIsLoading] = useState(true)
 
